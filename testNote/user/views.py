@@ -90,7 +90,7 @@ def logout_view(request):
     if 'uid' in request.session:
         del request.session['uid']
 
-    resp = HttpResponseRedirect('/index')
+    resp = HttpResponseRedirect('/user/login')
     if 'username' in request.COOKIES:
         resp.delete_cookie('username')
     if 'uid' in request.COOKIES:
