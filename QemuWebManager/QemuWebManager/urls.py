@@ -23,5 +23,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     re_path(r'^$', include("servers.urls")),
     path('user/', include("user.urls"), name='user'),
-    # path('servers/', include("servers.urls"), name='servers'),
+    path('servers/', include("servers.urls"), name='servers'),
 ]
