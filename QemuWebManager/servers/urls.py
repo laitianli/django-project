@@ -6,6 +6,7 @@ from . import views
 app_name='servers'
 
 urlpatterns = [
-    re_path('^$', views.QWM_index, name='index'),
+    # re_path('^$', views.QWM_index, name='index'),
+    path('index', views.QWM_index, name='index'),
     path('servers_list', views.QWM_servers_list, name='servers_list'),
 ]

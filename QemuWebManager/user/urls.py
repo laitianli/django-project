@@ -6,4 +6,5 @@ app_name='user'
 
 urlpatterns = [
     path('login', views.QWM_login, name='login'),
+    path('logout', views.QWM_logout, name='logout'),
 ]

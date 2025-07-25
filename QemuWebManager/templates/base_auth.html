@@ -19,13 +19,13 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="{% url 'servers:index' %}">WebVirtMgr</a>
+            <a class="navbar-brand" href="{% url 'servers:index' %}">QemuWebManager</a>
         </div>
         <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav navbar-right">
                 {% if request.user.is_authenticated %}
                     <li class="">
-                        <a href="{% url 'logout' %}">{% trans "Sign out" %}</a>
+                        <a href="{% url 'user:logout' %}">{% trans "Sign out" %}</a>
                     </li>
                 {% else %}
                     <li class="">
