@@ -39,8 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
 ]
-
-AUTH_USER_MODEL = 'auth.User'  # 使用Django内置用户模型
+AUTH_USER_MODEL = 'accounts.CustomUser'  # your_app为应用名称
+# AUTH_USER_MODEL = 'auth.User'  # 使用Django内置用户模型
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
@@ -142,5 +142,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = True  # 仅HTTPS
+# SESSION_COOKIE_HTTPONLY = True
+# # SESSION_COOKIE_SECURE = True  # 仅HTTPS
+# SECURE_SSL_REDIRECT = False  # 开发环境建议设为False

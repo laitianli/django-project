@@ -1,4 +1,5 @@
-{%  load static %}
+{% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -6,10 +7,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>虚拟机管理系统登录</title>
-    <link href="{% static './css/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static './bootstrap-5.3.0-alpha1/dist/css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static './css/all.min.css' %}">
     <script src="{% static './js/jquery-3.6.0.min.js' %}"></script>
-    <script src="{% static './js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static './bootstrap-5.3.0-alpha1/dist/js/bootstrap.bundle.min.js' %}"></script>
     <style>
         :root {
             --gold: #D4AF37;
@@ -416,7 +417,7 @@
                 }
                 // 使用AJAX发送POST请求
                 $.ajax({
-                    url: "https://api.example.com/login", // 替换为实际的API地址
+                    url: "/accounts/login/", // 替换为实际的API地址
                     type: "POST",
                     contentType: "application/json",
                     data: JSON.stringify(formData),
@@ -427,10 +428,9 @@
                         // $("#registerBtn").prop("disabled", false);
 
                         if (response.success) {
-                            // 注册成功
-                            alert("注册成功！");
+                            alert("登录成功！");
                             // 可以重定向到登录页面或其他页面
-                            // window.location.href = "login.html";
+                            window.location.href = '/index';
                         } else {
                             // 注册失败，显示错误信息
                             alert("注册失败: " + response.message);
@@ -452,7 +452,7 @@
                 $(this).removeClass("is-invalid");
             });
 
-             // 点击验证码刷新
+            // 点击验证码刷新
             $("#registervMWM").click(function () {
                 alert("这是注册按钮，将跳转到注册页面");
             });

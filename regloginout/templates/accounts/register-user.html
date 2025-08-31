@@ -1,15 +1,15 @@
-{%  load static %}
-<!DOCTYPE html>
+{% load static %}
+{% load i18n %}
 <html lang="zh-CN">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>虚拟机管理系统注册</title>
-    <link href="{% static './css/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static './bootstrap-5.3.0-alpha1/dist/css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static './css/all.min.css' %}">
     <script src="{% static './js/jquery-3.6.0.min.js' %}"></script>
-    <script src="{% static './js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static './bootstrap-5.3.0-alpha1/dist/js/bootstrap.bundle.min.js' %}"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -315,6 +315,13 @@
                 <div class="tab-pane fade show active" id="email" role="tabpanel" aria-labelledby="email-tab">
                     <form id="registerForm" method="post">
                         <div class="mb-3">
+                            <label class="form-label">用户名：</label>
+                            <input type="text" class="form-control" id="username" name="username"
+                                placeholder="请输入用户名">
+                            <div class="error-message" id="usernameError"></div>
+                        </div>
+
+                        <div class="mb-3">
                             <label class="form-label">邮箱地址：</label>
                             <div class="input-group">
                                 <input type="text" class="form-control" id="emailPrefix" name="emailPrefix"
@@ -460,6 +467,16 @@
                 // 重置错误信息
                 $(".error-message").hide();
 
+                // 验证密码
+                var username = $("#username").val();
+                if (!username) {
+                    $("#usernameError").text("请输入用户名").show();
+                    isValid = false;
+                } else if (username.length < 6) {
+                    $("#usernameError").text("用户名长度不能少于6位").show();
+                    isValid = false;
+                }
+
                 // 验证邮箱前缀
                 var emailPrefix = $("#emailPrefix").val();
                 if (!emailPrefix) {
@@ -534,22 +551,25 @@
 
                 // 收集表单数据
                 var formData = {
+                    username: $('#username').val(),
                     email: $("#emailPrefix").val() + $("#emailType").val(),
                     password: $("#password").val(),
                     phone: $("#phone").val(),
-                    usertype:$('#userType').val(),
+                    usertype: $('#userType').val(),
                     captcha: $("#captcha").val(),
                     smsCode: $("#smsCode").val(),
                     agree: $("#agreeCheck").prop("checked")
                 };
 
-                // Object.keys(formData).forEach(key => {
-                //     console.log(`${key}` + ": " + `${formData[key]}`)
-                // });
-
-                // 使用AJAX发送POST请求
+                Object.keys(formData).forEach(key => {
+                    console.log(`${key}` + ": " + `${formData[key]}`)
+                });
+                // host = '{{ host_with_port }}'
+                // console.log(host)
+                console.log(JSON.stringify(formData))
+                // 使用AJAX发送POST请求http://{{ host_with_port }}
                 $.ajax({
-                    url: "https://api.example.com/register", // 替换为实际的API地址
+                    url: "/accounts/register/", // 替换为实际的API地址
                     type: "POST",
                     contentType: "application/json",
                     data: JSON.stringify(formData),
@@ -561,9 +581,7 @@
 
                         if (response.success) {
                             // 注册成功
-                            alert("注册成功！");
-                            // 可以重定向到登录页面或其他页面
-                            // window.location.href = "login.html";
+                            window.location.href = '/index';
                         } else {
                             // 注册失败，显示错误信息
                             alert("注册失败: " + response.message);
