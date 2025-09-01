@@ -306,7 +306,7 @@
                     </li>
                 </ul>
 
-                <form id="login-form">
+                <form id="login-form" method="post">
                     <div class="mb-3">
                         <input type="text" class="form-control" id="username" placeholder="输入虚拟机用户邮箱名/手机号">
                     </div>
@@ -389,10 +389,11 @@
                 $("#username").attr("placeholder", "输入超级用户邮箱名/手机号");
             });
 
-            // 表单提交验证
-            // $("#login-form").submit(function (e) {
-            //     e.preventDefault();
-            $("#loginVMWM").click(function () {
+            // 表单提交验证，通过这个submit才ajax能把接收server返回的消息
+            $("#login-form").submit(function (e) {
+                 e.preventDefault();
+            //不能使用按钮的id事件来接收server返回消息
+            //$("#loginVMWM").click(function () {
 
                 const username = $("#username").val();
                 const password = $("#password").val();
