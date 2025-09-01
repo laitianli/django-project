@@ -21,9 +21,7 @@ def register(request):
             #{'username': 'haizhi', 'email': 'admin@outlook.com', 'password': '123456', 
             # 'phone': '13632598923', 'usertype': 'normaluser', 'captcha': 'a', 
             # 'smsCode': 'aaa', 'agree': True}
-            print('json_data:%s' % json_data)
             form = UserRegistrationForm(json_data)
-            print(form.is_valid())
             if form.is_valid():
                 cleaned_data = form.cleaned_data
                 # 创建用户逻辑
@@ -48,18 +46,15 @@ def register(request):
 
 def user_login(request):
     if request.method == 'POST':
-        print('call user_login...')
         raw_data = request.body  # 获取原始字节流
         json_data = json.loads(raw_data.decode('utf-8'))  # 解码并解析JSON
         form = AuthenticationForm(request, data=json_data)
         if form.is_valid():
-            print('1' * 12)
+            usertype = json_data.get('usertype')
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
-            print('username: %s password: %s' % (username, password))
             user = authenticate(username=username, password=password)
             if user is not None:
-                print('2' * 12)
                 login(request, user)
                 data = {'success': 'true', 'message': '登录成功'}
                 return JsonResponse(data)
