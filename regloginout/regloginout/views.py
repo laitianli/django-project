@@ -4,3 +4,4 @@ def mainPage(request):
     host_with_port = request.get_host() 
     print(host_with_port)
     return render(request, 'mainpage.html')
+    # return render(request, 'createvmwizard/createvm-wizard.html')
