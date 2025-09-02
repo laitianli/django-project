@@ -39,7 +39,7 @@
             font-weight: bold;
         }
     </style>
-    
+
     {% block extra_css %}{% endblock %}
 
     {% block css %}{% endblock %}
@@ -54,7 +54,7 @@
                 <div class="d-flex">
                     <p class="fw-normal  me-1  col-form-label">用户名: </p>
                     <p class="fw-normal  me-3  col-form-label" id="username">haizhi</p>
-                    <button class="btn btn-danger me-5" id="userLogout">退出</button>
+                    <button class="btn btn-danger me-5" id="userLogoutBtn">退出</button>
                     <div class="row">
                         <label for="" class="col-md-5 text-end col-form-label">语言：</label>
                         <div class="col-md-7">
@@ -86,6 +86,12 @@
     {% block javascript %}
     <!-- 子模板可以在此添加页面特定的JS -->
     {% endblock %}
+
+    <script>
+        document.getElementById('userLogoutBtn').addEventListener('click', function() {
+            window.location.href = '/accounts/logout';
+        })    
+    </script>
 </body>
 
 </html>

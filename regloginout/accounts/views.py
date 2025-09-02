@@ -53,6 +53,7 @@ def user_login(request):
             usertype = json_data.get('usertype')
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
+            next_path = form.cleaned_data.get('next_path')
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
@@ -64,6 +65,8 @@ def user_login(request):
     return render(request, 'accounts/loginout-user.html', {'form': form})
 
 def user_logout(request):
-    logout(request)
+    print('user has login: %s' % request.user.is_authenticated)
+    if request.user.is_authenticated:
+        logout(request)
     return redirect('/accounts/login')
 

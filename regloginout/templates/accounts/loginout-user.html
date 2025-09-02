@@ -389,11 +389,15 @@
                 $("#username").attr("placeholder", "输入超级用户邮箱名/手机号");
             });
 
+            function isEmpty(obj) {
+                return obj === undefined || obj === null || Object.keys(obj).length === 0;
+            }
+
             // 表单提交验证，通过这个submit才ajax能把接收server返回的消息
             $("#login-form").submit(function (e) {
-                 e.preventDefault();
-            //不能使用按钮的id事件来接收server返回消息
-            //$("#loginVMWM").click(function () {
+                e.preventDefault();
+                //不能使用按钮的id事件来接收server返回消息
+                //$("#loginVMWM").click(function () {
 
                 const username = $("#username").val();
                 const password = $("#password").val();
@@ -411,11 +415,13 @@
                 } else {
                     $("#password").removeClass("is-invalid");
                 }
+                var next_path = new URLSearchParams(window.location.search).get('next');
                 var formData = {
                     usertype: $('.nav-link.active').attr('id'),
                     username: username,
-                    password: password
+                    password: password,
                 }
+
                 // 使用AJAX发送POST请求
                 $.ajax({
                     url: "/accounts/login/", // 替换为实际的API地址
@@ -429,9 +435,14 @@
                         // $("#registerBtn").prop("disabled", false);
 
                         if (response.success) {
-                            alert("登录成功！");
+                            console.log(response)
                             // 可以重定向到登录页面或其他页面
-                            window.location.href = '/index';
+                            if (isEmpty(next_path)) {
+                                window.location.href = '/index';
+                            }
+                            else {
+                                window.location.href = next_path;
+                            }
                         } else {
                             // 注册失败，显示错误信息
                             alert("注册失败: " + response.message);
@@ -453,9 +464,9 @@
                 $(this).removeClass("is-invalid");
             });
 
-            // 点击验证码刷新
+            // 点击注册按钮
             $("#registervMWM").click(function () {
-                alert("这是注册按钮，将跳转到注册页面");
+                window.location.href = '/accounts/register';
             });
 
         });
