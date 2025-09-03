@@ -12,463 +12,455 @@
     <script src="{% static './js/jquery-3.6.0.min.js' %}"></script>
     <script src="{% static './bootstrap-5.3.0-alpha1/dist/js/bootstrap.bundle.min.js' %}"></script>
     <style>
-        :root {
-            --gold: #D4AF37;
-            --dark-gold: #B8860B;
-            --dark-bg: #1A1A1A;
-            --darker-bg: #121212;
-            --light-text: #E0E0E0;
-        }
-
         body {
-            /* background: linear-gradient(135deg, #1976d2, #42a5f5); */
-            background: linear-gradient(135deg, var(--darker-bg), #2c2c2c);
-            color: var(--light-text);
-            font-family: "Microsoft YaHei", sans-serif;
-            min-height: 100vh;
+            font-family: 'Microsoft YaHei', sans-serif;
+            /* background-color: #f8f9fa; */
+            background: linear-gradient(135deg, #1976d2, #42a5f5);
+            color: #495057;
+            height: 100vh;
+            margin: 0;
             display: flex;
             align-items: center;
-            padding: 20px 0;
-        }
-
-        .container {
-            max-width: 1200px;
-            background: var(--dark-bg);
-            border-radius: 15px;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
-            overflow: hidden;
-            border: 1px solid rgba(212, 175, 55, 0.2);
-        }
-
-        .vip-promo {
-            background: linear-gradient(to bottom right, #0c0c0c, #2a2a2a);
-            padding: 40px 30px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .vip-promo::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 30% 70%, rgba(212, 175, 55, 0.1) 0%, transparent 60%);
-            pointer-events: none;
-        }
-
-        .gold-text {
-            color: var(--gold);
-            font-weight: bold;
-        }
-
-        .vip-card {
-            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-            border: 2px solid var(--gold);
-            border-radius: 12px;
-            padding: 20px;
-            margin: 20px 0;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.3s;
-        }
-
-        .vip-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .vip-card::after {
-            content: "";
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.01));
-            transform: rotate(30deg);
-        }
-
-        .card-number {
-            font-size: 1.2rem;
-            letter-spacing: 2px;
-            color: var(--gold);
-            text-shadow: 0 0 5px rgba(212, 175, 55, 0.5);
-        }
-
-        .decoration-text {
-            position: absolute;
-            font-size: 1.5rem;
-            font-weight: bold;
-            opacity: 0.1;
-            color: var(--gold);
-            z-index: 0;
-        }
-
-        .boss-text {
-            top: 15%;
-            right: 10%;
-            transform: rotate(15deg);
-        }
-
-        .love-text {
-            bottom: 20%;
-            left: 10%;
-            transform: rotate(-10deg);
         }
 
         .login-container {
-            padding: 40px 30px;
-            background: var(--dark-bg);
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
         }
 
-        .sina-logo {
+        .left-panel {
+            background-color: #f8f9fa;
+            padding: 40px;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .right-panel {
+            padding: 30px;
+            background-color: #f8f9fa;
+        }
+
+        .system-name {
             font-size: 2.5rem;
             font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .system-description {
+            color: #6c757d;
             margin-bottom: 30px;
+            font-size: 1.1rem;
+            line-height: 1.6;
         }
 
-        .sina-logo span:first-child {
-            color: #fff;
+        .feature-box {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #ffffff;
+            transition: all 0.3s;
         }
 
-        .sina-logo span:last-child {
-            color: var(--gold);
+        .feature-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
-        .nav-pills .nav-link {
-            color: var(--light-text);
-            border-radius: 0;
+        .feature-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .feature-description {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+
+        .user-type-tabs {
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .user-type-tabs .nav-link {
+            color: #6c757d;
+            border: none;
             padding: 10px 20px;
-            background: transparent;
         }
 
-        .nav-pills .nav-link.active {
-            color: var(--gold);
-            background: transparent;
-            border-bottom: 2px solid var(--gold);
+        .user-type-tabs .nav-link.active {
+            background-color: transparent;
+            color: #2c3e50;
+            border-bottom: 2px solid #2c3e50;
+        }
+
+        .login-form {
+            padding: 20px 0;
         }
 
         .form-control {
-            background-color: #2c2c2c;
-            border: 1px solid #444;
-            color: var(--light-text);
-            padding: 12px 15px;
-            margin-bottom: 20px;
+            background-color: #ffffff;
+            border: 1px solid #ced4da;
+            color: #495057;
+            padding: 12px;
         }
 
         .form-control:focus {
-            background-color: #2c2c2c;
-            border-color: var(--gold);
-            color: var(--light-text);
-            box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 0.25rem rgba(44, 62, 80, 0.25);
+            border-color: #2c3e50;
+            color: #495057;
         }
 
-        .btn-vip {
-            background: linear-gradient(to right, var(--gold), var(--dark-gold));
-            color: #000;
+        .form-check-input {
+            background-color: #ffffff;
+            border: 1px solid #ced4da;
+        }
+
+        .form-check-input:checked {
+            background-color: #2c3e50;
+            border-color: #2c3e50;
+        }
+
+        .btn-primary {
+            background-color: #2c3e50;
+            color: #ffffff;
             font-weight: bold;
-            padding: 12px;
+            padding: 10px 20px;
             border: none;
-            width: 100%;
-            margin-top: 10px;
         }
 
-        .btn-vip:hover {
-            background: linear-gradient(to right, var(--dark-gold), var(--gold));
+        .btn-primary:hover {
+            background-color: #1a2635;
+            color: #ffffff;
         }
 
-        .login-options a {
-            color: #aaa;
+        .forgot-password {
+            color: #2c3e50;
             text-decoration: none;
-            font-size: 0.9rem;
         }
 
-        .login-options a:hover {
-            color: var(--gold);
+        .forgot-password:hover {
+            text-decoration: underline;
         }
 
         .divider {
-            border-top: 1px solid #444;
-            margin: 25px 0;
-            position: relative;
-        }
-
-        .divider-text {
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--dark-bg);
-            padding: 0 10px;
-            color: #888;
-            font-size: 0.9rem;
-        }
-
-        .btn-social {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #444;
-            color: var(--light-text);
+            display: flex;
+            align-items: center;
             text-align: center;
+            color: #6c757d;
+            margin: 20px 0;
         }
 
-        .btn-social i {
-            margin-right: 8px;
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #dee2e6;
         }
 
-        .btn-social:hover {
-            border-color: var(--gold);
-            color: var(--gold);
+        .divider::before {
+            margin-right: .25em;
+        }
+
+        .divider::after {
+            margin-left: .25em;
         }
 
         .app-download {
             text-align: center;
-            margin-top: 30px;
-            padding: 20px;
-            background: #252525;
+            margin-top: 20px;
+        }
+
+        .vip-badge {
+            background-color: #2c3e50;
+            color: #ffffff;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .qr-code {
+            width: 150px;
+            height: 150px;
+            background-color: #f8f9fa;
             border-radius: 10px;
-        }
-
-        .app-download img {
-            max-width: 180px;
-            margin-bottom: 10px;
-        }
-
-        .form-control::placeholder {
-            opacity: 0.5;
-            /* 设置透明度为50% */
-            color: #999;
-            /* 可选：同时改变文字颜色 */
-        }
-
-        @media (max-width: 992px) {
-            .vip-promo {
-                display: none;
-            }
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2c3e50;
+            font-size: 3rem;
+            border: 1px solid #dee2e6;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="row">
-            <!-- 左侧VIP宣传区 -->
-            <div class="col-md-6 col-lg-7 vip-promo">
-                <h1 class="gold-text">VMWM <span class="text-light">虚拟机Web管理系统</span></h1>
-                <p class="text-light mt-3">虚拟机Web管理系统是一款多用户高性能虚拟机系统</p>
+    <div class="container login-container">
+        <div class="row no-gutters">
+            <!-- 左区域 -->
+            <div class="col-md-7 left-panel">
+                <h1 class="system-name">VMWM 虚拟机Web管理系统</h1>
+                <p class="system-description">
+                    虚拟机Web管理系统是一款多用户高性能虚拟机系统，提供稳定可靠的虚拟化服务，
+                    支持多种虚拟化技术，为企业级应用提供强大的计算资源管理和分配能力。
+                </p>
 
-                <div class="vip-card mt-5">
-                    <div class="card-number">支持OpenvSwitch</div>
-                    <div class="mt-2">
-                        <span class="badge bg-dark gold-text">高带宽</span>
-                        <span class="badge bg-dark gold-text">低延时</span>
+                <div class="feature-box">
+                    <div class="feature-title">支持OpenvSwitch</div>
+                    <div class="feature-description">
+                        高带宽、低延时的网络虚拟化解决方案，提供灵活的网络配置和管理功能，
+                        满足复杂网络环境下的虚拟化需求。
                     </div>
                 </div>
 
-                <div class="vip-card">
-                    <div class="card-number">支持SPDK</div>
-                    <div class="mt-2">
-                        <span class="badge bg-dark gold-text">写硬盘高带宽</span>
-                        <span class="badge bg-dark gold-text">写硬件高可靠</span>
+                <div class="feature-box">
+                    <div class="feature-title">支持SPDK</div>
+                    <div class="feature-description">
+                        写硬盘高带宽、写硬件高可靠，通过用户空间I/O驱动实现高性能存储解决方案，
+                        大幅提升存储性能和效率。
                     </div>
                 </div>
 
-                <div class="vip-card">
-                    <div class="card-number">支持Spice</div>
-                    <div class="mt-2">
-                        <span class="badge bg-dark gold-text">音视频设备映射</span>
-                        <span class="badge bg-dark gold-text">本地USB设备映射</span>
+                <div class="feature-box">
+                    <div class="feature-title">支持Spice</div>
+                    <div class="feature-description">
+                        音视频设备映射、本地USB设备映射，提供高质量的远程桌面体验，
+                        支持多媒体重定向和设备共享功能。
                     </div>
                 </div>
-                <!--                 
-                <div class="decoration-text boss-text">BOSS</div>
-                <div class="decoration-text love-text">520</div> -->
             </div>
 
-            <!-- 右侧登录区 -->
-            <div class="col-md-6 col-lg-5 login-container">
-                <div class="sina-logo text-center">
-                    <span>VMWM</span><span>虚拟机</span>
-                </div>
-
-                <ul class="nav nav-pills mb-4 justify-content-center">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#" id="vmuser">虚拟机用户</a>
+            <!-- 右区域 -->
+            <div class="col-md-5 right-panel">
+                <ul class="nav nav-tabs user-type-tabs" id="userTypeTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="vm-user-tab" data-bs-toggle="tab" data-bs-target="#vm-user"
+                            type="button" role="tab" aria-controls="vm-user" aria-selected="true">虚拟机用户</button>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link " href="#" id="normaluser">普通用户</a>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="normal-user-tab" data-bs-toggle="tab" data-bs-target="#normal-user"
+                            type="button" role="tab" aria-controls="normal-user" aria-selected="false">普通用户</button>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" id="susperuser">超级用户</a>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="super-user-tab" data-bs-toggle="tab" data-bs-target="#super-user"
+                            type="button" role="tab" aria-controls="super-user" aria-selected="false">超级用户</button>
                     </li>
                 </ul>
 
-                <form id="login-form" method="post">
-                    <div class="mb-3">
-                        <input type="text" class="form-control" id="username" placeholder="输入虚拟机用户邮箱名/手机号">
-                    </div>
-                    <div class="mb-3">
-                        <input type="password" class="form-control" id="password" placeholder="输入密码">
+                <div class="tab-content login-form" id="userTypeContent">
+                    <!-- 虚拟机用户登录 -->
+                    <div class="tab-pane fade show active" id="vm-user" role="tabpanel" aria-labelledby="vm-user-tab">
+                        <form>
+                            <div class="mb-3">
+                                <label for="vmUserEmail" class="form-label">输入虚拟机用户邮箱名/手机号</label>
+                                <input type="text" class="form-control" id="vmUserEmail" placeholder="请输入邮箱或手机号">
+                            </div>
+                            <div class="mb-3">
+                                <label for="vmUserPassword" class="form-label">输入密码</label>
+                                <input type="password" class="form-control" id="vmUserPassword" placeholder="请输入密码">
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="rememberVmLogin">
+                                <label class="form-check-label" for="rememberVmLogin">记住登录</label>
+                                <a href="#" class="forgot-password float-end">忘记密码?</a>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg" id="loginVMWM">登录</button>
+                                <button type="button" class="btn btn-outline-secondary" id="registervMWM">注册</button>
+                            </div>
+                        </form>
                     </div>
 
-                    <div class="d-flex justify-content-between login-options mb-3">
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="remember">
-                            <label class="form-check-label" for="remember">记住登录</label>
-                        </div>
-                        <a href="#"><i class="fas fa-question-circle"></i> 忘记密码?</a>
+                    <!-- 普通用户登录 -->
+                    <div class="tab-pane fade" id="normal-user" role="tabpanel" aria-labelledby="normal-user-tab">
+                        <form>
+                            <div class="mb-3">
+                                <label for="normalUserEmail" class="form-label">输入普通用户邮箱名/手机号</label>
+                                <input type="text" class="form-control" id="normalUserEmail" placeholder="请输入邮箱或手机号">
+                            </div>
+                            <div class="mb-3">
+                                <label for="normalUserPassword" class="form-label">输入密码</label>
+                                <input type="password" class="form-control" id="normalUserPassword" placeholder="请输入密码">
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="rememberNormalLogin">
+                                <label class="form-check-label" for="rememberNormalLogin">记住登录</label>
+                                <a href="#" class="forgot-password float-end">忘记密码?</a>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg" " id=" loginVMWM">登录</button>
+                                <button type="button" class="btn btn-outline-secondary" id="registervMWM">注册</button>
+                            </div>
+                        </form>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <button type="submit" class="btn btn-vip" id="loginVMWM">登录</button>
-                        </div>
-                        <div class="col-md-3 ">
-                            <button type="submit" class="btn btn-vip" id="registervMWM">注册</button>
-                        </div>
+                    <!-- 超级用户登录 -->
+                    <div class="tab-pane fade" id="super-user" role="tabpanel" aria-labelledby="super-user-tab">
+                        <form>
+                            <div class="mb-3">
+                                <label for="superUserEmail" class="form-label">输入超级用户邮箱名/手机号</label>
+                                <input type="text" class="form-control" id="superUserEmail" placeholder="请输入邮箱或手机号">
+                            </div>
+                            <div class="mb-3">
+                                <label for="superUserPassword" class="form-label">输入密码</label>
+                                <input type="password" class="form-control" id="superUserPassword" placeholder="请输入密码">
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="rememberSuperLogin">
+                                <label class="form-check-label" for="rememberSuperLogin">记住登录</label>
+                                <a href="#" class="forgot-password float-end">忘记密码?</a>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg" " id=" loginVMWM">登录</button>
+                                <button type="button" class="btn btn-outline-secondary" id="registervMWM">注册</button>
+                            </div>
+                        </form>
                     </div>
-                    <!-- <button type="submit" class="btn btn-vip">登录</button> -->
-
-                    <!-- <div class="text-center mt-3">
-                        <a href="#" class="gold-text">注册VIP邮箱</a>
-                    </div> -->
-                </form>
-
-                <div class="divider">
-                    <span class="divider-text">或</span>
                 </div>
 
-                <!-- <div class="row">
-                    <div class="col-12">
-                        <button class="btn btn-social">
-                            <i class="fab fa-weibo"></i> 微博账号登录
-                        </button>
-                    </div>
-                </div> -->
+                <div class="divider">或</div>
 
                 <div class="app-download">
-                    <h6 class="gold-text">下载官方APP</h6>
-                    <p class="small">扫码登录更安全</p>
-                    <div class="text-center">
-                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHBhdGggZD0iTTI1IDI1SDc1Vjc1SDI1VjI1WiIgZmlsbD0iI0Q0QUYzNyIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1zaXplPSIxOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgYWxpZ25tZW50LWJhc2VsaW5lPSJtaWRkbGUiIGZpbGw9IiMwMDAiPlZJUDwvdGV4dD48L3N2Zz4="
-                            alt="官方APP二维码" class="img-fluid">
+                    <h5>下载官方APP <span class="vip-badge">VIP</span></h5>
+                    <p class="text-muted">扫码登录更安全</p>
+                    <div class="qr-code">
+                        <i class="fas fa-qrcode"></i>
                     </div>
-                    <!-- <p class="small mt-2">sina 新浪企业邮箱</p> -->
-                    <a href="#">APP下载</a>
+                    <button class="btn btn-outline-primary">APP下载</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Bootstrap & jQuery JS -->
+    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script> -->
+    <script src="./static/js/jquery-3.6.0.min.js"></script>
+    <script src="./static/js/bootstrap.bundle.min.js"></script>
     <script>
         $(document).ready(function () {
-            // 选项卡切换
-            $("#vmuser").click(function (e) {
-                e.preventDefault();
-                $("#vmuser").addClass("active");
-                $("#normaluser").removeClass("active");
-                $("#susperuser").removeClass("active");
-                $("#username").attr("placeholder", "输入虚拟机用户邮箱名/手机号");
-            });
-            $("#normaluser").click(function (e) {
-                e.preventDefault();
-                $("#normaluser").addClass("active");
-                $("#susperuser").removeClass("active");
-                $("#vmuser").removeClass("active");
-                $("#username").attr("placeholder", "输入普通用户邮箱名");
-            });
-
-            $("#susperuser").click(function (e) {
-                e.preventDefault();
-                $("#susperuser").addClass("active");
-                $("#normaluser").removeClass("active");
-                $("#vmuser").removeClass("active");
-                $("#username").attr("placeholder", "输入超级用户邮箱名/手机号");
-            });
 
             function isEmpty(obj) {
                 return obj === undefined || obj === null || Object.keys(obj).length === 0;
             }
-
-            // 表单提交验证，通过这个submit才ajax能把接收server返回的消息
-            $("#login-form").submit(function (e) {
+            // 表单提交事件
+            $('form').submit(function (e) {
                 e.preventDefault();
-                //不能使用按钮的id事件来接收server返回消息
-                //$("#loginVMWM").click(function () {
+                // 获取当前tab类型
+                const emailInput = $(this).find('input[type="text"]');
+                const passwordInput = $(this).find('input[type="password"]')
+                const email = emailInput.val();
+                const password = passwordInput.val();
 
-                const username = $("#username").val();
-                const password = $("#password").val();
+                // 移除之前的警告状态
+                emailInput.removeClass('is-invalid');
+                passwordInput.removeClass('is-invalid');
 
-                if (!username) {
-                    $("#username").addClass("is-invalid");
+                // 验证逻辑
+                let isValid = true;
+                if (!email.trim()) {
+                    emailInput.addClass("is-invalid");
+                    emailInput.focus();
+                    isValid = false;
                     return;
                 } else {
-                    $("#username").removeClass("is-invalid");
+                    emailInput.removeClass("is-invalid");
                 }
-
-                if (!password) {
-                    $("#password").addClass("is-invalid");
+                // 验证密码
+                if (!password.trim()) {
+                    passwordInput.addClass('is-invalid');
+                    // 如果邮箱已经有效，才将焦点移到密码框
+                    if (isValid) passwordInput.focus();
+                    isValid = false;
                     return;
-                } else {
-                    $("#password").removeClass("is-invalid");
                 }
-                var next_path = new URLSearchParams(window.location.search).get('next');
-                var formData = {
-                    usertype: $('.nav-link.active').attr('id'),
-                    username: username,
-                    password: password,
-                }
+                // 在实际应用中，这里应该添加表单验证和提交逻辑
+                if (isValid) {
+                    const tabType = $(this).closest('.tab-pane').attr('id');
+                    
+                    const rememberMe = $(this).find('input[type="checkbox"]').is(':checked');
 
-                // 使用AJAX发送POST请求
-                $.ajax({
-                    url: "/accounts/login/", // 替换为实际的API地址
-                    type: "POST",
-                    contentType: "application/json",
-                    data: JSON.stringify(formData),
-                    dataType: "json",
-                    success: function (response) {
-                        // 隐藏加载指示器
-                        // $("#loadingIndicator").hide();
-                        // $("#registerBtn").prop("disabled", false);
-
-                        if (response.success) {
-                            console.log(response)
-                            // 可以重定向到登录页面或其他页面
-                            if (isEmpty(next_path)) {
-                                window.location.href = '/index';
-                            }
-                            else {
-                                window.location.href = next_path;
-                            }
-                        } else {
-                            // 注册失败，显示错误信息
-                            alert("注册失败: " + response.message);
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        // 隐藏加载指示器
-                        // $("#loadingIndicator").hide();
-                        // $("#registerBtn").prop("disabled", false);
-
-                        // 处理错误
-                        alert("请求失败，请稍后重试。错误信息: " + error);
+                    var next_path = new URLSearchParams(window.location.search).get('next');
+                    var formData = {
+                        'usertype': tabType,
+                        'username': email,
+                        'password': password,
+                        'rememberMe': rememberMe,
                     }
-                });
+                    console.log(formData)
+
+                    // 使用AJAX发送POST请求
+                    $.ajax({
+                        url: "/accounts/login/", // 替换为实际的API地址
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify(formData),
+                        dataType: "json",
+                        success: function (response) {
+                            // 隐藏加载指示器
+                            if (response.success) {
+                                console.log(response)
+                                // 可以重定向到登录页面或其他页面
+                                if (isEmpty(next_path)) {
+                                    window.location.href = '/index';
+                                }
+                                else {
+                                    window.location.href = next_path;
+                                }
+                            } else {
+                                // 注册失败，显示错误信息
+                                alert("注册失败: " + response.message);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            // 隐藏加载指示器
+                            // 处理错误
+                            alert("请求失败，请稍后重试。错误信息: " + error);
+                        }
+                    });
+
+                }
+                alert('登录请求已发送（模拟）');
             });
 
-            // 输入时移除错误状态
-            $("#username, #password").on("input", function () {
-                $(this).removeClass("is-invalid");
+            // 实时验证输入
+            $('input[type="text"], input[type="password"]').on('input', function () {
+                if ($(this).val().trim()) {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+
+            // 注册按钮点击事件
+            $('.btn-outline-secondary').click(function () {
+                alert('跳转到注册页面（模拟）');
+            });
+
+            // 忘记密码点击事件
+            $('.forgot-password').click(function (e) {
+                e.preventDefault();
+                alert('跳转到密码重置页面（模拟）');
+            });
+
+            // APP下载按钮点击事件
+            $('.app-download .btn').click(function () {
+                alert('开始下载官方APP（模拟）');
             });
 
             // 点击注册按钮
             $("#registervMWM").click(function () {
                 window.location.href = '/accounts/register';
             });
-
         });
     </script>
 </body>
