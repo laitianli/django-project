@@ -210,7 +210,7 @@
         <div class="row no-gutters">
             <!-- 左区域 -->
             <div class="col-md-7 left-panel">
-                <h1 class="system-name">VMWM 虚拟机Web管理系统</h1>
+                <h1 class="system-name">虚拟机Web管理系统</h1>
                 <p class="system-description">
                     虚拟机Web管理系统是一款多用户高性能虚拟机系统，提供稳定可靠的虚拟化服务，
                     支持多种虚拟化技术，为企业级应用提供强大的计算资源管理和分配能力。
@@ -409,8 +409,7 @@
                         dataType: "json",
                         success: function (response) {
                             // 隐藏加载指示器
-                            if (response.success) {
-                                console.log(response)
+                            if (response.result == 'success') {
                                 // 可以重定向到登录页面或其他页面
                                 if (isEmpty(next_path)) {
                                     window.location.href = '/index';
@@ -419,8 +418,8 @@
                                     window.location.href = next_path;
                                 }
                             } else {
-                                // 注册失败，显示错误信息
-                                alert("注册失败: " + response.message);
+                                // 登录失败，显示错误信息
+                                alert(response.message);
                             }
                         },
                         error: function (xhr, status, error) {
@@ -431,7 +430,7 @@
                     });
 
                 }
-                alert('登录请求已发送（模拟）');
+                // alert('登录请求已发送（模拟）');
             });
 
             // 实时验证输入
@@ -443,7 +442,7 @@
 
             // 注册按钮点击事件
             $('.btn-outline-secondary').click(function () {
-                alert('跳转到注册页面（模拟）');
+                window.location.href = '/accounts/register';
             });
 
             // 忘记密码点击事件

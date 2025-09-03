@@ -32,11 +32,11 @@ def register(request):
                     phone=cleaned_data['phone'],
                 )
                 login(request, user)
-            data = {'success': 'true', 'message': '操作成功'}
+            data = {'result': 'success', 'message': '注册用户名成功'}
             return JsonResponse(data)
         except Exception as e:
             # 错误时也返回JSON
-            return JsonResponse({'success': 'false', 'message': str(e)}, status=500)
+            return JsonResponse({'result': 'failed', 'message': str(e)}, status=500)
 
     else:
         form = UserRegistrationForm()
@@ -49,6 +49,7 @@ def user_login(request):
         raw_data = request.body  # 获取原始字节流
         json_data = json.loads(raw_data.decode('utf-8'))  # 解码并解析JSON
         form = AuthenticationForm(request, data=json_data)
+        print(form.is_valid())
         if form.is_valid():
             usertype = json_data.get('usertype')
             username = form.cleaned_data.get('username')
@@ -57,8 +58,12 @@ def user_login(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                data = {'success': 'true', 'message': '登录成功'}
+                data = {'result': 'success', 'message': '登录成功！'}
                 return JsonResponse(data)
+        else:
+            data = {'result': 'failed', 'message': '用户名或密码错误！'}
+            return JsonResponse(data)
+            
     else:
         form = AuthenticationForm()
     #return render(request, 'accounts/login.html', {'form': form})

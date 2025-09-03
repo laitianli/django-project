@@ -290,9 +290,9 @@
 
 <body>
     <div class="container-wrapper">
-        <div class="logo">
+        <!-- <div class="logo">
             <span>VMWManager</span> <span style="color: #ff5252;">虚拟机管理系统</span>
-        </div>
+        </div> -->
 
         <div class="login-container">
             <div class="welcome-header">
@@ -579,7 +579,7 @@
                         $("#loadingIndicator").hide();
                         $("#registerBtn").prop("disabled", false);
 
-                        if (response.success) {
+                        if (response.result == 'success') {
                             // 注册成功
                             window.location.href = '/index';
                         } else {

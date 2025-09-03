@@ -1,8 +1,8 @@
-body {
+/* body {
     background-color: #f0f0f0;
-    padding: 20px;
+    padding: 0px;
     font-family: "Microsoft YaHei", sans-serif;
-}
+} */
 
 .settings-container {
     background-color: white;
@@ -41,7 +41,7 @@ body {
 .device-item.active {
     background-color: #e1ecf4;
     border-right: 3px solid #317ab9;
-}
+} 
 
 .settings-panel {
     padding: 20px;
