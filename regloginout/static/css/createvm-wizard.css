@@ -17,15 +17,16 @@
     border-right: 1px solid #d4d4d4;
     padding: 0;
     background-color: #f8f8f8;
-    height: 460px;
-    overflow-y: auto;
+    /* 左侧边滚动条 */
+    /* height: 460px;
+    overflow-y: auto; */
 }
-
-#display-settings
+/* 右侧边滚动条 */
+/* #display-settings
 {
     height: 450px;
     overflow-y: auto;
-}
+} */
 
 .device-item {
     padding: 12px 15px;
