@@ -13,21 +13,25 @@
 
 {% block content %}
 <div class="settings-container mt-1">
-    <span class="d-block p-2 text-bg-dark">硬件添加向导>></span>
+    <span class="d-block p-2 text-bg-dark">新建虚拟机向导>></span>
     <div class="row g-0">
         <!-- 左侧设备列表 -->
         <div class="col-md-4 device-list">
-             <div class="device-item active" data-device="vmname">
+            <div class="device-item active" data-device="vmname">
                 <div class="fw-bold">虚拟机</div>
                 <div class="device-summary">centos8.4</div>
             </div>
-            <div class="device-item active" data-device="memory">
+            <div class="device-item" data-device="memory">
                 <div class="fw-bold">内存</div>
                 <div class="device-summary">4GB</div>
             </div>
             <div class="device-item" data-device="processor">
                 <div class="fw-bold">处理器</div>
                 <div class="device-summary">2</div>
+            </div>
+            <div class="device-item" data-device="disk">
+                <div class="fw-bold">硬盘</div>
+                <div class="device-summary">20G</div>
             </div>
             <div class="device-item" data-device="cdrom">
                 <div class="fw-bold">新CD/DVD(SATA)</div>
@@ -53,19 +57,24 @@
 
         <!-- 右侧设置面板 -->
         <div class="col-md-8 settings-panel">
-                        <!-- 【虚拟机】设置面板 -->
+            <!-- 【虚拟机】设置面板 -->
             <div class="device-settings " id="vmname-settings">
                 <div class="settings-panel">
                     <!-- 虚拟机名设置框 -->
                     <div class="section-box">
                         <div class="section-title">虚拟机名</div>
-                        <div class="processor-info">
-                            <div class="processor-label">虚拟机名:</div>
-                            <input type="number" class="form-control" id="processorCount" value="4" min="1" max="64">
+                        <div class="vmname-info">
+                            <div class="vmname-label">虚拟机名:</div>
+                            <input type="text" style="width: 320px;" id="setVMNameID" value="vm-centos8.4"
+                                placeholder="请输入虚拟机名称">
                         </div>
-                        <div class="processor-info">
-                            <div class="processor-label">虚拟机类型:</div>
-                            <input type="number" class="form-control" id="coresPerProcessor" value="2" min="1" max="16">
+                        <div class="vmname-info">
+                            <div class="vmname-label mt-3">虚拟机类型:</div>
+                            <select class="form-control user-defined-form-control" id="VMSystemType">
+                                <option selected>Linux</option>
+                                <option>Unix</option>
+                                <option>Microsoft Windows</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -153,6 +162,109 @@
                                 </label>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 【硬盘】设置面板（默认隐藏） -->
+            <div class="device-settings d-none" id="disk-settings">
+                <div class="settings-panel">
+                    <!-- 【硬盘】设置框 -->
+                    <div class="section-box">
+                        <div class="section-title">添加硬盘</div>
+                        <div class="tab-pane" id="addDisk" role="tabpanel">
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="mb-3 row">
+                                        <label for="diskPart"
+                                            class="col-md-4 text-end form-lable col-form-label">名称:</label>
+                                        <div class="col-md-6">
+                                            <select class="form-select" id="diskPart">
+                                                <option value="vda">vda</option>
+                                                <option value="vda">vdb</option>
+                                                <option value="vda">vdc</option>
+                                                <option value="vda">vdd</option>
+                                                <option value="vda">vde</option>
+                                                <option value="vda">vdf</option>
+                                                <option value="vda">vdg</option>
+                                                <option value="vda">vdh</option>
+                                                <option value="vda">vdi</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 row">
+                                        <label for="diskPartType"
+                                            class="col-md-4 text-end form-lable col-form-label">格式:</label>
+                                        <div class="col-md-6">
+                                            <select class="form-select" id="diskPartType">
+                                                <option value="qcow2">qcow2</option>
+                                                <option value="row">row</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3 row">
+                                        <label for="diskPartSize"
+                                            class="col-md-4 text-end form-lable col-form-label">大小(G):</label>
+                                        <div class="col-md-6">
+                                            <input type="number" class="form-control" id="diskPartSize" value="20"
+                                                min="15" max="800" step="5">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 row">
+                                        <label for="diskPartBusType"
+                                            class="col-md-4 text-end form-lable col-form-label">总线:</label>
+                                        <div class="col-md-6">
+                                            <select class="form-select" id="diskPartBusType">
+                                                <option value="virtio">virtio</option>
+                                                <option value="ide">ide</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-end form-lable col-form-label">
+                                <button class="btn btn-primary">添加</button>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="section-box">
+                        <div class="section-title">硬盘列表</div>
+                        <div class="tab-pane" id="disk-list" role="tabpanel">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>名称</th>
+                                        <th>格式</th>
+                                        <th>大小</th>
+                                        <th>总线</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>vda</td>
+                                        <td>qcow2</td>
+                                        <td>20G</td>
+                                        <td>virtio</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-danger">删除</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>vdb</td>
+                                        <td>raw</td>
+                                        <td>20G</td>
+                                        <td>ide</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-danger">删除</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -255,7 +367,7 @@
                                 </label>
                             </div>
                         </div>
- 
+
                         <div class="radio-group">
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="networkType" id="natMode" checked>
@@ -743,6 +855,22 @@
             updateMemory2DeviceSummary(value)
         });
 
+        function updateVMName2DeviceSummary() {
+            var type = $('#VMSystemType').val();
+            var name = $('#setVMNameID').val();
+            $('[data-device="vmname"] .device-summary').text(type + ' : ' + name);
+        }
+        updateVMName2DeviceSummary();
+
+        // 监听虚拟机名输入框的变化
+        $('#setVMNameID').on('input', function () {
+            updateVMName2DeviceSummary();
+        });
+        // 监听虚拟机类型下拉菜单的变化
+        $('#VMSystemType').change(function () {
+            updateVMName2DeviceSummary();
+        });
+
         function updateMemory2DeviceSummary(value) {
             $('[data-device="memory"] .device-summary').text(value + 'GB');
         }
@@ -845,68 +973,7 @@
                 }
             });
         })
-        // LAN区段按钮点击事件
-        // $('#lanSegmentBtn').click(function () {
-        //     $('#lanSegmentModal').modal('show');
-        // });
 
-        // 高级按钮点击事件
-        // $('#networkAdvancedBtn').click(function () {
-        //     $('#networkAdvancedModal').modal('show');
-        // });
-
-        // 初始化LAN区段列表
-        // var lanSegments = ["LAN区段1", "LAN区段2", "LAN区段3"];
-        // var lanSegmentList = $('#lanSegmentList');
-
-        // lanSegments.forEach(function (segment) {
-        //     lanSegmentList.append('<div class="lan-segment-item">' + segment + '</div>');
-        // });
-
-        // LAN区段项点击事件
-        // $(document).on('click', '.lan-segment-item', function () {
-        //     $('.lan-segment-item').removeClass('selected');
-        //     $(this).addClass('selected');
-        // });
-
-        // 添加LAN区段
-        // $('#addLanSegment').click(function () {
-        //     var newSegment = "LAN区段" + (lanSegments.length + 1);
-        //     lanSegments.push(newSegment);
-        //     lanSegmentList.append('<div class="lan-segment-item">' + newSegment + '</div>');
-        // });
-
-        // 重命名LAN区段
-        // $('#renameLanSegment').click(function () {
-        //     var selected = $('.lan-segment-item.selected');
-        //     if (selected.length) {
-        //         var newName = prompt("请输入新的名称:", selected.text());
-        //         if (newName) {
-        //             selected.text(newName);
-        //         }
-        //     } else {
-        //         alert("请先选择一个LAN区段");
-        //     }
-        // });
-
-        // 移除LAN区段
-        // $('#removeLanSegment').click(function () {
-        //     var selected = $('.lan-segment-item.selected');
-        //     if (selected.length) {
-        //         selected.remove();
-        //     } else {
-        //         alert("请先选择一个LAN区段");
-        //     }
-        // });
-
-        // 带宽限制切换
-        // $('input[name="incomingBandwidth"]').change(function () {
-        //     $('#incomingKbps').prop('disabled', !$('#incomingLimited').is(':checked'));
-        // });
-
-        // $('input[name="outgoingBandwidth"]').change(function () {
-        //     $('#outgoingKbps').prop('disabled', !$('#outgoingLimited').is(':checked'));
-        // });
         //【usb控制器】
         function updateUSB2DeviceSummary(value) {
             $('[data-device="usb"] .device-summary').text(value);
@@ -982,22 +1049,199 @@
 
             $('#hardwareExplanation').text(explanations[type] || '');
         }
+
         $('#completeAddHardwareBtn').click(function () {
-            type = $('.hardware-item.selected').data('type')
-            if ('cdrom' == type) {
+            const selectedHardware = $('.hardware-item.selected').data('type');
+            if ('cdrom' == selectedHardware) {
                 console.log('cdrom')
             }
-            else if ('floppy' == type) {
+            else if ('floppy' == selectedHardware) {
                 console.log('floppy')
             }
-            else if ('network' == type) {
+            else if ('network' == selectedHardware) {
                 console.log('network')
+                // 添加新网络适配器的逻辑
+                addNewNetworkAdapter();
+            }
+            else if ('usb' == selectedHardware) {
+                // 添加USB控制器的逻辑
+                addNewUSBController();
             }
         })
 
-        $('#createHardwareBtn').click(function(){
-            window.location.href = '/index';
-        })
+        // 添加新网络适配器的示例函数
+        function addNewNetworkAdapter() {
+            // 这里只是示例，实际实现需要创建新的UI元素
+            console.log('添加新网络适配器');
+
+            // 在实际实现中，您需要：
+            // 1. 创建新的网络适配器UI元素
+            // 2. 为它们分配唯一的ID
+            // 3. 确保getAllHardwareConfig()能获取到新硬件的配置
+        }
+
+        // $('#createHardwareBtn').click(function () {
+        //     window.location.href = '/index';
+        // })
+
+        // 为创建按钮绑定点击事件
+        $('#createHardwareBtn').click(function () {
+            // 获取所有表单数据
+            const formData = getAllFormData(false);
+
+            // 转换为JSON字符串
+            const jsonData = JSON.stringify(formData);
+            console.log(jsonData); // 用于调试
+
+            // 发送到服务器
+            submitFormData(formData);
+        });
+
+        // 为创建按钮绑定点击事件
+        $('#createHardwareRunBtn').click(function () {
+            // 获取所有表单数据
+            const formData = getAllFormData(true);
+
+            // 转换为JSON字符串
+            const jsonData = JSON.stringify(formData);
+            console.log(jsonData); // 用于调试
+
+            // 发送到服务器
+            submitFormData(formData);
+        });
+
+        // 获取所有表单数据的函数
+        function getAllFormData(status) {
+            const formData = {
+                vmConfig: {},
+                hardware: [],
+                shouldrun: status
+            };
+
+            // 获取虚拟机基本配置
+            formData.vmConfig = getVMConfiguration();
+
+            // 获取所有硬件配置
+            formData.hardware = getAllHardwareConfig();
+
+            return formData;
+        }
+
+        // 获取虚拟机基本配置
+        function getVMConfiguration() {
+            return {
+                name: $('#setVMNameID').val().trim(),
+                type: $('#VMSystemType').val(),
+                memory: parseInt($('#memorySize').val()),
+                processor: {
+                    count: parseInt($('#processorCount').val()),
+                    coresPerProcessor: parseInt($('#coresPerProcessor').val()),
+                    totalCores: parseInt($('#totalCores').val()),
+                    virtualization: {
+                        vt: $('#virtualizationVT').is(':checked'),
+                        cpu: $('#virtualizationCPU').is(':checked')
+                    }
+                }
+            };
+        }
+
+        // 获取所有硬件配置
+        function getAllHardwareConfig() {
+            const hardware = [];
+
+            // 获取每种硬件类型的配置
+            hardware.push(getHardwareConfig('cdrom'));
+            hardware.push(getHardwareConfig('network'));
+            hardware.push(getHardwareConfig('usb'));
+            hardware.push(getHardwareConfig('sound'));
+            hardware.push(getHardwareConfig('display'));
+
+            // 可以继续添加其他硬件类型...
+
+            return hardware.filter(item => item !== null);
+        }
+
+        // 获取特定硬件类型的配置
+        function getHardwareConfig(hardwareType) {
+            switch (hardwareType) {
+                case 'cdrom':
+                    return {
+                        type: 'cdrom',
+                        connected: $('#cdrom-settings input#connected').is(':checked'),
+                        connectAtPowerOn: $('#cdrom-settings input#connectAtPowerOn').is(':checked'),
+                        connectionType: $('#cdrom-settings input[name="connectionType"]:checked').attr('id'),
+                        drive: $('#driveSelector').val(),
+                        isoPath: $('#isoPath').val()
+                    };
+
+                case 'network':
+                    return {
+                        type: 'network',
+                        connected: $('#network-settings input#connected').is(':checked'),
+                        connectAtPowerOn: $('#network-settings input#connectAtPowerOn').is(':checked'),
+                        networkType: $('#network-settings input[name="networkType"]:checked').attr('id'),
+                        customNetwork: $('#networkSelector').val()
+                    };
+
+                case 'usb':
+                    return {
+                        type: 'usb',
+                        compatibility: $('#usbCompatibility').val(),
+                        showAllUsb: $('#showAllUsb').is(':checked')
+                    };
+
+                case 'sound':
+                    return {
+                        type: 'sound',
+                        connected: $('#sound-settings input#connected').is(':checked'),
+                        connectAtPowerOn: $('#sound-settings input#connectAtPowerOn').is(':checked'),
+                        soundCardType: $('#sound-settings input[name="soundCardType"]:checked').attr('id'),
+                        specificSoundCard: $('#soundCardSelector').val(),
+                        echoCancellation: $('#echoCancellation').is(':checked')
+                    };
+
+                case 'display':
+                    return {
+                        type: 'display',
+                        accelerate3D: $('#accelerate3D').is(':checked'),
+                        monitorSetting: $('#display-settings input[name="monitorSetting"]:checked').attr('id'),
+                        monitorCount: $('#monitorCount').val(),
+                        maxResolution: $('#maxResolution').val(),
+                        graphicsMemory: $('#graphicsMemory').val(),
+                        stretchMode: $('#stretchMode').is(':checked'),
+                        stretchOption: $('#display-settings input[name="stretchOption"]:checked').attr('id')
+                    };
+
+                default:
+                    return null;
+            }
+        }
+
+        // 提交表单数据到服务器
+        function submitFormData(formData) {
+            $.ajax({
+                url: '/createvmwizard/createvm/', // 替换为您的API端点
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function (response) {
+                    console.log('服务器响应:', response);
+                    // 处理成功响应
+                    if (response.result == 'success') {
+                        // 注册成功
+                        window.location.href = '/index';
+                    } else {
+                        // 注册失败，显示错误信息
+                        alert("注册失败: " + response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // 处理错误
+                    alert('创建虚拟机时出错: ' + error);
+                    console.error('错误详情:', xhr.responseText);
+                }
+            });
+        }
 
     });
 </script>

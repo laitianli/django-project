@@ -16,5 +16,12 @@ from django.contrib.auth.decorators import login_required
 def mainPage(request):
     host_with_port = request.get_host() 
     print(host_with_port)
-    return render(request, 'mainpage.html')
+    #调用libvirt.py库查询虚拟机,交将结果返回到页面中
+    #1)查询虚拟机
+    #2)查询存储池
+    #3)查询网络池
+    #4)查询物理接口
+    #5)查询secrets
+    #6)查询物理设备信息
+    return render(request, 'mainpage.html', locals())
     # return render(request, 'createvmwizard/createvm-wizard.html')

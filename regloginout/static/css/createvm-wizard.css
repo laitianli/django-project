@@ -214,6 +214,16 @@
     margin-top: 5px;
 }
 
+.vmname-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.vmname-label {
+    width: 120px;
+}
+
 .processor-info {
     display: flex;
     align-items: center;

@@ -1,0 +1,113 @@
+{
+    "vmConfig": {
+        "name": "vm-centos8.4",
+        "type": "Linux",
+        "memory": 4,
+        "processor": {
+            "count": 4,
+            "coresPerProcessor": 2,
+            "totalCores": 8,
+            "virtualization": {
+                "vt": true,
+                "cpu": false
+            }
+        }
+    },
+    "hardware": [
+        {
+            "type": "cdrom",
+            "connected": true,
+            "connectAtPowerOn": true,
+            "connectionType": "physicalDrive",
+            "drive": "自动检测",
+            "isoPath": "未选择"
+        },
+        {
+            "type": "network",
+            "connected": true,
+            "connectAtPowerOn": true,
+            "networkType": "natMode",
+            "customNetwork": "OpenvSwitch"
+        },
+        {
+            "type": "usb",
+            "compatibility": "USB 2.0",
+            "showAllUsb": false
+        },
+        {
+            "type": "sound",
+            "connected": true,
+            "connectAtPowerOn": true,
+            "soundCardType": "specificSoundCard",
+            "specificSoundCard": "耳机 (Realtek(R) Audio)",
+            "echoCancellation": false
+        },
+        {
+            "type": "display",
+            "accelerate3D": true,
+            "monitorSetting": "useHostSetting",
+            "monitorCount": "1",
+            "maxResolution": "2560 x 1600",
+            "graphicsMemory": "8 GB",
+            "stretchMode": false,
+            "stretchOption": "keepAspectRatio"
+        }
+    ]
+}
+
+
+{
+    "vmConfig": {
+        "name": "vm-centos8.4",
+        "type": "Linux",
+        "memory": 4,
+        "processor": {
+            "count": 4,
+            "coresPerProcessor": 2,
+            "totalCores": 8,
+            "virtualization": {
+                "vt": true,
+                "cpu": false
+            }
+        }
+    },
+    "hardware": [
+        {
+            "type": "cdrom",
+            "connected": false,
+            "connectAtPowerOn": true,
+            "connectionType": "physicalDrive",
+            "drive": "自动检测",
+            "isoPath": "未选择"
+        },
+        {
+            "type": "network",
+            "connected": false,
+            "connectAtPowerOn": true,
+            "networkType": "natMode",
+            "customNetwork": "OpenvSwitch"
+        },
+        {
+            "type": "usb",
+            "compatibility": "USB 2.0",
+            "showAllUsb": false
+        },
+        {
+            "type": "sound",
+            "connected": false,
+            "connectAtPowerOn": true,
+            "soundCardType": "specificSoundCard",
+            "specificSoundCard": "耳机 (Realtek(R) Audio)",
+            "echoCancellation": false
+        },
+        {
+            "type": "display",
+            "accelerate3D": true,
+            "monitorSetting": "useHostSetting",
+            "monitorCount": "1",
+            "maxResolution": "2560 x 1600",
+            "graphicsMemory": "8 GB (推荐)",
+            "stretchMode": false
+        }
+    ]
+}
