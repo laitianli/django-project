@@ -175,29 +175,21 @@
                             <div class="row mt-3">
                                 <div class="col-md-6">
                                     <div class="mb-3 row">
-                                        <label for="diskPart"
-                                            class="col-md-4 text-end form-lable col-form-label">名称:</label>
+                                        <label for="diskPartBusType"
+                                            class="col-md-4 text-end form-lable col-form-label">总线:</label>
                                         <div class="col-md-6">
-                                            <select class="form-select" id="diskPartSelect">
-                                                <option value="vda">vda</option>
-                                                <option value="vdb">vdb</option>
-                                                <option value="vdc">vdc</option>
-                                                <option value="vdd">vdd</option>
-                                                <option value="vde">vde</option>
-                                                <option value="vdf">vdf</option>
-                                                <option value="vdg">vdg</option>
-                                                <option value="vdh">vdh</option>
-                                                <option value="vdi">vdi</option>
+                                            <select class="form-select" id="diskPartBusTypeSelect">
+                                                <option value="virtio">virtio</option>
+                                                <option value="ide">ide</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="mb-3 row">
-                                        <label for="diskPartType"
-                                            class="col-md-4 text-end form-lable col-form-label">格式:</label>
+                                        <label for="diskPart"
+                                            class="col-md-4 text-end form-lable col-form-label">名称:</label>
                                         <div class="col-md-6">
-                                            <select class="form-select" id="diskPartTypeSelect">
-                                                <option value="qcow2">qcow2</option>
-                                                <option value="row">row</option>
+                                            <select class="form-select" id="diskPartSelect">
+                                                <!-- <option value="vda">vda</option> -->
                                             </select>
                                         </div>
                                     </div>
@@ -212,12 +204,12 @@
                                         </div>
                                     </div>
                                     <div class="mb-3 row">
-                                        <label for="diskPartBusType"
-                                            class="col-md-4 text-end form-lable col-form-label">总线:</label>
+                                        <label for="diskPartType"
+                                            class="col-md-4 text-end form-lable col-form-label">格式:</label>
                                         <div class="col-md-6">
-                                            <select class="form-select" id="diskPartBusTypeSelect">
-                                                <option value="virtio">virtio</option>
-                                                <option value="ide">ide</option>
+                                            <select class="form-select" id="diskPartTypeSelect">
+                                                <option value="qcow2">qcow2</option>
+                                                <option value="row">row</option>
                                             </select>
                                         </div>
                                     </div>
@@ -226,7 +218,6 @@
                             <div class="text-end form-lable col-form-label">
                                 <button class="btn btn-primary" id="addDiskBtn">添加</button>
                             </div>
-
                         </div>
                     </div>
                     <div class="section-box">
@@ -264,7 +255,6 @@
                                 </tbody>
                             </table>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -335,71 +325,67 @@
             <!-- 【网络适配器】设置设置面板（默认隐藏） -->
             <div class="device-settings d-none" id="network-settings">
                 <div class="settings-panel">
-                    <!-- 设备状态设置框 -->
                     <div class="section-box">
-                        <div class="section-title">设备状态</div>
-                        <div class="checkbox-group">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="connected">
-                                <label class="form-check-label" for="connected">
-                                    已连接(C)
-                                </label>
+                        <div class="section-title">添加网卡</div>
+                        <div class="tab-pane" id="addVMNIC" role="tabpanel">
+                            <div class="row mt-3">
+                                <label for="vmNICMACID" class="col-md-2 text-end form-lable col-form-label">MAC:</label>
+                                <div class="col-md-5 text-end form-lable col-form-label">
+                                    <input type="text" id="vmNICMACID" value="00:1A:2B:AB:9C:13">
+                                </div>
+                                <div class="col-md-3 ">
+                                    <button class="btn btn-info" id="nicGenerateMACBtn">生成</button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="checkbox-group">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="connectAtPowerOn" checked>
-                                <label class="form-check-label" for="connectAtPowerOn">
-                                    启动时连接(O)
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 网络连接设置框 -->
-                    <div class="section-box" id="IDNetworkType">
-                        <div class="section-title">网络连接</div>
-                        <div class="radio-group">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="networkType" id="bridgedMode">
-                                <label class="form-check-label" for="bridgedMode">
-                                    桥接模式:直接连接物理网络
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="radio-group">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="networkType" id="natMode" checked>
-                                <label class="form-check-label" for="natMode">
-                                    NAT 模式:用于共享主机的IP地址
-                                </label>
-                            </div>
-                        </div>
-                        <div class="radio-group">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="networkType" id="hostOnlyMode">
-                                <label class="form-check-label" for="hostOnlyMode">
-                                    仅主机模式:与主机共享的专用网络
-                                </label>
-                            </div>
-                        </div>
-                        <div class="radio-group">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="networkType" id="customMode">
-                                <label class="form-check-label" for="customMode">
-                                    自定义:特定虚拟网络
-                                </label>
-                                <div class="custom-network">
-                                    <select class="form-control user-defined-form-control" id="networkSelector">
-                                        <option>OpenvSwitch</option>
-                                        <!-- <option>VMnet1 (仅主机模式)</option>
-                                            <option>VMnet8 (NAT 模式)</option> -->
+                            <div class="row mt-3">
+                                <label for="nicConnectTypeSelect"
+                                    class="col-md-2 text-end form-lable col-form-label">类型:</label>
+                                <div class="col-md-7">
+                                    <select class="form-select" id="nicConnectTypeSelect">
+                                        <option value="Bridge">Bridge模式:直接连接物理网络</option>
+                                        <option value="NAT">NAT模式:共享主机的IP地址</option>
+                                        <option value="Host">Host模式:共享主机的专用网络</option>
+                                        <option value="OpenvSwitch">自定义:特定虚拟网络</option>
                                     </select>
                                 </div>
                             </div>
+                            <div class="text-end form-lable col-form-label">
+                                <button class="btn btn-primary" id="addVMNICBtn">添加</button>
+                            </div>
                         </div>
-
+                    </div>
+                    <div class="section-box">
+                        <div class="section-title">网卡列表</div>
+                        <div class="tab-pane" id="vmNIC-list" role="tabpanel">
+                            <table class="table table-hover" id="vmNICTab">
+                                <thead>
+                                    <tr>
+                                        <th>#ID</th>
+                                        <th>MAC</th>
+                                        <th>连接方式</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- <tr>
+                                        <td>网卡1</td>
+                                        <td>10:11.01:ab:ac:1f</td>
+                                        <td>Bridge</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-danger btn-delete">删除</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>网卡2</td>
+                                        <td>10:11.01:ab:ac:2f</td>
+                                        <td>Bridge</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-danger btn-delete">删除</button>
+                                        </td>
+                                    </tr> -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -935,21 +921,53 @@
         }
 
         // 检查下拉框状态函数
-            function checkSelectStatus() {
-                const select = $('#diskPartSelect');
-                const addButton = $('#addDiskBtn');
-                const statusIndicator = $('#selectStatus');
-                
-                if (select.find('option').length === 0) {
-                    // 下拉框为空，禁用按钮
-                    addButton.prop('disabled', true);
-                    // statusIndicator.html('<span class="status-indicator status-inactive"></span><span>下拉列表已无可用选项</span>');
-                } else {
-                    // 下拉框不为空，启用按钮
-                    addButton.prop('disabled', false);
-                    // statusIndicator.html('<span class="status-indicator status-active"></span><span>下拉列表有可用选项</span>');
-                }
+        function checkSelectStatus() {
+            const select = $('#diskPartSelect');
+            const addButton = $('#addDiskBtn');
+            const statusIndicator = $('#selectStatus');
+
+            if (select.find('option').length === 0) {
+                // 下拉框为空，禁用按钮
+                addButton.prop('disabled', true);
+                // statusIndicator.html('<span class="status-indicator status-inactive"></span><span>下拉列表已无可用选项</span>');
+            } else {
+                // 下拉框不为空，启用按钮
+                addButton.prop('disabled', false);
+                // statusIndicator.html('<span class="status-indicator status-active"></span><span>下拉列表有可用选项</span>');
             }
+        }
+        function addDiskName(prefix) {
+            for (var i = 0; i < 8; i++) {
+                var num = 97 + i;
+                var char = String.fromCharCode(num); // 返回 'a'
+                var diskName = `${prefix}${char}`
+                // console.log(diskName)
+                $('#diskPartSelect').append($('<option>', {
+                    value: diskName,
+                    text: diskName
+                }));
+            }
+        }
+        function showDiskNameList() {
+            const diskBus = $('#diskPartBusTypeSelect').val();
+            // console.log(diskBus);
+            $('#diskPartSelect').empty();
+            if (diskBus === 'ide') {
+                addDiskName('sd');
+            }
+            else if (diskBus == 'virtio') {
+                addDiskName('vd');
+            }
+
+        }
+
+        //显示硬盘名称列表
+        showDiskNameList();
+
+        $('#diskPartBusTypeSelect').change(function () {
+            showDiskNameList();
+        })
+
         // 磁盘添加按钮事件
         $('#addDiskBtn').click(function () {
             const diskName = $('#diskPartSelect').val();
@@ -1042,23 +1060,134 @@
         });
 
         //【网络适配器】
+        // 生成随机十六进制数
+        function randomHexDigit() {
+            return Math.floor(Math.random() * 16).toString(16);
+        }
+
+        // 生成随机字节（两位十六进制）
+        function randomByte() {
+            const digit1 = randomHexDigit();
+            const digit2 = randomHexDigit();
+            return digit1 + digit2;
+        }
+        // 生成随机MAC地址
+        function generateRandomMAC() {
+            let baseOUI = "60:1A:2B"; // 默认OUI   
+            const separator = ":";
+            // 生成后三个随机字节
+            const randomPart1 = randomByte();
+            const randomPart2 = randomByte();
+            const randomPart3 = randomByte();
+
+            // 组合MAC地址
+            let macAddress = baseOUI;
+
+            macAddress += separator + randomPart1;
+            macAddress += separator + randomPart2;
+            macAddress += separator + randomPart3;
+
+            return macAddress.toUpperCase();
+        }
+
+        function setMAC() {
+            const mac = generateRandomMAC();
+            $('#vmNICMACID').val(mac);
+        }
+        /* 初始化网卡编号 */
+        let nextId = $('#vmNICTab tbody tr').length + 1;
+
+        function addNIC2List() {
+            // const nicName = 1;
+            const nicMAC = $('#vmNICMACID').val();
+            const nicConnType = $('#nicConnectTypeSelect').val();
+
+            const newRow = `
+                <tr>
+                    <td class="id-cell">${nextId}</td>
+                    <td class="mac-cell">${nicMAC}</td>
+                    <td class="connType-cell">${nicConnType}</td>
+                    <td>
+                         <button class="btn btn-sm btn-danger btn-delete">删除</button>
+                    </td>
+                </tr>
+            `;
+            $('#vmNICTab tbody').append(newRow);
+            nextId += 1;
+        }
+        function setDefautNIC() {
+            /* 默认生成一个MAC地址 */
+            setMAC();
+            updateNetwork2DeviceSummary($('#vmNICMACID').val());
+            addNIC2List();
+
+            setMAC();
+            updateDeleteButtonsState();
+        }
+        setDefautNIC();
+
+        // 保存修改前的初始值
+        $('#vmNICMACID').on('focus', function () {
+            $(this).data('originalValue', $(this).val());
+        });
+        /* 点击按钮时生成一个MAC地址 */
+        $('#nicGenerateMACBtn').click(function () {
+            setMAC()
+            $('#addVMNICBtn').removeClass('disabled');
+        })
+        // 网卡添加按钮
+        $('#addVMNICBtn').click(function () {
+            addNIC2List();
+            $(this).addClass('disabled');
+            updateDeleteButtonsState();
+        })
+        // 更新所有行的ID（从1开始重新编号）
+        function updateRowIds() {
+            $('#vmNICTab tbody tr').each(function (index) {
+                $(this).find('.id-cell').text(index + 1);
+            });
+        }
+        // 检查并更新删除按钮状态
+        function updateDeleteButtonsState() {
+            const rowCount = $('#vmNICTab tbody tr').length;
+            const deleteButtons = $('.btn-delete');
+
+            if (rowCount <= 1) {
+                // 只剩一条记录，禁用所有删除按钮
+                deleteButtons.prop('disabled', true);
+                 $('#vmNICTab tbody tr').each(function(index) {
+                    const mac = $(this).find('.mac-cell').text();
+                    const connection = $(this).find('.connType-cell').text();
+                    const id = $(this).find('.id-cell').text();
+                    updateNetwork2DeviceSummary(mac);
+                });
+            } else {
+                // 多条记录，启用所有删除按钮
+                deleteButtons.prop('disabled', false);
+            }
+        }
+        /* 删除网卡 */
+        $('#vmNICTab').on('click', '.btn-delete', function () {
+            $(this).closest('tr').fadeOut(300, function () {
+                $(this).remove();
+                nextId -= 1;
+                updateRowIds();
+                updateDeleteButtonsState();
+            });
+        });
+        //输入框的内存修改
+        $('#vmNICMACID').change(function () {
+            const currentValue = $('#vmNICMACID').val();
+            const originalValue = $('#vmNICMACID').data('originalValue');
+            if (currentValue !== originalValue) {
+                $('#addVMNICBtn').removeClass('disabled');
+            }
+        })
+
         function updateNetwork2DeviceSummary(value) {
             $('[data-device="network"] .device-summary').text(value);
         }
-        $('#IDNetworkType input[type="radio"]').change(function () {
-            const modeType = {
-                '#bridgedMode': 'Bridge',
-                '#natMode': 'NAT',
-                '#hostOnlyMode': 'Host',
-                '#customMode': 'OpenvSwitch'
-            }
-            Object.keys(modeType).forEach(key => {
-                var status = $(`${key}`).prop('checked')
-                if (true == status) {
-                    updateNetwork2DeviceSummary(`${modeType[key]}`)
-                }
-            });
-        })
+
 
         //【usb控制器】
         function updateUSB2DeviceSummary(value) {
