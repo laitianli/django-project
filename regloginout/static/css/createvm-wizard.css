@@ -21,6 +21,7 @@
     /* height: 460px;
     overflow-y: auto; */
 }
+
 /* 右侧边滚动条 */
 /* #display-settings
 {
@@ -42,12 +43,12 @@
 .device-item.active {
     background-color: #e1ecf4;
     border-right: 3px solid #317ab9;
-} 
+}
 
 .settings-panel {
     padding: 20px;
     background-color: white;
-        /* height: 500px;
+    /* height: 500px;
     overflow-y: auto; */
 }
 
@@ -215,14 +216,31 @@
     margin-top: 5px;
 }
 
-.vmname-info {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
+/* 修复输入框长度和边框颜色 */
+.input-text {
+    width: 100%;
+    /* 使输入框延伸到右边框 */
+    border: 1px solid #cbd5e0;
+    /* 使用较浅的边框颜色 */
+    border-radius: 6px;
+    padding: 8px 8px;
+    font-size: 15px;
+    color: #2d3748;
+    transition: all 0.2s ease;
 }
 
-.vmname-label {
-    width: 120px;
+/* 输入框焦点状态 */
+input-text:focus,
+.user-defined-form-control:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+}
+
+/* 修复下拉选择框样式 */
+#VMSystemType {
+    width: 100%;
+    /* 确保下拉框也延伸到右边框 */
 }
 
 .processor-info {
@@ -452,9 +470,13 @@
     margin-bottom: 5px;
 }
 
-/*  width: 100%;   */       /* 必须设置固定宽度或百分比 */
+/*  width: 100%;   */
+/* 必须设置固定宽度或百分比 */
 .ellipsis-single {
-  white-space: nowrap;  /* 禁止文本换行 */
-  overflow: hidden;      /* 隐藏溢出内容 */
-  text-overflow: ellipsis; /* 显示省略号 */
+    white-space: nowrap;
+    /* 禁止文本换行 */
+    overflow: hidden;
+    /* 隐藏溢出内容 */
+    text-overflow: ellipsis;
+    /* 显示省略号 */
 }

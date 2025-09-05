@@ -63,7 +63,29 @@
                     <!-- 虚拟机名设置框 -->
                     <div class="section-box">
                         <div class="section-title">虚拟机名</div>
-                        <div class="vmname-info">
+                        <div class="row mt-1">
+                            <label class="col-md-3  text-end form-lable col-form-label">虚拟机名:</label>
+                            <div class="col-md-9">
+                                <input type="text" id="setVMNameID" class=" input-text" value="" placeholder="请输入虚拟机名称">
+                            </div>
+
+                        </div>
+
+                        <div class="row mt-1">
+                            <label class="col-md-3  text-end form-lable col-form-label">系统类型:</label>
+                            <div class="col-md-9  form-lable col-form-label">
+                                <select class="form-control user-defined-form-control" id="VMSystemType">
+                                    <option selected>Linux</option>
+                                    <option>Unix</option>
+                                    <option>Microsoft Windows</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-box">
+                        <div class="section-title">系统启动方式</div>
+                        <!-- <div class="vmname-info">
                             <div class="vmname-label">虚拟机名:</div>
                             <input type="text" style="width: 320px;" id="setVMNameID" value="vm-centos8.4"
                                 placeholder="请输入虚拟机名称">
@@ -75,7 +97,7 @@
                                 <option>Unix</option>
                                 <option>Microsoft Windows</option>
                             </select>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -181,6 +203,8 @@
                                             <select class="form-select" id="diskPartBusTypeSelect">
                                                 <option value="virtio">virtio</option>
                                                 <option value="ide">ide</option>
+                                                <option value="sata">sata</option>
+                                                <option value="scsi">scsi</option>
                                             </select>
                                         </div>
                                     </div>
@@ -292,7 +316,7 @@
                                 <label class="form-check-label" for="physicalDrive">
                                     使用物理驱动器:
                                 </label>
-                                <div class="drive-options">
+                                <div class="drive-options  mt-2">
                                     <select class="form-control user-defined-form-control" id="driveSelector">
                                         <option>自动检测</option>
                                         <option>/dev/sr0</option>
@@ -307,11 +331,16 @@
                                 <label class="form-check-label" for="isoImage">
                                     使用ISO映像文件:
                                 </label>
-                                <div class="iso-options">
+                                <!-- <div class="iso-options row">
+                                    <div class="col-md-3"></div>
                                     <button class="btn btn-outline-secondary btn-sm" id="browseBtn" disabled>浏览</button>
-                                    <input type="text" class="iso-path" id="isoPath" style="width: 320px;" value="未选择"
+                                    <input type="text" class="iso-path input-text" id="isoPath" value="未选择"
                                         readonly>
-                                    <!-- <span class="iso-path ellipsis-single" id="isoPath" style="width: 300px;">未选择</span> -->
+                                </div> -->
+                                <div class="input-group mt-2">
+                                    <button class="btn btn-outline-secondary" type="button"
+                                        id="browseBtn">浏览</button>
+                                    <input type="text" class="form-control" id="isoPath" placeholder="iso文件">
                                 </div>
                             </div>
                         </div>
@@ -953,10 +982,13 @@
             // console.log(diskBus);
             $('#diskPartSelect').empty();
             if (diskBus === 'ide') {
-                addDiskName('sd');
+                addDiskName('hd');
             }
             else if (diskBus == 'virtio') {
                 addDiskName('vd');
+            }
+            else {
+                addDiskName('sd');
             }
 
         }
@@ -1155,7 +1187,7 @@
             if (rowCount <= 1) {
                 // 只剩一条记录，禁用所有删除按钮
                 deleteButtons.prop('disabled', true);
-                 $('#vmNICTab tbody tr').each(function(index) {
+                $('#vmNICTab tbody tr').each(function (index) {
                     const mac = $(this).find('.mac-cell').text();
                     const connection = $(this).find('.connType-cell').text();
                     const id = $(this).find('.id-cell').text();
