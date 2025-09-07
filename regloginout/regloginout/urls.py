@@ -21,4 +21,5 @@ urlpatterns = [
     path('index', mainPage, name='home'),
     path('accounts/', include('accounts.urls')),
     path('createvmwizard/', include('createvmwizard.urls')),
+    path('storagepool/', include('storagepool.urls')),
 ]

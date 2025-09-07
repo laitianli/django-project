@@ -642,8 +642,8 @@
     <!-- 底部四个按钮 -->
     <div class="button-container">
         <div class="left-buttons">
-            <button class="btn btn-outline-secondary btn-custom" id="addHardwareBtn">添加(A)...</button>
-            <button class="btn btn-outline-secondary btn-custom">移除</button>
+            <!-- <button class="btn btn-outline-secondary btn-custom" id="addHardwareBtn">添加(A)...</button>
+            <button class="btn btn-outline-secondary btn-custom">移除</button> -->
         </div>
         <div class="right-buttons">
             <button class="btn btn-primary btn-custom" id="createHardwareRunBtn">创建运行</button>
@@ -1327,9 +1327,9 @@
             // 3. 确保getAllHardwareConfig()能获取到新硬件的配置
         }
 
-        // $('#createHardwareBtn').click(function () {
-        //     window.location.href = '/index';
-        // })
+        $('#cancelCreateHardwareBtn').click(function () {
+            window.location.href = '/index';
+        })
 
         // 为创建按钮绑定点击事件
         $('#createHardwareBtn').click(function () {

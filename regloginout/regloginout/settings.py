@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
     'createvmwizard',
+    'storagepool',
 ]
 AUTH_USER_MODEL = 'accounts.CustomUser'  # your_app为应用名称
 # AUTH_USER_MODEL = 'auth.User'  # 使用Django内置用户模型
