@@ -163,7 +163,8 @@ $(document).ready(function () {
 
     // 上传ISO按钮点击事件
     $('#uploadIsoBtn').click(function () {
-        alert('上传ISO文件功能（模拟）');
+        // alert('上传ISO文件功能（模拟）');
+        $('#uploadModal').modal('show');
     });
 
     // 添加本地目录按钮点击事件
@@ -235,7 +236,106 @@ $(document).ready(function () {
         $('#addDirectoryModal').modal('hide');
         $('#storagePoolForm')[0].reset();
 
+    }
 
+    // 确定按钮点击事件
+    $('#confirmUpload').click(function () {
+        const fileInput = $('#addIsoFile')[0];
+        const file = fileInput.files[0];
+console.log(file)
+        if (!file) {
+            showModalMessage('请先选择ISO文件', 'danger');
+            return;
+        }
+
+        // 检查文件类型
+        if (!file.name.toLowerCase().endsWith('.iso')) {
+            showModalMessage('只允许上传ISO格式文件', 'danger');
+            return;
+        }
+
+        // 准备上传
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // 显示进度条
+        $('#progressContainer').show();
+        updateProgress(0);
+
+        // 发送AJAX请求[3](@ref)
+        $.ajax({
+            url: '/upload/handle_iso/',  // 根据实际路由调整
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            xhr: function () {
+                const xhr = new window.XMLHttpRequest();
+
+                // 进度事件处理[3](@ref)
+                xhr.upload.addEventListener('progress', function (evt) {
+                    if (evt.lengthComputable) {
+                        const percent = Math.round((evt.loaded / evt.total) * 100);
+                        updateProgress(percent);
+                    }
+                }, false);
+
+                return xhr;
+            },
+            success: function (response) {
+                if (response.status === 'success') {
+                    showModalMessage(`文件 ${response.filename} 上传成功！`, 'success');
+                    setTimeout(() => {
+                        $('#uploadModal').modal('hide');
+                        showMainMessage(`ISO文件 ${response.filename} 已成功上传`, 'success');
+                    }, 1500);
+                } else {
+                    showModalMessage(response.message, 'danger');
+                }
+            },
+            error: function (xhr) {
+                showModalMessage('上传失败: ' + (xhr.responseJSON?.message || '服务器错误'), 'danger');
+            },
+            complete: function () {
+                // 上传完成后重置进度条
+                setTimeout(() => {
+                    updateProgress(0);
+                    $('#progressContainer').hide();
+                }, 2000);
+            }
+        });
+    });
+
+    // 模态框隐藏时重置
+    $('#uploadModal').on('hidden.bs.modal', function () {
+        $('#addIsoFile').val('');
+        $('#modalStatus').empty();
+        updateProgress(0);
+        $('#progressContainer').hide();
+    });
+
+    function updateProgress(percent) {
+        $('#progressBar')
+            .css('width', percent + '%')
+            .text(percent + '%');
+    }
+
+    function showModalMessage(text, type) {
+        $('#modalStatus').html(`
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${text}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `);
+    }
+
+    function showMainMessage(text, type) {
+        $('#uploadStatus').html(`
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${text}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `);
     }
 
     /* 存储池--------------------------------------------------------------------------------------------end*/

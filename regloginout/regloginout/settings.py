@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'accounts',
     'createvmwizard',
     'storagepool',
+    'upload',
 ]
 AUTH_USER_MODEL = 'accounts.CustomUser'  # your_app为应用名称
 # AUTH_USER_MODEL = 'auth.User'  # 使用Django内置用户模型
@@ -147,3 +148,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # SESSION_COOKIE_HTTPONLY = True
 # # SESSION_COOKIE_SECURE = True  # 仅HTTPS
 # SECURE_SSL_REDIRECT = False  # 开发环境建议设为False
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# 增加文件上传大小限制（可选）
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB[3](@ref)

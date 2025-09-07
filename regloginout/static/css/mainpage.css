@@ -118,3 +118,13 @@
         background-color: #dc3545;
         border-color: #dc3545;
     }
+
+    .progress {
+        height: 25px;
+        margin: 15px 0;
+    }
+
+    .progress-bar {
+        line-height: 25px;
+        font-weight: bold;
+    }
