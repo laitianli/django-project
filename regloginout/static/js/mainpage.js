@@ -183,6 +183,85 @@ $(document).ready(function () {
         handleFormSubmit();
     });
 
+    function addNewLiNewDiv() {
+        // 假设这是你要添加的新标签页和数据
+        var newTabId = "new-images"; // 新标签页的唯一ID
+        var newTabTitle = "新增镜像"; // 新标签页的标题
+        var tableData = [ // 新标签页表格中的数据
+            { id: 1, fileName: "new_image1.qcow2", size: "40 GB", format: "qcow2" },
+            { id: 2, fileName: "new_image2.qcow2", size: "45 GB", format: "qcow2" }
+        ];
+
+        // 1. 动态创建并添加 li 标签 (Tab项)
+        var newLi = $('<li class="nav-item" role="presentation">' +
+            '<button class="nav-link" id="' + newTabId + '-tab" ' +
+            'data-bs-toggle="tab" ' +
+            'data-bs-target="#' + newTabId + '" ' +
+            'type="button" role="tab" ' +
+            'aria-controls="' + newTabId + '" ' +
+            'aria-selected="false">' +
+            newTabTitle +
+            '</button>' +
+            '</li>');
+
+        $("#imageTabs").append(newLi); // 将新标签项添加到导航中[1,3](@ref)
+
+        // 2. 动态创建并添加 div 标签 (内容面板)
+        var newDiv = $('<div class="tab-pane fade" ' +
+            'id="' + newTabId + '" ' +
+            'role="tabpanel" ' +
+            'aria-labelledby="' + newTabId + '-tab">' +
+            '<div class="table-responsive">' +
+            // 这里可以初始化表格结构，具体数据用jQuery动态填充
+            '<table class="table table-bordered directory-table">' +
+            '<thead><tr><th>ID</th><th>镜像文件名</th><th>大小</th><th>格式</th><th>操作</th></tr></thead>' +
+            '<tbody></tbody>' +
+            '</table>' +
+            '</div>' +
+            '</div>');
+
+        $("#imageDetailTabs").append(newDiv); // 将新内容面板添加到容器中[1,2](@ref)
+
+        // 3. 为新面板的表格动态添加行
+        var tbody = $(newDiv).find('tbody');
+        $.each(tableData, function (index, item) {
+            var newRow = $('<tr>' +
+                '<td>' + item.id + '</td>' +
+                '<td>' + item.fileName + '</td>' +
+                '<td>' + item.size + '</td>' +
+                '<td>' + item.format + '</td>' +
+                '<td>' +
+                '<button class="btn btn-sm btn-primary me-1">克隆</button> ' +
+                '<button class="btn btn-sm btn-danger">删除</button>' +
+                '</td>' +
+                '</tr>');
+            tbody.append(newRow); // 将新行添加到表格中[9,10](@ref)
+        });
+
+        // 4. (可选) 添加后自动切换到新标签页
+         $('#imageTabs a[href="#' + newTabId + '"]').tab('show');
+    }
+    function addNewdir(poolName, path) {
+        const newRow = `
+                <tr>
+                    <td>${poolName}</td>
+                    <td>${path}</td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar" role="progressbar"
+                                    style="width: 45%;" aria-valuenow="45"></div>
+                                </div>
+                                <small>0 GB / 0 GB</small>
+                        </td>
+                        <td>0</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger">移除</button>
+                    </td>
+                </tr>
+            `;
+        $('#customPoolDirectoryPathTable tbody').append(newRow);
+
+    }
     function handleFormSubmit() {
         const poolName = $('#poolName').val().trim();
         const path = $('#directoryPath').val().trim();
@@ -215,9 +294,7 @@ $(document).ready(function () {
                 if (response.result == 'success') {
                     // 模拟添加成功提示
                     alert(`存储池添加成功\n名称: ${poolName}\n路径: ${path}`);
-                    // 关闭模态框并清空输入
-                    $('#addDirectoryModal').modal('hide');
-                    $('#storagePoolForm')[0].reset();
+                    addNewdir(poolName, path);
 
                 } else {
                     // 登录失败，显示错误信息
@@ -242,7 +319,7 @@ $(document).ready(function () {
     $('#confirmUpload').click(function () {
         const fileInput = $('#addIsoFile')[0];
         const file = fileInput.files[0];
-console.log(file)
+
         if (!file) {
             showModalMessage('请先选择ISO文件', 'danger');
             return;
