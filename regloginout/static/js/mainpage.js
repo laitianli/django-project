@@ -183,10 +183,22 @@ $(document).ready(function () {
         handleFormSubmit();
     });
 
-    function addNewLiNewDiv() {
+     // 生成随机十六进制数
+        function randomHexDigit() {
+            return Math.floor(Math.random() * 16).toString(16);
+        }
+
+        // 生成随机字节（两位十六进制）
+        function randomByte() {
+            const digit1 = randomHexDigit();
+            const digit2 = randomHexDigit();
+            return digit1 + digit2;
+        }
+    function addNewLiNewDiv(poolName) {
         // 假设这是你要添加的新标签页和数据
-        var newTabId = "new-images"; // 新标签页的唯一ID
-        var newTabTitle = "新增镜像"; // 新标签页的标题
+        var newTabId = poolName + randomByte(); // 新标签页的唯一ID
+        console.log(newTabId);
+        var newTabTitle = poolName  + '目录镜像'; // 新标签页的标题
         var tableData = [ // 新标签页表格中的数据
             { id: 1, fileName: "new_image1.qcow2", size: "40 GB", format: "qcow2" },
             { id: 2, fileName: "new_image2.qcow2", size: "45 GB", format: "qcow2" }
@@ -232,14 +244,14 @@ $(document).ready(function () {
                 '<td>' + item.format + '</td>' +
                 '<td>' +
                 '<button class="btn btn-sm btn-primary me-1">克隆</button> ' +
-                '<button class="btn btn-sm btn-danger">删除</button>' +
+                '<button class="btn btn-sm btn-danger" id="deleteCustomDirBtn">删除</button>' +
                 '</td>' +
                 '</tr>');
             tbody.append(newRow); // 将新行添加到表格中[9,10](@ref)
         });
 
         // 4. (可选) 添加后自动切换到新标签页
-         $('#imageTabs a[href="#' + newTabId + '"]').tab('show');
+         $('#imageTabs button[data-bs-target="#' + newTabId + '"]').tab('show');
     }
     function addNewdir(poolName, path) {
         const newRow = `
@@ -247,11 +259,18 @@ $(document).ready(function () {
                     <td>${poolName}</td>
                     <td>${path}</td>
                         <td>
-                            <div class="progress" style="height: 20px;">
-                                <div class="progress-bar" role="progressbar"
-                                    style="width: 45%;" aria-valuenow="45"></div>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar" role="progressbar"
+                                            style="width: 10%;"">
+                                        </div>
+                                    </div>
                                 </div>
-                                <small>0 GB / 0 GB</small>
+                                <div class="col-md-4 mt-3">
+                                    <small>0 GB / 0 GB</small>
+                                </div>
+                            </div>
                         </td>
                         <td>0</td>
                     <td>
@@ -295,6 +314,7 @@ $(document).ready(function () {
                     // 模拟添加成功提示
                     alert(`存储池添加成功\n名称: ${poolName}\n路径: ${path}`);
                     addNewdir(poolName, path);
+                    addNewLiNewDiv(poolName);
 
                 } else {
                     // 登录失败，显示错误信息
@@ -312,8 +332,13 @@ $(document).ready(function () {
         // 关闭模态框并清空输入
         $('#addDirectoryModal').modal('hide');
         $('#storagePoolForm')[0].reset();
-
     }
+
+    $('#deleteCustomDirBtn').click(function(){
+        //当表格中的镜像个数为0才可以删除。
+        //删除li标签
+        //删除列表和表格（）
+    })
 
     // 确定按钮点击事件
     $('#confirmUpload').click(function () {
