@@ -8,6 +8,7 @@ $('.sidebar .list-group-item').click(function (e) {
     const contentId = $(this).data('content') + '-content';
     console.log(contentId);
     if (contentId === 'storage-content') { //发送Query查询事件。
+        cleanLocalStoragepool();
         queryLocalStoragePool();
     }
     $('.content-section').addClass('d-none');
@@ -76,6 +77,13 @@ function randomByte() {
     return digit1 + digit2;
 }
 
+function cleanLocalStoragepool() {
+    $("#imageTabs").empty();
+    $('#customPoolDirectoryPathTable tbody').empty();
+    $("#imageDetailTabs").empty();
+
+}
+
 function addNewLi(poolName) {
     // 假设这是你要添加的新标签页和数据
     var newTabId = poolName; // 新标签页的唯一ID
@@ -93,26 +101,6 @@ function addNewLi(poolName) {
 function addNewDiv(poolName, file) {
     // 假设这是你要添加的新标签页和数据
     var newTabId = poolName; // 新标签页的唯一ID
-    // console.log(newTabId);
-
-    /**
-     * TODO:数据通过ajax从服务器获取。
-     */
-    // var tableData = [ // 新标签页表格中的数据
-    //     { id: 1, fileName: "new_image1.qcow2", size: "40 GB", format: "qcow2" },
-    //     { id: 2, fileName: "new_image2.qcow2", size: "45 GB", format: "qcow2" },
-    //     { id: 3, fileName: "new_image3.qcow2", size: "50 GB", format: "qcow2" },
-    //     { id: 4, fileName: "new_image4.qcow2", size: "65 GB", format: "qcow2" }
-    // ];
-
-    // 1. 动态创建并添加 li 标签 (Tab项)
-    // const newLi = `
-    //     <li class="nav-item" role="presentation">
-    //         <button class="nav-link" id="${newTabId}-tab" data-bs-toggle="tab" data-bs-target="#${newTabId}" type="button" role="tab">${newTabTitle}
-    //         </button>
-    //     </li>
-    // `
-    // $("#imageTabs").append(newLi); // 将新标签项添加到导航中[1,3](@ref)
 
     // 2. 动态创建并添加 div 标签 (内容面板)
     const newDiv = `
@@ -265,7 +253,7 @@ function doDefaultData(defaultData) {
 
     // 2. 计算使用率
     var usagePercentage = (usedValue / totalValue) * 100;
-    console.log('totalValue: ' + totalValue + ' usedValue: ' + usedValue + ' usagePercentage: ' + usagePercentage);
+    // console.log('totalValue: ' + totalValue + ' usedValue: ' + usedValue + ' usagePercentage: ' + usagePercentage);
 
     $(".progress #defaultStoragePoolProgress")
         .css("width", usagePercentage + "%") // 更新style属性中的宽度
@@ -273,22 +261,9 @@ function doDefaultData(defaultData) {
     // 2. 更新存储使用信息的p标签文本
     $(".progress").next("p").text("已使用: " + usedValue + " GB / " + totalValue + " GB");
     // 遍历 default 下的 fileList
-    var tbody = $('.tab-content #default-images tbody');
+    addNewLi('default');
     $.each(defaultData.fileList, function (index, file) {
-        console.log("Default File " + file.id + ":", file.fileName, file.size, file.format);
-        var newRow = `
-        <tr>
-            <td class="id-cell">${file.id}</td>
-            <td class="fileName-cell">${file.fileName}</td>
-            <td class="size-cell">${file.size}</td>
-            <td class="format-cell">${file.format}</td>
-            <td>
-                <button class="btn btn-sm btn-primary me-1">克隆</button>
-                <button class="btn btn-sm btn-danger" id="deleteDefaultImageBtn">删除</button>
-            </td>
-        </tr>
-        `
-        tbody.append(newRow); // 将新行添加到表格中
+        addNewDiv('default', file);
     });
 }
 
@@ -302,7 +277,7 @@ function doCustomData(customData) {
         console.log("Disk Total:", value.diskTotal);
         console.log("Disk Used:", value.diskUsed);
         console.log("Pool Path:", value.poolPath); // 访问新增的poolPath字段
-        
+
         addNewLi(poolName);
         // 遍历每个自定义池下的文件列表
         $.each(value.fileList, function (index, file) {
