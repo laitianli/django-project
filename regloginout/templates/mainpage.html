@@ -281,10 +281,9 @@
                                             <h5>默认目录</h5>
                                             <p>/var/lib/libvirt/images</p>
                                             <div class="progress mb-3">
-                                                <div class="progress-bar" role="progressbar" style="width: 65%;"
-                                                    aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">65%</div>
+                                                <div class="progress-bar" id="defaultStoragePoolProgress" role="progressbar" style="width: 65%;">65%</div>
                                             </div>
-                                            <p>已使用: 256.5 GB / 500 GB</p>
+                                            <p id="defaultStoragePoolText">已使用: 256.5 GB / 500 GB</p>
                                         </div>
 
                                         <div class="mb-4">
@@ -301,22 +300,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr>
-                                                            <td>vm_images</td>
-                                                            <td>/data/vm_images</td>
-                                                            <td>
-                                                                <div class="progress" style="height: 20px;">
-                                                                    <div class="progress-bar" role="progressbar"
-                                                                        style="width: 45%;" aria-valuenow="45"
-                                                                        aria-valuemin="0" aria-valuemax="100"></div>
-                                                                </div>
-                                                                <small>120 GB / 300 GB</small>
-                                                            </td>
-                                                            <td>8</td>
-                                                            <td>
-                                                                <button class="btn btn-sm btn-danger">移除</button>
-                                                            </td>
-                                                        </tr>
+
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -332,13 +316,6 @@
                                                         type="button" role="tab" aria-controls="default-images"
                                                         aria-selected="true">
                                                         默认目录镜像
-                                                    </button>
-                                                </li>
-                                                <li class="nav-item" role="presentation">
-                                                    <button class="nav-link" id="custom-images-tab" data-bs-toggle="tab"
-                                                        data-bs-target="#custom-images" type="button" role="tab"
-                                                        aria-controls="custom-images" aria-selected="false">
-                                                        自定义目录镜像
                                                     </button>
                                                 </li>
                                             </ul>
@@ -358,73 +335,7 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
-                                                                <tr>
-                                                                    <td>1</td>
-                                                                    <td>centos7.qcow2</td>
-                                                                    <td>20 GB</td>
-                                                                    <td>qcow2</td>
-                                                                    <td>
-                                                                        <button
-                                                                            class="btn btn-sm btn-primary me-1">克隆</button>
-                                                                        <button
-                                                                            class="btn btn-sm btn-danger">删除</button>
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td>2</td>
-                                                                    <td>ubuntu20.qcow2</td>
-                                                                    <td>25 GB</td>
-                                                                    <td>qcow2</td>
-                                                                    <td>
-                                                                        <button
-                                                                            class="btn btn-sm btn-primary me-1">克隆</button>
-                                                                        <button
-                                                                            class="btn btn-sm btn-danger">删除</button>
-                                                                    </td>
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </div>
-
-                                                <div class="tab-pane fade" id="custom-images" role="tabpanel"
-                                                    aria-labelledby="custom-images-tab">
-                                                    <div class="table-responsive">
-                                                        <table class="table table-bordered directory-table">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>ID</th>
-                                                                    <th>镜像文件名</th>
-                                                                    <th>大小</th>
-                                                                    <th>格式</th>
-                                                                    <th>操作</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <tr>
-                                                                    <td>1</td>
-                                                                    <td>custom_vm1.qcow2</td>
-                                                                    <td>30 GB</td>
-                                                                    <td>qcow2</td>
-                                                                    <td>
-                                                                        <button
-                                                                            class="btn btn-sm btn-primary me-1">克隆</button>
-                                                                        <button
-                                                                            class="btn btn-sm btn-danger">删除</button>
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td>2</td>
-                                                                    <td>custom_vm2.qcow2</td>
-                                                                    <td>35 GB</td>
-                                                                    <td>qcow2</td>
-                                                                    <td>
-                                                                        <button
-                                                                            class="btn btn-sm btn-primary me-1">克隆</button>
-                                                                        <button
-                                                                            class="btn btn-sm btn-danger">删除</button>
-                                                                    </td>
-                                                                </tr>
+                                                                
                                                             </tbody>
                                                         </table>
                                                     </div>
@@ -1735,5 +1646,6 @@
 
 {% block javascript %}
 <script src="{% static './js/mainpage.js' %}"></script>
+<script src="{% static './js/storagepool.js' %}"></script>
 
 {% endblock %}

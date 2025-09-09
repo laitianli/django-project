@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import addcustomstoragepooldir
+from .views import doLocalstroagepool
 
 urlpatterns = [
-    path('addcustomstoragepooldir/', addcustomstoragepooldir, name='addcustomstoragepooldir'),
+    path('localstroagepool/', doLocalstroagepool, name='localstroagepool'),
 ]
