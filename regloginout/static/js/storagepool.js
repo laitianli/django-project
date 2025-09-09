@@ -48,6 +48,12 @@ $('#uploadIsoBtn').click(function () {
     $('#uploadModal').modal('show');
 });
 
+// 添加ISO本地目录按钮点击事件
+$('#addISODirectoryBtn').click(function () {
+    // alert('添加本地目录功能（模拟）');
+    $('#addISODirectoryModal').modal('show');
+});
+
 // 添加本地目录按钮点击事件
 $('#addLocalDirectoryBtn').click(function () {
     // alert('添加本地目录功能（模拟）');

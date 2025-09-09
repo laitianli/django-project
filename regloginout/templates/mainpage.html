@@ -281,7 +281,8 @@
                                             <h5>默认目录</h5>
                                             <p>/var/lib/libvirt/images</p>
                                             <div class="progress mb-3">
-                                                <div class="progress-bar" id="defaultStoragePoolProgress" role="progressbar" style="width: 65%;">65%</div>
+                                                <div class="progress-bar" id="defaultStoragePoolProgress"
+                                                    role="progressbar" style="width: 65%;">65%</div>
                                             </div>
                                             <p id="defaultStoragePoolText">已使用: 256.5 GB / 500 GB</p>
                                         </div>
@@ -289,7 +290,8 @@
                                         <div class="mb-4">
                                             <h5>自定义目录</h5>
                                             <div class="table-responsive">
-                                                <table class="table table-bordered directory-table" id="customPoolDirectoryPathTable">
+                                                <table class="table table-bordered directory-table"
+                                                    id="customPoolDirectoryPathTable">
                                                     <thead>
                                                         <tr>
                                                             <th>名称</th>
@@ -350,17 +352,23 @@
                                             <h4><i class="fas fa-compact-disc me-2"></i>ISO池</h4>
                                             <!-- 上传状态显示 -->
                                             <div id="uploadStatus" class="mt-3"></div>
-                                            <button class="btn btn-primary" id="uploadIsoBtn" data-bs-target="#uploadModal">
-                                                <i class="fas fa-upload me-2"></i>上传ISO
-                                            </button>
-                                            
+                                            <div class="d-flex justify-content-between">
+                                                <button class=" btn btn-outline-primary" id="addISODirectoryBtn">
+                                                    <i class="fas fa-folder-plus me-2"></i>添加目录
+                                                </button>
+                                                <button class="btn btn-primary ms-2" id="uploadIsoBtn"
+                                                    data-bs-target="#uploadModal">
+                                                    <i class="fas fa-upload me-2"></i>上传ISO
+                                                </button>
+                                            </div>
                                         </div>
 
                                         <div class="mb-4">
                                             <h5>存储信息</h5>
+                                            <p>/var/lib/libvirt/iso</p>
                                             <div class="progress mb-3">
-                                                <div class="progress-bar" role="progressbar" style="width: 45%;"
-                                                    aria-valuenow="45" aria-valuemin="0" aria-valuemax="100">45%</div>
+                                                <div class="progress-bar" id="isoPoolPropress" role="progressbar"
+                                                    style="width: 45%;">45%</div>
                                             </div>
                                             <p>已使用: 45.2 GB / 100 GB</p>
                                         </div>
@@ -1577,7 +1585,7 @@
 </div>
 
 <!-- 添加本地存储池模态对话框 -->
-<!-- 添加目录模态对话框 -->
+<!-- 添加本地目录模态对话框 -->
 <div class="modal fade" id="addDirectoryModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -1604,6 +1612,38 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                 <button type="submit" class="btn btn-primary" id="confirmAddDirectoryBtn">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加ISO目录模态对话框 -->
+<div class="modal fade" id="addISODirectoryModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addISODirectoryModalLabel">添加新ISO存储池</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">
+                    <!-- <i class="fas fa-times"></i> -->
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="isoStoragePoolForm">
+                    <div class="mb-3">
+                        <label for="isoPoolName" class="form-label">存储池名字:</label>
+                        <input type="text" class="form-control" name="isoCustomPoolName" id="isoPoolName"
+                            placeholder="请输入存储池名称" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ISODirectoryPath" class="form-label">存储池路径:</label>
+                        <input type="text" class="form-control" name="customISOPoolDirectoryPath" id="ISODirectoryPath"
+                            placeholder="请输入目录路径，例如：/data/iso_images" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="submit" class="btn btn-primary" id="confirmAddISODirectoryBtn">确定</button>
             </div>
         </div>
     </div>
