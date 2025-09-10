@@ -4,6 +4,8 @@ from django.http import JsonResponse
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 import os
+from . import models
+
 def _get_local_default_from_libvirt():
     res_json_data = {
         "default": {
@@ -271,12 +273,34 @@ def doISOstroagepool(request):
             pass
         elif json_data["action"] == "addDir":
             # {'action': 'addDir', 'storagepoolName': 'aa', 'path': 'aaa'}
+            name = json_data.get('storagepoolName')
+            path = json_data.get('path')
+            if name is None:
+                return JsonResponse('{"result": "failed", "message": "storagepoolName字段为None"}')
+            if path is None:
+                return JsonResponse('{"result": "failed", "message": "path字段为None"}')
+            #创建目录
+            custom_path = os.path.join(settings.MEDIA_ROOT, path)
+            try:
+                os.makedirs(os.path.dirname(custom_path), exist_ok=True)
+            except Exception as e:
+                data = {"result": "failed", "message": "创建目录%s失败" % custom_path}
+                return JsonResponse(data)
+        
+            #保存数据库
+            try:
+                models.isoCustompool.objects.create(isopoolname=name, isopoolpath=custom_path)
+            except Exception as e:
+                data = {"result": "failed", "message": "iso池名：%s已经存在" % name}
+                return JsonResponse(data)
+
             pass
         elif json_data["action"] == "deleteImage":
             ##{'action': 'deleteImage', 'storagepoolName': 'aa', 'imageFileName': 'new_image2.qcow2'}
             pass
         elif json_data["action"] == "deleteCustomStoragePoolDir":
             ##{'action': 'deleteCustomStoragePoolDir', 'storagepoolName': 'aa'}
+            ##从数据库删除
             pass
         data = {"result": "success", "message": "%s操作成功" % json_data["action"]}
         return JsonResponse(data)
