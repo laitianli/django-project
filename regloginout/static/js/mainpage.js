@@ -1,4 +1,5 @@
 $(document).ready(function () {
+    pageReadyForStroagepool();
     // 更新服务器时间
     function updateServerTime() {
         const now = new Date();

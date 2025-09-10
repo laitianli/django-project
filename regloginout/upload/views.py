@@ -9,16 +9,18 @@ def handle_iso_upload(request):
     """处理文件上传"""
     if request.method == 'POST' and request.FILES.get('file'):
         uploaded_file = request.FILES['file']
-        print(uploaded_file)
         
+        uploaded_path = request.POST.get('path');
+        print("uploaded_file: %s uploaded_path: %s" % (uploaded_file, uploaded_path))
         # 检查文件类型
         if not uploaded_file.name.lower().endswith('.iso'):
             return JsonResponse({'status': 'error', 'message': '只允许上传ISO文件'})
         
         # 保存文件
-        save_path = os.path.join(settings.MEDIA_ROOT, 'isos', uploaded_file.name)
+        save_path = os.path.join(settings.MEDIA_ROOT, uploaded_path, uploaded_file.name)
+        print('settings.MEDIA_ROOT： %s, save_path: %s' % (settings.MEDIA_ROOT, save_path))
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        
+        # print('save_path: %s' % save_path)
         # 分块写入文件[3](@ref)
         with open(save_path, 'wb+') as destination:
             for chunk in uploaded_file.chunks():

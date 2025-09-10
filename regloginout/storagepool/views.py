@@ -113,6 +113,117 @@ def _get_local_default_from_libvirt():
     }
     return res_json_data
 
+def _get_iso_local_default_from_libvirt():
+    res_json_data = {
+        "default": {
+            "diskTotal": "500GB",
+            "diskUsed": "190GB",
+            "fileList": [
+                {
+                    "id": 1,
+                    "fileName": "default_image1.iso",
+                    "size": "40 GB",
+                    "format": "iso",
+                },
+                {
+                    "id": 2,
+                    "fileName": "default_image2.iso",
+                    "size": "45 GB",
+                    "format": "iso",
+                },
+                {
+                    "id": 3,
+                    "fileName": "default_image3.iso",
+                    "size": "50 GB",
+                    "format": "iso",
+                },
+                {
+                    "id": 4,
+                    "fileName": "default_image4.iso",
+                    "size": "65 GB",
+                    "format": "iso",
+                },
+            ],
+        },
+        "custom": {
+            "isocustom_1": {
+                "diskTotal": "2048GB",
+                "diskUsed": " 1300GB",
+                "poolPath":"/opt/isocustom_1",
+                "fileList": [
+                    {
+                        "id": 1,
+                        "fileName": "isocustom_1_image1.iso",
+                        "size": "400 GB",
+                        "format": "iso",
+                    },
+                    {
+                        "id": 2,
+                        "fileName": "isocustom_1_image2.iso",
+                        "size": "400 GB",
+                        "format": "iso",
+                    },
+                    {
+                        "id": 3,
+                        "fileName": "isocustom_1_image3.iso",
+                        "size": "500 GB",
+                        "format": "iso",
+                    },
+                ],
+            },
+            "isocustom_2": {
+                "diskTotal": "2048GB",
+                "diskUsed": "1000GB",
+                "poolPath":"/opt/isocustom_2",
+                "fileList": [
+                    {
+                        "id": 1,
+                        "fileName": "isocustom_2_image1.iso",
+                        "size": "100 GB",
+                        "format": "iso",
+                    },
+                    {
+                        "id": 2,
+                        "fileName": "isocustom_2_image2.iso",
+                        "size": "400 GB",
+                        "format": "iso",
+                    },
+                    {
+                        "id": 3,
+                        "fileName": "isocustom_2_image3.iso",
+                        "size": "500 GB",
+                        "format": "iso",
+                    },
+                ],
+            },
+            "isocustom_3": {
+                "diskTotal": "1000 GB",
+                "diskUsed": "2048 GB",
+                "poolPath":"/opt/isocustom_3",
+                "fileList": [
+                    {
+                        "id": 1,
+                        "fileName": "isocustom_3_image1.iso",
+                        "size": "100 GB",
+                        "format": "iso",
+                    },
+                    {
+                        "id": 2,
+                        "fileName": "isocustom_3_image2.iso",
+                        "size": "400 GB",
+                        "format": "iso",
+                    },
+                    {
+                        "id": 3,
+                        "fileName": "isocustom_3_image3.iso",
+                        "size": "500 GB",
+                        "format": "iso",
+                    },
+                ],
+            },
+        },
+    }
+    return res_json_data
 
 # Create your views here.
 def doLocalstroagepool(request):
@@ -125,6 +236,32 @@ def doLocalstroagepool(request):
                 "result": "success",
                 "message": "%s操作成功" % json_data["action"],
                 "response_json": _get_local_default_from_libvirt(),
+            }
+            return JsonResponse(data)
+
+            pass
+        elif json_data["action"] == "addDir":
+            # {'action': 'addDir', 'storagepoolName': 'aa', 'path': 'aaa'}
+            pass
+        elif json_data["action"] == "deleteImage":
+            ##{'action': 'deleteImage', 'storagepoolName': 'aa', 'imageFileName': 'new_image2.qcow2'}
+            pass
+        elif json_data["action"] == "deleteCustomStoragePoolDir":
+            ##{'action': 'deleteCustomStoragePoolDir', 'storagepoolName': 'aa'}
+            pass
+        data = {"result": "success", "message": "%s操作成功" % json_data["action"]}
+        return JsonResponse(data)
+
+def doISOstroagepool(request):
+    if request.method == "POST":
+        raw_data = request.body  # 获取原始字节流
+        json_data = json.loads(raw_data.decode("utf-8"))  # 解码并解析JSON
+        print(json_data)
+        if json_data["action"] == "query":
+            data = {
+                "result": "success",
+                "message": "%s操作成功" % json_data["action"],
+                "response_json": _get_iso_local_default_from_libvirt(),
             }
             return JsonResponse(data)
 

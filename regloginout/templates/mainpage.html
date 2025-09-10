@@ -366,47 +366,83 @@
                                         <div class="mb-4">
                                             <h5>存储信息</h5>
                                             <p>/var/lib/libvirt/iso</p>
-                                            <div class="progress mb-3">
+                                            <div class="progress mb-3 ISOprogress">
                                                 <div class="progress-bar" id="isoPoolPropress" role="progressbar"
                                                     style="width: 45%;">45%</div>
                                             </div>
                                             <p>已使用: 45.2 GB / 100 GB</p>
                                         </div>
-
                                         <div class="mb-4">
-                                            <h5>ISO文件列表</h5>
+                                            <h5>自定义ISO目录</h5>
                                             <div class="table-responsive">
-                                                <table class="table table-bordered directory-table">
+                                                <table class="table table-bordered directory-table"
+                                                    id="customISOPoolDirectoryPathTable">
                                                     <thead>
                                                         <tr>
-                                                            <th>ID</th>
-                                                            <th>文件名</th>
-                                                            <th>大小</th>
-                                                            <th>格式</th>
+                                                            <th>名称</th>
+                                                            <th>目录路径</th>
+                                                            <th>使用情况</th>
+                                                            <th>镜像数量</th>
                                                             <th>操作</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr>
-                                                            <td>1</td>
-                                                            <td>CentOS-7-x86_64-DVD-2009.iso</td>
-                                                            <td>4.2 GB</td>
-                                                            <td>ISO</td>
-                                                            <td>
-                                                                <button class="btn btn-sm btn-danger">删除</button>
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>2</td>
-                                                            <td>ubuntu-20.04.3-live-server-amd64.iso</td>
-                                                            <td>1.2 GB</td>
-                                                            <td>ISO</td>
-                                                            <td>
-                                                                <button class="btn btn-sm btn-danger">删除</button>
-                                                            </td>
-                                                        </tr>
+
                                                     </tbody>
                                                 </table>
+                                            </div>
+                                        </div>
+                                        <div class="mb-4">
+                                            <h5>镜像文件列表</h5>
+                                            <ul class="nav nav-tabs" id="isoImageTabs" role="tablist">
+                                                <!-- <li class="nav-item" role="presentation">
+                                                    <button class="nav-link active" id="iso-images-tab"
+                                                        data-bs-toggle="tab" data-bs-target="#iso-images" type="button"
+                                                        role="tab" aria-controls="iso-images" aria-selected="true">
+                                                        默认目录镜像
+                                                    </button>
+                                                </li> -->
+                                            </ul>
+
+                                            <div class="tab-content sub-tab-content" id="isoImageDetailTabs">
+                                                <div class="tab-pane fade show active" id="iso-images" role="tabpanel"
+                                                    aria-labelledby="iso-images-tab">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered directory-table">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>ID</th>
+                                                                    <th>镜像文件名</th>
+                                                                    <th>大小</th>
+                                                                    <th>格式</th>
+                                                                    <th>操作</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <!-- <tr>
+                                                                    <td>1</td>
+                                                                    <td>CentOS-7-x86_64-DVD-2009.iso</td>
+                                                                    <td>4.2 GB</td>
+                                                                    <td>ISO</td>
+                                                                    <td>
+                                                                        <button
+                                                                            class="btn btn-sm btn-danger">删除</button>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>2</td>
+                                                                    <td>ubuntu-20.04.3-live-server-amd64.iso</td>
+                                                                    <td>1.2 GB</td>
+                                                                    <td>ISO</td>
+                                                                    <td>
+                                                                        <button
+                                                                            class="btn btn-sm btn-danger">删除</button>
+                                                                    </td>
+                                                                </tr> -->
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1151,7 +1187,7 @@
                                                 <label for="isoFile"
                                                     class="col-md-2 text-end form-lable col-form-label">选择ISO文件:</label>
                                                 <div class="col-md-4">
-                                                    
+
                                                     <select class="form-select" id="isoFile">
                                                         <option value="">无</option>
                                                         <option value="centos.iso">CentOS-7-x86_64-DVD-2009.iso</option>
@@ -1663,8 +1699,16 @@
                 <form id="uploadForm">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label for="addIsoFile" class="form-label">选择ISO文件</label>
+                        <label for="addIsoFile" class="form-label">选择ISO文件：</label>
                         <input type="file" class="form-control" id="addIsoFile" accept=".iso" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="isoStoragePoolName" class="form-label">上传ISO文件到：</label>
+                        <select class="form-control user-defined-form-control" id="isoStoragePoolName">
+                            <option value="/var/lib/libvirt/iso" selected>默认ISO池</option>
+                            <!-- <option value="/opt/isocustom_1">isocustom_1</option>
+                            <option value="/opt/isocustom_2">isocustom_2</option> -->
+                        </select>
                     </div>
                 </form>
 
