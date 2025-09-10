@@ -499,11 +499,7 @@ function handleISOFormSubmit() {
         addISONewdir(poolName, path, '0GB', '0GB', 0);
         addISONewLi(poolName);
         addISONewDiv(poolName, null);
-// var localdata = sessionStorage.getItem("isostoragepool_json");
-        // console.log('----------------------------------------');
-        // var localdata_json = JSON.parse(localdata);
-        /*修改sessonlocal */
-        var poolName='aaa';
+
         let res_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
         res_json_data.custom[poolName] = {
             "diskTotal": "0 GB",
@@ -718,7 +714,6 @@ function doISOStoragepollRemove(button) {
         // 方法2: 通过DOM遍历寻找关联的tabpanel
         // 这里以方法1为例：
         var contentDivId = button.data('content-div-id');
-        console.log('a:'+contentDivId);
         // 如果未通过data属性设置，可以尝试通过遍历DOM找到关联的tabpanel的id
         if (!contentDivId) {
             var $tabPane = button.closest('.tab-pane');
@@ -748,8 +743,6 @@ function doISOStoragepollRemove(button) {
                 if (checkIfDirectoryEmpty(contentDivId)) {
                                         //删除json ---------TODO: fix bug
                     let res_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
-                    // console.log(res_json_data)
-                    // console.log('contentDivId');
 
                     if (contentDivId in  res_json_data.custom) {
                         delete res_json_data.custom[contentDivId];
@@ -845,7 +838,7 @@ $('#confirmUpload').click(function () {
 
     // 发送AJAX请求[3](@ref)
     $.ajax({
-        url: '/upload/handle_iso/',  // 根据实际路由调整
+        url: '/storagepool/handle_iso/',  // 根据实际路由调整
         type: 'POST',
         data: formData,
         processData: false,
@@ -865,6 +858,14 @@ $('#confirmUpload').click(function () {
         },
         success: function (response) {
             if (response.status === 'success') {
+                /*把目录更新到表中，对相对路径有用 */
+                $('#customISOPoolDirectoryPathTable tbody tr').each(function(index) {
+                    // const poolName = $(this).find('td:eq(0)').text().trim();
+                    const poolPath = $(this).find('td').eq(1).text().trim();
+                    if (path === poolPath) {
+                        $(this).find('td').eq(1).text(response.path);
+                    }
+                });
                 showModalMessage(`文件 ${response.filename} 上传成功！`, 'success');
                 setTimeout(() => {
                     $('#uploadModal').modal('hide');

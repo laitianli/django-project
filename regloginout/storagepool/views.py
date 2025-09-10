@@ -1,6 +1,9 @@
 from django.shortcuts import render
 import json
 from django.http import JsonResponse
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+import os
 def _get_local_default_from_libvirt():
     res_json_data = {
         "default": {
@@ -277,3 +280,34 @@ def doISOstroagepool(request):
             pass
         data = {"result": "success", "message": "%s操作成功" % json_data["action"]}
         return JsonResponse(data)
+    
+def handle_iso_upload(request):
+    """处理文件上传"""
+    if request.method == 'POST' and request.FILES.get('file'):
+        uploaded_file = request.FILES['file']
+        print(__file__)
+        uploaded_path = request.POST.get('path');
+        print("uploaded_file: %s uploaded_path: %s" % (uploaded_file, uploaded_path))
+        # 检查文件类型
+        if not uploaded_file.name.lower().endswith('.iso'):
+            return JsonResponse({'status': 'error', 'message': '只允许上传ISO文件'})
+        
+        # 保存文件
+        save_path = os.path.join(settings.MEDIA_ROOT, uploaded_path, uploaded_file.name)
+        print('settings.MEDIA_ROOT： %s, save_path: %s' % (settings.MEDIA_ROOT, save_path))
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        print('dir-name: %s' % os.path.dirname(save_path))
+        # print('save_path: %s' % save_path)
+        # 分块写入文件[3](@ref)
+        with open(save_path, 'wb+') as destination:
+            for chunk in uploaded_file.chunks():
+                destination.write(chunk)
+        
+        return JsonResponse({
+            'status': 'success', 
+            'filename': uploaded_file.name,
+            'path': os.path.dirname(save_path),
+            'message': '文件上传成功'
+        })
+    
+    return JsonResponse({'status': 'error', 'message': '无效的请求'}, status=400)

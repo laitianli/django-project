@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'accounts',
     'createvmwizard',
     'storagepool',
-    'upload',
+    # 'upload',
 ]
 AUTH_USER_MODEL = 'accounts.CustomUser'  # your_app为应用名称
 # AUTH_USER_MODEL = 'auth.User'  # 使用Django内置用户模型

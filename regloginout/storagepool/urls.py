@@ -1,7 +1,8 @@
 from django.urls import path
-from .views import doLocalstroagepool, doISOstroagepool
+from . import views
 
 urlpatterns = [
-    path('localstroagepool/', doLocalstroagepool, name='localstroagepool'),
-    path('isostroagepool/', doISOstroagepool, name='isostroagepool'),
+    path('localstroagepool/', views.doLocalstroagepool, name='localstroagepool'),
+    path('isostroagepool/', views.doISOstroagepool, name='isostroagepool'),
+    path('handle_iso/', views.handle_iso_upload, name='handle_iso_upload'),
 ]
