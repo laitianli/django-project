@@ -305,7 +305,7 @@ function handleFormSubmit() {
         addNewLi(poolName);
         addNewDiv(poolName, null);
     }, function (response) {
-        alert('添加本地存储池失败！' + poolName);
+        alert('添加本地存储池失败！' + response.message);
     });
 
     // 关闭模态框并清空输入
@@ -377,7 +377,7 @@ function queryLocalStoragePool() {
         doCustomData(customData);
 
     }, function (response) {
-        alert('查询本地存储池失败！' + poolName);
+        alert('查询本地存储池失败！' + response.message);
     });
 }
 
@@ -510,7 +510,7 @@ function handleISOFormSubmit() {
         console.log(res_json_data);
         sessionStorage.setItem("isostoragepool_json", JSON.stringify(res_json_data));
     }, function (response) {
-        alert('添加本地存储池失败！' + poolName);
+        alert('添加本地存储池失败！' + response.message);
     });
 
     // 关闭模态框并清空输入
@@ -585,7 +585,7 @@ function queryISOStoragePool() {
         // var localdata_json = JSON.parse(localdata);
 
     }, function (response) {
-        alert('查询ISO本地存储池失败！' + poolName);
+        alert('查询ISO本地存储池失败！' + response.message);
     });
 }
 
@@ -669,7 +669,7 @@ function doLocalStoragepollRemove(button) {
                     $('#imageTabs li.nav-item:first button').tab('show');
                 }
             }, function (response) {
-                alert('删除本地存储池失败！' + contentDivId);
+                alert('删除本地存储池失败！' + response.message);
             });
 
         } else {
@@ -700,7 +700,7 @@ function doLocalStoragepollRemove(button) {
             updateRowIds(tableID);
 
         }, function (response) {
-            alert('删除文件行失败! 文件：' + filename);
+            alert('删除文件行失败! 文件：' + response.message);
         });
     }
 }
@@ -763,7 +763,7 @@ function doISOStoragepollRemove(button) {
                     $('#isoImageTabs li.nav-item:first button').tab('show');
                 }
             }, function (response) {
-                alert('删除本地存储池失败！' + contentDivId);
+                alert('删除本地存储池失败！' + response.message);
             });
 
         } else {
@@ -794,7 +794,7 @@ function doISOStoragepollRemove(button) {
             updateRowIds(tableID);
 
         }, function (response) {
-            alert('删除文件行失败! 文件：' + filename);
+            alert('删除文件行失败! 文件：' + response.message);
         });
     }
 }
