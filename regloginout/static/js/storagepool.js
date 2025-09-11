@@ -1,5 +1,9 @@
 function pageReadyForStroagepool() {
-    /*从服务器下载数据并显示到对应的子页面中 */
+    /*当进入主页时，就从服务器下载数据并显示到对应的子页面中 */
+    flushData();
+}
+
+function flushData() {
     cleanLocalStoragepool();
     queryLocalStoragePool();
 
@@ -17,11 +21,9 @@ $('.sidebar .list-group-item').click(function (e) {
     const contentId = $(this).data('content') + '-content';
     console.log(contentId);
     if (contentId === 'storage-content') { //发送Query查询事件。
-        // cleanLocalStoragepool();
-        // queryLocalStoragePool();
-
-        // cleanISOStoragepool();
-        // queryISOStoragePool();
+        /*当从其它页面进入存储子页时，就从服务器下载数据并显示到对应的子页面中，
+         *若是从【新建虚拟实例】切换过来，可以使得页面显示数据与服务器保持一致 */
+        flushData();
     }
     $('.content-section').addClass('d-none');
     // $('#' + contentId).removeClass('d-none');
