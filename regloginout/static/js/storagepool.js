@@ -58,19 +58,22 @@ $('#createStoragePoolBtn').click(function () {
 $('#uploadIsoBtn').click(function () {
     $('#isoStoragePoolName').empty();
     $('#isoStoragePoolName').append($('<option>', {
-                value: '/var/lib/libvirt/iso',
-                text: '默认ISO池'
-            }));
-     $('#customISOPoolDirectoryPathTable tbody tr').each(function(index) {
+        value: '/var/lib/libvirt/iso',
+        text: '默认ISO池'
+    }));
+    $('#customISOPoolDirectoryPathTable tbody tr').each(function (index) {
         const poolName = $(this).find('td:eq(0)').text().trim();
         const poolPath = $(this).find('td:eq(1)').text().trim();
         $('#isoStoragePoolName').append($('<option>', {
-                value: poolPath,
-                text: poolName
-            }));
-     });
+            value: poolPath,
+            text: poolName
+        }));
+    });
 
-    $('#uploadModal').modal('show');
+    $('#uploadModal').modal('show', {
+        backdrop: 'static', // 点击背景不关闭模态框
+        keyboard: false     // 按ESC键不关闭模态框
+    });
 });
 
 // 添加ISO本地目录按钮点击事件
@@ -188,14 +191,7 @@ function addNewDiv(poolName, file) {
     // 4. (可选) 添加后自动切换到新标签页
     $('#imageTabs button[data-bs-target="#' + newTabId + '"]').tab('show');
 }
-function addNewdir(poolName, path, total, used, filecount) {
-    var pers = 0;
-    if (parseFloat(total) == 0) {
-        pers = 0;
-    }
-    else {
-        pers = (parseFloat(used) / parseFloat(total)) * 100;
-    }
+function addNewdir(poolName, path, total, used, pers, filecount) {
     const newRow = `
                 <tr>
                     <td>${poolName}</td>
@@ -301,9 +297,23 @@ function handleFormSubmit() {
 
     sendReqeust2Localstoragepool(jsonData, function (response) {
         /* 从response解析出image列表 */
-        addNewdir(poolName, path, '0GB', '0GB', 0);
+        diskTotal = response.diskTotal;
+        diskUsed = response.diskUsed;
+        percentUsed = response.percentUsed;
+        newPath = response.poolPath;
+        addNewdir(poolName, newPath, diskTotal, diskUsed, percentUsed, 0);
         addNewLi(poolName);
         addNewDiv(poolName, null);
+
+        let res_json_data = JSON.parse(sessionStorage.getItem("localstoragepool_json"));
+        res_json_data.custom[poolName] = {
+            "diskTotal": diskTotal,
+            "diskUsed": diskUsed,
+            "poolPath": newPath,
+            "percentUsed": percentUsed,
+            "fileList": []
+        };
+        sessionStorage.setItem("localstoragepool_json", JSON.stringify(res_json_data));
     }, function (response) {
         alert('添加本地存储池失败！' + response.message);
     });
@@ -321,7 +331,8 @@ function doDefaultData(defaultData) {
     var usedValue = parseFloat(defaultData.diskUsed);   // 提取出 1000
 
     // 2. 计算使用率
-    var usagePercentage = (usedValue / totalValue) * 100;
+    // var usagePercentage = (usedValue / totalValue) * 100;
+    var usagePercentage = parseInt(defaultData.percentUsed);
     // console.log('totalValue: ' + totalValue + ' usedValue: ' + usedValue + ' usagePercentage: ' + usagePercentage);
 
     $(".progress #defaultStoragePoolProgress")
@@ -354,7 +365,7 @@ function doCustomData(customData) {
             count += 1;
             // console.log("File " + file.id + ":", file.fileName, file.size, file.format);
         });
-        addNewdir(poolName, path, value.diskTotal, value.diskUsed, count);
+        addNewdir(poolName, path, value.diskTotal, value.diskUsed, value.percentUsed, count);
     });
 }
 
@@ -443,14 +454,7 @@ function addISONewDiv(poolName, file) {
     // 4. (可选) 添加后自动切换到新标签页
     $('#isoImageTabs button[data-bs-target="#' + newTabId + '"]').tab('show');
 }
-function addISONewdir(poolName, path, total, used, filecount) {
-    var pers = 0;
-    if (parseFloat(total) == 0) {
-        pers = 0;
-    }
-    else {
-        pers = (parseFloat(used) / parseFloat(total)) * 100;
-    }
+function addISONewdir(poolName, path, total, used, pers, filecount) {
     const newRow = `
                 <tr>
                     <td>${poolName}</td>
@@ -495,19 +499,24 @@ function handleISOFormSubmit() {
     }
 
     sendReqeust2isostoragepool(jsonData, function (response) {
+        diskTotal = response.diskTotal;
+        diskUsed = response.diskUsed;
+        percentUsed = response.percentUsed;
+        newPath = response.poolPath;
         /* 从response解析出image列表 */
-        addISONewdir(poolName, path, '0GB', '0GB', 0);
+        addISONewdir(poolName, newPath, diskTotal, diskUsed, percentUsed, 0);
         addISONewLi(poolName);
         addISONewDiv(poolName, null);
 
         let res_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
         res_json_data.custom[poolName] = {
-            "diskTotal": "0 GB",
-            "diskUsed": "0 GB",
-            "poolPath": path,
+            "diskTotal": diskTotal,
+            "diskUsed": diskUsed,
+            "poolPath": newPath,
+            "percentUsed": percentUsed,
             "fileList": []
         };
-        console.log(res_json_data);
+        // console.log(res_json_data);
         sessionStorage.setItem("isostoragepool_json", JSON.stringify(res_json_data));
     }, function (response) {
         alert('添加本地存储池失败！' + response.message);
@@ -526,7 +535,8 @@ function doISODefaultData(defaultData) {
     var usedValue = parseFloat(defaultData.diskUsed);   // 提取出 1000
 
     // 2. 计算使用率
-    var usagePercentage = (usedValue / totalValue) * 100;
+    // var usagePercentage = (usedValue / totalValue) * 100;
+    var usagePercentage = parseInt(defaultData.percentUsed);
     // console.log('totalValue: ' + totalValue + ' usedValue: ' + usedValue + ' usagePercentage: ' + usagePercentage);
 
     $(".progress #isoPoolPropress")
@@ -559,7 +569,7 @@ function doISOCustomData(customData) {
             count += 1;
             // console.log("File " + file.id + ":", file.fileName, file.size, file.format);
         });
-        addISONewdir(poolName, path, value.diskTotal, value.diskUsed, count);
+        addISONewdir(poolName, path, value.diskTotal, value.diskUsed, value.percentUsed, count);
     });
 }
 
@@ -580,10 +590,6 @@ function queryISOStoragePool() {
         // 2. 遍历并获取 custom 下的各个自定义数据 (custom_1, custom_2, custom_3)
         var customData = res_json_data.custom;
         doISOCustomData(customData);
-        // var localdata = sessionStorage.getItem("isostoragepool_json");
-        // console.log('----------------------------------------');
-        // var localdata_json = JSON.parse(localdata);
-
     }, function (response) {
         alert('查询ISO本地存储池失败！' + response.message);
     });
@@ -657,6 +663,11 @@ function doLocalStoragepollRemove(button) {
 
                 // (可选) 再次检查删除后表格是否为空，如果为空，可以考虑移除整个Tab和内容面板
                 if (checkIfDirectoryEmpty(contentDivId)) {
+                    let res_json_data = JSON.parse(sessionStorage.getItem("localstoragepool_json"));
+                    if (contentDivId in res_json_data.custom) {
+                        delete res_json_data.custom[contentDivId];
+                        sessionStorage.setItem("localstoragepool_json", JSON.stringify(res_json_data));
+                    }
                     // 找到对应的Tab（li）和内容面板（div.tab-pane）
                     var $associatedTab = $('button[data-bs-target="#' + contentDivId + '"]').closest('li.nav-item');
                     var $associatedContent = $('#' + contentDivId);
@@ -699,6 +710,9 @@ function doLocalStoragepollRemove(button) {
             /* 4.调整id值*/
             updateRowIds(tableID);
 
+            /**删除一个文件后，刷新当前子页面，确保【使用情况】的更新 */
+            cleanLocalStoragepool();
+            queryLocalStoragePool();
         }, function (response) {
             alert('删除文件行失败! 文件：' + response.message);
         });
@@ -741,10 +755,8 @@ function doISOStoragepollRemove(button) {
 
                 // (可选) 再次检查删除后表格是否为空，如果为空，可以考虑移除整个Tab和内容面板
                 if (checkIfDirectoryEmpty(contentDivId)) {
-                                        //删除json ---------TODO: fix bug
                     let res_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
-
-                    if (contentDivId in  res_json_data.custom) {
+                    if (contentDivId in res_json_data.custom) {
                         delete res_json_data.custom[contentDivId];
                         sessionStorage.setItem("isostoragepool_json", JSON.stringify(res_json_data));
                     }
@@ -787,11 +799,14 @@ function doISOStoragepollRemove(button) {
             storagepoolName: storagepoolName,
             imageFileName: filename
         }
-        sendReqeust2Localstoragepool(jsonData, function (response) {
+        sendReqeust2isostoragepool(jsonData, function (response) {
             /* 3.删除当前数据行 */
             button.closest('tr').remove();
             /* 4.调整id值*/
             updateRowIds(tableID);
+            /**5.刷新页面的数据，因为删除一个文件后，硬盘空间会变化 */
+            cleanISOStoragepool();
+            queryISOStoragePool();
 
         }, function (response) {
             alert('删除文件行失败! 文件：' + response.message);
@@ -822,12 +837,14 @@ $('#confirmUpload').click(function () {
         showModalMessage('只允许上传ISO格式文件', 'danger');
         return;
     }
+    /**禁用确定按钮 */
+    $('#confirmUpload').addClass('disabled');
 
     // 准备上传
     const formData = new FormData();
     formData.append('file', file);
     const path = $('#isoStoragePoolName').val();
-    if (path === null || path === undefined ) {
+    if (path === null || path === undefined) {
         path = '/var/lib/libvirt/iso';
     }
     formData.append('path', path);
@@ -859,15 +876,20 @@ $('#confirmUpload').click(function () {
         success: function (response) {
             if (response.status === 'success') {
                 /*把目录更新到表中，对相对路径有用 */
-                $('#customISOPoolDirectoryPathTable tbody tr').each(function(index) {
-                    // const poolName = $(this).find('td:eq(0)').text().trim();
-                    const poolPath = $(this).find('td').eq(1).text().trim();
-                    if (path === poolPath) {
-                        $(this).find('td').eq(1).text(response.path);
-                    }
-                });
+                // $('#customISOPoolDirectoryPathTable tbody tr').each(function(index) {
+                //     // const poolName = $(this).find('td:eq(0)').text().trim();
+                //     const poolPath = $(this).find('td').eq(1).text().trim();
+                //     if (path === poolPath) {
+                //         $(this).find('td').eq(1).text(response.path);
+                //     }
+                // });
+                /**5.刷新页面的数据，因为上传一个文件后，硬盘空间会变化 */
+                cleanISOStoragepool();
+                queryISOStoragePool();
                 showModalMessage(`文件 ${response.filename} 上传成功！`, 'success');
                 setTimeout(() => {
+                    /**启用确定按钮 */
+                    $('#confirmUpload').removeClass('disabled');
                     $('#uploadModal').modal('hide');
                     showMainMessage(`ISO文件 ${response.filename} 已成功上传`, 'success');
                 }, 1500);
