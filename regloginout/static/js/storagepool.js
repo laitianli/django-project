@@ -1,6 +1,34 @@
-function pageReadyForStroagepool() {
+function initStroagepool() {
     /*当进入主页时，就从服务器下载数据并显示到对应的子页面中 */
     flushData();
+    // 新建存储池按钮点击事件
+    $(document).on('click', '#createStoragePoolBtn', do_createStoragePoolBtn);
+
+    // [storagepool]为删除按钮绑定点击事件（使用事件委托，适用于动态添加的元素）
+    $(document).on('click', '.btn-danger', doStoragepool_BtnDanger);
+
+    // 上传ISO按钮点击事件
+    $(document).on('click', '#uploadIsoBtn', do_uploadIsoBtn);
+
+    // 添加ISO本地目录按钮点击事件
+    $(document).on('click', '#addISODirectoryBtn', do_addISODirectoryBtn);
+
+    // 添加本地目录按钮点击事件
+    $(document).on('click', '#addLocalDirectoryBtn', do_addLocalDirectoryBtn);
+
+    // 添加本地目录对话框中的确定按钮点击事件
+    $(document).on('click', '#confirmAddDirectoryBtn', do_confirmAddDirectoryBtn);
+
+    // 添加ISO本地目录对话框中的确定按钮点击事件
+    $(document).on('click', '#confirmAddISODirectoryBtn', do_confirmAddISODirectoryBtn);
+
+    // 上传ISO对话框的确定按钮点击事件
+    $(document).on('click', '#confirmUpload', do_confirmUpload);
+}
+
+// 新建存储池按钮点击事件
+function do_createStoragePoolBtn() {
+    alert('新建存储池按钮点击事件');
 }
 
 function flushData() {
@@ -11,25 +39,6 @@ function flushData() {
     queryISOStoragePool();
 }
 
-// 存储池标签点击事件data-content="storage"
-$('.sidebar .list-group-item').click(function (e) {
-    e.preventDefault();
-    console.log('.sidebar .list-group-item');
-    $('.sidebar .list-group-item').removeClass('active');
-    $(this).addClass('active');
-
-    const contentId = $(this).data('content') + '-content';
-    console.log(contentId);
-    if (contentId === 'storage-content') { //发送Query查询事件。
-        /*当从其它页面进入存储子页时，就从服务器下载数据并显示到对应的子页面中，
-         *若是从【新建虚拟实例】切换过来，可以使得页面显示数据与服务器保持一致 */
-        flushData();
-    }
-    $('.content-section').addClass('d-none');
-    // $('#' + contentId).removeClass('d-none');
-    $('#storage-pool-content').removeClass('d-none');
-
-});
 // 存储池Card点击事件
 $('#localStorageCard').click(function () {
     $('.content-section').addClass('d-none');
@@ -51,13 +60,8 @@ $('#cephStorageCard').click(function () {
     $('#ceph-storage-content').removeClass('d-none');
 });
 
-// 新建存储池按钮点击事件
-$('#createStoragePoolBtn').click(function () {
-    alert('新建存储池功能（模拟）');
-});
-
 // 上传ISO按钮点击事件
-$('#uploadIsoBtn').click(function () {
+function do_uploadIsoBtn() {
     $('#isoStoragePoolName').empty();
     $('#isoStoragePoolName').append($('<option>', {
         value: '/var/lib/libvirt/iso',
@@ -76,35 +80,34 @@ $('#uploadIsoBtn').click(function () {
         backdrop: 'static', // 点击背景不关闭模态框
         keyboard: false     // 按ESC键不关闭模态框
     });
-});
+}
 
 // 添加ISO本地目录按钮点击事件
-$('#addISODirectoryBtn').click(function () {
+function do_addISODirectoryBtn() {
     // alert('添加本地目录功能（模拟）');
     $('#addISODirectoryModal').modal('show');
-});
+}
 
 // 添加本地目录按钮点击事件
-$('#addLocalDirectoryBtn').click(function () {
+function do_addLocalDirectoryBtn() {
     // alert('添加本地目录功能（模拟）');
     $('#addDirectoryModal').modal('show');
-});
+}
 // 表单提交处理
 // $('#storagePoolForm').submit(function (e) {
 //     e.preventDefault();
 //     // console.log('aaa: storagePoolForm....');
 //     handleFormSubmit();
 // });
-
-$('#confirmAddDirectoryBtn').click(function () {
-    // console.log('aaa: confirmAddDirectoryBtn....');
+// 添加本地目录对话框中的确定按钮点击事件
+function do_confirmAddDirectoryBtn() {
     handleFormSubmit();
-})
-$('#confirmAddISODirectoryBtn').click(function () {
-    // console.log('aaa: confirmAddISODirectoryBtn....');
-    handleISOFormSubmit();
-})
+}
 
+// 添加ISO本地目录对话框中的确定按钮点击事件
+function do_confirmAddISODirectoryBtn() { 
+    handleISOFormSubmit();
+}
 
 // 生成随机十六进制数
 function randomHexDigit() {
@@ -530,8 +533,6 @@ function handleISOFormSubmit() {
 }
 
 function doISODefaultData(defaultData) {
-    // console.log("Default - Total Disk:", defaultData.diskTotal);
-    // console.log("Default - Disk Used:", defaultData.diskUsed);
     // 1. 提取数值
     var totalValue = parseFloat(defaultData.diskTotal); // 提取出 2048
     var usedValue = parseFloat(defaultData.diskUsed);   // 提取出 1000
@@ -815,17 +816,17 @@ function doISOStoragepollRemove(button) {
         });
     }
 }
-
 // 为删除按钮绑定点击事件（使用事件委托，适用于动态添加的元素）
-$(document).on('click', '.btn-danger', function () {
+function doStoragepool_BtnDanger() {
     // 获取当前点击的按钮
+    console.log('doStoragepool_BtnDanger');
     var button = $(this);
     doLocalStoragepollRemove(button);
     doISOStoragepollRemove(button);
-});
+}
 
-// 确定按钮点击事件
-$('#confirmUpload').click(function () {
+// 上传ISO对话框的确定按钮点击事件
+function do_confirmUpload() {
     const fileInput = $('#addIsoFile')[0];
     const file = fileInput.files[0];
 
@@ -910,7 +911,7 @@ $('#confirmUpload').click(function () {
             }, 2000);
         }
     });
-});
+}
 
 // 模态框隐藏时重置
 $('#uploadModal').on('hidden.bs.modal', function () {

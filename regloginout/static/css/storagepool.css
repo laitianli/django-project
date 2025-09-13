@@ -33,19 +33,41 @@
      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
  }
 
+ /* .storage-card {
+     cursor: pointer;
+     transition: all 0.3s;
+     height: 100%;
+ } */
+
  .storage-card {
      cursor: pointer;
      transition: all 0.3s;
      height: 100%;
+     margin-bottom: 20px;
+     border: 1px solid #dee2e6;
+     border-radius: 8px;
+     overflow: hidden;
  }
+
+ /* .storage-card:hover {
+     transform: translateY(-5px);
+     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+ } */
 
  .storage-card:hover {
      transform: translateY(-5px);
      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+     border-color: var(--secondary-color);
  }
 
  .storage-card .card-body {
      padding: 20px;
+ }
+
+ .storage-card .card-header {
+     background-color: var(--primary-color);
+     color: #2c3e50;
+     font-weight: bold;
  }
 
  .storage-card .card-title {

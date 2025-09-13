@@ -84,7 +84,16 @@
     <script>
         document.getElementById('userLogoutBtn').addEventListener('click', function() {
             window.location.href = '/accounts/logout';
-        })    
+        });
+            // 语言切换
+        $('.language-option').click(function (e) {
+            e.preventDefault();
+            const lang = $(this).data('lang');
+            $('#languageDropdown').text($(this).text());
+
+            // 这里可以添加实际的语言切换逻辑
+            console.log('jQuery切换到语言: ' + lang);
+        });
     </script>
 </body>
 

@@ -6,6 +6,7 @@
 {% block css %}
 <link href="{% static './css/mainpage.css' %}" rel="stylesheet">
 <link href="{% static './css/storagepool.css' %}" rel="stylesheet">
+<link href="{% static './css/netpool.css' %}" rel="stylesheet">
 {% endblock %}
 <style>
 
@@ -61,143 +62,146 @@
                     <div id="vm-content">
                         <!-- 虚机实例内容 -->
                         <div class="content-panel" id="instance-panel">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h4 class="text-primary">虚机实例</h4>
-                                <button class="btn btn-success" id="newVmBtn">
-                                    <i class="fas fa-plus me-1"></i> 新建虚拟实例
-                                </button>
-                            </div>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="text-primary">虚机实例</h4>
+                                        <button class="btn btn-success" id="newVmBtn">
+                                            <i class="fas fa-plus me-1"></i> 新建虚拟实例
+                                        </button>
+                                    </div>
 
-                            <div class="table-responsive">
-                                <table class="table table-hover vm-table">
-                                    <thead>
-                                        <tr>
-                                            <th>名称</th>
-                                            <th>状态</th>
-                                            <th>VCPUs</th>
-                                            <th>内存</th>
-                                            <th>执行</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="vmTableBody">
-                                        <tr>
-                                            <!-- <td><a href="#" class="vm-name-link" data-vm-id="vm1">text-vm-centosa</a></td> -->
-                                            <td><a href="#" class="vm-detail-link" data-vm-id="vm1">text-vm-centos</a>
-                                            </td>
-                                            <td><span class="badge bg-secondary">已停止</span></td>
-                                            <td>2</td>
-                                            <td>4096MB</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-success action-btn" title="启动"><i
-                                                        class="fas fa-play"></i></button>
-                                                <button class="btn btn-sm btn-outline-secondary action-btn"
-                                                    title="暂停"><i class="fas fa-pause"></i></button>
-                                                <button class="btn btn-sm btn-outline-info action-btn" title="保存"><i
-                                                        class="fas fa-save"></i></button>
-                                                <button class="btn btn-sm btn-outline-warning action-btn" title="关机"><i
-                                                        class="fas fa-power-off"></i></button>
-                                                <button class="btn btn-sm btn-outline-danger action-btn" title="强制关机"><i
-                                                        class="fas fa-bolt"></i></button>
-                                                <button class="btn btn-sm btn-outline-primary action-btn" title="控制台"><i
-                                                        class="fas fa-terminal"></i></button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="#" class="vm-detail-link" data-vm-id="vm2">vm1</a></td>
-                                            <td><span class="badge bg-success">运行中</span></td>
-                                            <td>4</td>
-                                            <td>4096MB</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-success action-btn" title="启动"><i
-                                                        class="fas fa-play"></i></button>
-                                                <button class="btn btn-sm btn-outline-secondary action-btn"
-                                                    title="暂停"><i class="fas fa-pause"></i></button>
-                                                <button class="btn btn-sm btn-outline-info action-btn" title="保存"><i
-                                                        class="fas fa-save"></i></button>
-                                                <button class="btn btn-sm btn-outline-warning action-btn" title="关机"><i
-                                                        class="fas fa-power-off"></i></button>
-                                                <button class="btn btn-sm btn-outline-danger action-btn" title="强制关机"><i
-                                                        class="fas fa-bolt"></i></button>
-                                                <button class="btn btn-sm btn-outline-primary action-btn" title="控制台"><i
-                                                        class="fas fa-terminal"></i></button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="#" class="vm-detail-link" data-vm-id="vm3">vm2</a></td>
-                                            <td><span class="badge bg-secondary">已停止</span></td>
-                                            <td>2</td>
-                                            <td>4096MB</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-success action-btn" title="启动"><i
-                                                        class="fas fa-play"></i></button>
-                                                <button class="btn btn-sm btn-outline-secondary action-btn"
-                                                    title="暂停"><i class="fas fa-pause"></i></button>
-                                                <button class="btn btn-sm btn-outline-info action-btn" title="保存"><i
-                                                        class="fas fa-save"></i></button>
-                                                <button class="btn btn-sm btn-outline-warning action-btn" title="关机"><i
-                                                        class="fas fa-power-off"></i></button>
-                                                <button class="btn btn-sm btn-outline-danger action-btn" title="强制关机"><i
-                                                        class="fas fa-bolt"></i></button>
-                                                <button class="btn btn-sm btn-outline-primary action-btn" title="控制台"><i
-                                                        class="fas fa-terminal"></i></button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="#" class="vm-detail-link" data-vm-id="vm4">windows10</a></td>
-                                            <td><span class="badge bg-secondary">已停止</span></td>
-                                            <td>4</td>
-                                            <td>4096MB</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-success action-btn" title="启动"><i
-                                                        class="fas fa-play"></i></button>
-                                                <button class="btn btn-sm btn-outline-secondary action-btn"
-                                                    title="暂停"><i class="fas fa-pause"></i></button>
-                                                <button class="btn btn-sm btn-outline-info action-btn" title="保存"><i
-                                                        class="fas fa-save"></i></button>
-                                                <button class="btn btn-sm btn-outline-warning action-btn" title="关机"><i
-                                                        class="fas fa-power-off"></i></button>
-                                                <button class="btn btn-sm btn-outline-danger action-btn" title="强制关机"><i
-                                                        class="fas fa-bolt"></i></button>
-                                                <button class="btn btn-sm btn-outline-primary action-btn" title="控制台"><i
-                                                        class="fas fa-terminal"></i></button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="#" class="vm-detail-link" data-vm-id="vm5">vm-ubuntu22.04</a>
-                                                </极td>
-                                            <td><span class="badge bg-success">运行中</span></td>
-                                            <td>4</td>
-                                            <td>8196MB</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-success action-btn" title="启动"><i
-                                                        class="fas fa-play"></i></button>
-                                                <button class="btn btn-sm btn-outline-secondary action-btn"
-                                                    title="暂停"><i class="fas fa-pause"></i></button>
-                                                <button class="btn btn-sm btn-outline-info action-btn" title="保存"><i
-                                                        class="fas fa-save"></i></button>
-                                                <button class="btn btn-sm btn-outline-warning action-btn" title="关机"><i
-                                                        class="fas fa-power-off"></i></button>
-                                                <button class="btn btn-sm btn-outline-danger action-btn" title="强制关机"><i
-                                                        class="fas fa-bolt"></i></button>
-                                                <button class="btn btn-sm btn-outline-primary action-btn" title="控制台"><i
-                                                        class="fas fa-terminal"></i></button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover vm-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>名称</th>
+                                                    <th>状态</th>
+                                                    <th>VCPUs</th>
+                                                    <th>内存</th>
+                                                    <th>执行</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="vmTableBody">
+                                                <tr>
+                                                    <!-- <td><a href="#" class="vm-name-link" data-vm-id="vm1">text-vm-centosa</a></td> -->
+                                                    <td><a href="#" class="vm-detail-link"
+                                                            data-vm-id="vm1">text-vm-centos</a>
+                                                    </td>
+                                                    <td><span class="badge bg-secondary">已停止</span></td>
+                                                    <td>2</td>
+                                                    <td>4096MB</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-success action-btn"
+                                                            title="启动"><i class="fas fa-play"></i></button>
+                                                        <button class="btn btn-sm btn-outline-secondary action-btn"
+                                                            title="暂停"><i class="fas fa-pause"></i></button>
+                                                        <button class="btn btn-sm btn-outline-info action-btn"
+                                                            title="保存"><i class="fas fa-save"></i></button>
+                                                        <button class="btn btn-sm btn-outline-warning action-btn"
+                                                            title="关机"><i class="fas fa-power-off"></i></button>
+                                                        <button class="btn btn-sm btn-outline-danger action-btn"
+                                                            title="强制关机"><i class="fas fa-bolt"></i></button>
+                                                        <button class="btn btn-sm btn-outline-primary action-btn"
+                                                            title="控制台"><i class="fas fa-terminal"></i></button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href="#" class="vm-detail-link" data-vm-id="vm2">vm1</a></td>
+                                                    <td><span class="badge bg-success">运行中</span></td>
+                                                    <td>4</td>
+                                                    <td>4096MB</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-success action-btn"
+                                                            title="启动"><i class="fas fa-play"></i></button>
+                                                        <button class="btn btn-sm btn-outline-secondary action-btn"
+                                                            title="暂停"><i class="fas fa-pause"></i></button>
+                                                        <button class="btn btn-sm btn-outline-info action-btn"
+                                                            title="保存"><i class="fas fa-save"></i></button>
+                                                        <button class="btn btn-sm btn-outline-warning action-btn"
+                                                            title="关机"><i class="fas fa-power-off"></i></button>
+                                                        <button class="btn btn-sm btn-outline-danger action-btn"
+                                                            title="强制关机"><i class="fas fa-bolt"></i></button>
+                                                        <button class="btn btn-sm btn-outline-primary action-btn"
+                                                            title="控制台"><i class="fas fa-terminal"></i></button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href="#" class="vm-detail-link" data-vm-id="vm3">vm2</a></td>
+                                                    <td><span class="badge bg-secondary">已停止</span></td>
+                                                    <td>2</td>
+                                                    <td>4096MB</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-success action-btn"
+                                                            title="启动"><i class="fas fa-play"></i></button>
+                                                        <button class="btn btn-sm btn-outline-secondary action-btn"
+                                                            title="暂停"><i class="fas fa-pause"></i></button>
+                                                        <button class="btn btn-sm btn-outline-info action-btn"
+                                                            title="保存"><i class="fas fa-save"></i></button>
+                                                        <button class="btn btn-sm btn-outline-warning action-btn"
+                                                            title="关机"><i class="fas fa-power-off"></i></button>
+                                                        <button class="btn btn-sm btn-outline-danger action-btn"
+                                                            title="强制关机"><i class="fas fa-bolt"></i></button>
+                                                        <button class="btn btn-sm btn-outline-primary action-btn"
+                                                            title="控制台"><i class="fas fa-terminal"></i></button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href="#" class="vm-detail-link"
+                                                            data-vm-id="vm4">windows10</a></td>
+                                                    <td><span class="badge bg-secondary">已停止</span></td>
+                                                    <td>4</td>
+                                                    <td>4096MB</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-success action-btn"
+                                                            title="启动"><i class="fas fa-play"></i></button>
+                                                        <button class="btn btn-sm btn-outline-secondary action-btn"
+                                                            title="暂停"><i class="fas fa-pause"></i></button>
+                                                        <button class="btn btn-sm btn-outline-info action-btn"
+                                                            title="保存"><i class="fas fa-save"></i></button>
+                                                        <button class="btn btn-sm btn-outline-warning action-btn"
+                                                            title="关机"><i class="fas fa-power-off"></i></button>
+                                                        <button class="btn btn-sm btn-outline-danger action-btn"
+                                                            title="强制关机"><i class="fas fa-bolt"></i></button>
+                                                        <button class="btn btn-sm btn-outline-primary action-btn"
+                                                            title="控制台"><i class="fas fa-terminal"></i></button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><a href="#" class="vm-detail-link"
+                                                            data-vm-id="vm5">vm-ubuntu22.04</a>
+                                                        </极td>
+                                                    <td><span class="badge bg-success">运行中</span></td>
+                                                    <td>4</td>
+                                                    <td>8196MB</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-outline-success action-btn"
+                                                            title="启动"><i class="fas fa-play"></i></button>
+                                                        <button class="btn btn-sm btn-outline-secondary action-btn"
+                                                            title="暂停"><i class="fas fa-pause"></i></button>
+                                                        <button class="btn btn-sm btn-outline-info action-btn"
+                                                            title="保存"><i class="fas fa-save"></i></button>
+                                                        <button class="btn btn-sm btn-outline-warning action-btn"
+                                                            title="关机"><i class="fas fa-power-off"></i></button>
+                                                        <button class="btn btn-sm btn-outline-danger action-btn"
+                                                            title="强制关机"><i class="fas fa-bolt"></i></button>
+                                                        <button class="btn btn-sm btn-outline-primary action-btn"
+                                                            title="控制台"><i class="fas fa-terminal"></i></button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <!-- 存储池面板 -->
                         <div class="content-panel d-none" id="storage-panel">
-                            <!-- <div class="page-header">
-                                <h4 class="text-primary">存储池</h4>
-                            </div> -->
-
                             <div class="card">
                                 <div class="card-body">
                                     <!-- 存储池子页面 -->
-                                    <div class="content-section" id="storage-pool-content">
+                                    <div class="content-section" id="storage-main">
                                         <div class="d-flex justify-content-between align-items-center mb-4">
                                             <h4 class="text-primary">存储池管理</h4>
                                             <button class="btn btn-primary" id="createStoragePoolBtn">
@@ -782,52 +786,471 @@
 
                         <!-- 网络池面板 -->
                         <div class="content-panel  d-none" id="network-panel">
-                            <div class="page-header">
-                                <h4 class="text-primary">网络池</h4>
-                            </div>
                             <div class="card">
                                 <div class="card-body">
-                                    <p>这里是网络池管理内容。您可以配置虚拟网络和网络资源。</p>
+                                    <div class="content-section" id="network-main">
+                                        <div class="d-flex justify-content-between align-items-center mb-4">
+                                            <h4 class="text-primary">网络池管理</h4>
+                                            <button class="btn btn-primary" id="createNetworkPoolBtn">
+                                                <i class="fas fa-plus me-2"></i>新建网络池
+                                            </button>
+                                        </div>
+                                        <div class="row">
+                                            <!-- NAT网络池卡片 -->
+                                            <div class="col-md-6 mb-4">
+                                                <div class="card storage-card" data-type="nat">
+                                                    <!-- <div class="card-body"> -->
+                                                    <div class="card-header bg-dark-subtle">
+                                                        <i class="fas fa-exchange-alt me-2"></i>NAT网络池
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="table-scroll">
+                                                            <table class="table table-sm">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>网卡名</th>
+                                                                        <th>子网信息</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td>virbr0</td>
+                                                                        <td>192.168.122.0/24</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>virbr1</td>
+                                                                        <td>172.16.123.0/24</td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                    <!-- </div> -->
+                                                </div>
+                                            </div>
+
+                                            <!-- Bridge网络池卡片 -->
+                                            <div class="col-md-6 mb-4">
+                                                <div class="card storage-card" data-type="bridge">
+                                                    <div class="card-header bg-dark-subtle">
+                                                        <i class="fas fa-network-wired me-2"></i>Bridge网络池
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="table-scroll">
+                                                            <table class="table table-sm">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>网桥名</th>
+                                                                        <th>MAC地址</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td>bridge0</td>
+                                                                        <td>00:10.ab:12:a1:2c</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>bridge1</td>
+                                                                        <td>00:20.ab:12:a1:2c</td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Host网络池卡片 -->
+                                            <div class="col-md-6 mb-4">
+                                                <div class="card storage-card" data-type="host">
+                                                    <div class="card-header bg-dark-subtle">
+                                                        <i class="fas fa-server me-2"></i>Host网络池
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="table-scroll">
+                                                            <table class="table table-sm">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>网卡名</th>
+                                                                        <th>IP地址</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td>enp3s0</td>
+                                                                        <td>192.168.10.1</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>enp4s0</td>
+                                                                        <td>172.15.88.1</td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- OpenVSwitch网络池卡片 -->
+                                            <div class="col-md-6 mb-4">
+                                                <div class="card storage-card" data-type="ovs">
+                                                    <div class="card-header bg-dark-subtle">
+                                                        <i class="fas fa-network-wired me-2"></i>OpenVSwitch池
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="table-scroll">
+                                                            <table class="table table-sm">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>网桥名</th>
+                                                                        <th>MAC地址</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td>ovs0</td>
+                                                                        <td>10:10.ab:12:a1:2c</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>ovs1</td>
+                                                                        <td>10:20.ab:12:a1:2c</td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- 各网络池子页面 -->
+                                    <!-- NAT网络池子页面 -->
+                                    <div class="content-section d-none" id="nat-content">
+                                        <!-- 内容会在JS中动态生成 -->
+                                        <div class="sub-page-header mb-4">
+                                            <button class="btn btn-secondary back-to-main">
+                                                <i class="fas fa-arrow-left me-2"></i>返回
+                                            </button>
+                                            <h4 class="d-inline-block ms-3">NAT网络池管理</h4>
+                                        </div>
+
+                                        <div class="card mb-4">
+                                            <div class="card-header bg-light">
+                                                <h5 class="mb-0">新建NAT网络池</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <form id="natPoolForm">
+                                                    <div class="row">
+                                                        <div class="col-md-4">
+                                                            <div class="mb-3">
+                                                                <label for="natInterface" class="form-label">网卡名</label>
+                                                                <input type="text" class="form-control"
+                                                                    id="natInterface" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="mb-3">
+                                                                <label for="natSubnet" class="form-label">子网信息</label>
+                                                                <input type="text" class="form-control" id="natSubnet"
+                                                                    placeholder="192.168.1.0/24" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">DHCP</label>
+                                                                <div class="form-check">
+                                                                    <input type="checkbox" class="form-check-input"
+                                                                        id="natDHCP">
+                                                                    <label class="form-check-label"
+                                                                        for="natDHCP">启用DHCP</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary">新建</button>
+                                                </form>
+                                            </div>
+                                        </div>
+
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <h5 class="mb-0">NAT网络池列表</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>ID</th>
+                                                                <th>网卡名</th>
+                                                                <th>子网信息</th>
+                                                                <th>DHCP</th>
+                                                                <th>操作</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="natPoolTable">
+                                                            <!-- 动态生成的行 -->
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Bridge网络池子页面 -->
+                                    <div class="content-section d-none" id="bridge-content">
+                                        <!-- 内容会在JS中动态生成 -->
+                                        <div class="sub-page-header mb-4">
+                                            <button class="btn btn-secondary back-to-main">
+                                                <i class="fas fa-arrow-left me-2"></i>返回
+                                            </button>
+                                            <h4 class="d-inline-block ms-3">Bridge网络池管理</h4>
+                                        </div>
+
+                                        <div class="card mb-4">
+                                            <div class="card-header bg-light">
+                                                <h5 class="mb-0">新建Bridge网络池</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <form id="bridgePoolForm">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label for="bridgeName" class="form-label">网桥名</label>
+                                                                <input type="text" class="form-control" id="bridgeName"
+                                                                    required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label for="bridgeMAC" class="form-label">MAC地址</label>
+                                                                <input type="text" class="form-control" id="bridgeMAC"
+                                                                    placeholder="00:00:00:00:00:00" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary">新建</button>
+                                                </form>
+                                            </div>
+                                        </div>
+
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <h5 class="mb-0">Bridge网络池列表</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>ID</th>
+                                                                <th>网桥名</th>
+                                                                <th>MAC地址</th>
+                                                                <th>操作</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="bridgePoolTable">
+                                                            <!-- 动态生成的行 -->
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Host网络池子页面 -->
+                                    <div class="content-section d-none" id="host-content">
+                                        <!-- 内容会在JS中动态生成 -->
+                                        <div class="sub-page-header mb-4">
+                                            <button class="btn btn-secondary back-to-main">
+                                                <i class="fas fa-arrow-left me-2"></i>返回
+                                            </button>
+                                            <h4 class="d-inline-block ms-3">Host网络池管理</h4>
+                                        </div>
+
+                                        <div class="card mb-4">
+                                            <div class="card-header bg-light">
+                                                <h5 class="mb-0">新建Host网络池</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <form id="hostPoolForm">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label for="hostInterface"
+                                                                    class="form-label">物理网卡</label>
+                                                                <select class="form-select" id="hostInterface" required>
+                                                                    <option value="">选择物理网卡</option>
+                                                                    <option value="enp3s0">enp3s0</option>
+                                                                    <option value="enp4s0">enp4s0</option>
+                                                                    <option value="eth0">eth0</option>
+                                                                    <option value="eth1">eth1</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label for="hostIP" class="form-label">IP地址</label>
+                                                                <input type="text" class="form-control" id="hostIP"
+                                                                    placeholder="192.168.1.1" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary">新建</button>
+                                                </form>
+                                            </div>
+                                        </div>
+
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <h5 class="mb-0">Host网络池列表</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>ID</th>
+                                                                <th>物理网卡名</th>
+                                                                <th>IP地址</th>
+                                                                <th>操作</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="hostPoolTable">
+                                                            <!-- 动态生成的行 -->
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- OpenVSwitch网络池子页面 -->
+                                    <div class="content-section d-none" id="ovs-content">
+                                        <!-- 内容会在JS中动态生成 -->
+                                        <div class="sub-page-header mb-4">
+                                            <button class="btn btn-secondary back-to-main">
+                                                <i class="fas fa-arrow-left me-2"></i>返回
+                                            </button>
+                                            <h4 class="d-inline-block ms-3">OpenVSwitch网络池管理</h4>
+                                        </div>
+
+                                        <div class="card mb-4">
+                                            <div class="card-header bg-light">
+                                                <h5 class="mb-0">新建OpenVSwitch网络池</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <form id="ovsPoolForm">
+                                                    <div class="row">
+                                                        <div class="col-md-4">
+                                                            <div class="mb-3">
+                                                                <label for="ovsName" class="form-label">网桥名</label>
+                                                                <input type="text" class="form-control" id="ovsName"
+                                                                    required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="mb-3">
+                                                                <label for="ovsMAC" class="form-label">MAC地址</label>
+                                                                <input type="text" class="form-control" id="ovsMAC"
+                                                                    placeholder="00:00:00:00:00:00" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">DPDK</label>
+                                                                <div class="form-check">
+                                                                    <input type="checkbox" class="form-check-input"
+                                                                        id="ovsDPDK">
+                                                                    <label class="form-check-label"
+                                                                        for="ovsDPDK">启用DPDK</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary">新建</button>
+                                                </form>
+                                            </div>
+                                        </div>
+
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <h5 class="mb-0">OpenVSwitch网络池列表</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>ID</th>
+                                                                <th>网桥名</th>
+                                                                <th>MAC地址</th>
+                                                                <th>DPDK</th>
+                                                                <th>操作</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="ovsPoolTable">
+                                                            <!-- 动态生成的行 -->
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
 
                         <!-- 网络接口面板 -->
                         <div class="content-panel  d-none" id="interface-panel">
-                            <div class="page-header">
-                                <h4 class="text-primary">网络接口</h4>
-                            </div>
                             <div class="card">
                                 <div class="card-body">
-                                    <p>这里是网络接口管理内容。您可以查看和配置网络接口设置。</p>
+                                    <div class="page-header">
+                                        <h4 class="text-primary">网络接口</h4>
+                                    </div>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p>这里是网络接口管理内容。您可以查看和配置网络接口设置。</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Secrets面板 -->
                         <div class="content-panel  d-none" id="secrets-panel">
-                            <div class="page-header">
-                                <h4 class="text-primary">Secrets</h4>
-                            </div>
                             <div class="card">
                                 <div class="card-body">
-                                    <p>这里是Secrets管理内容。您可以管理敏感信息和凭证。</p>
+                                    <div class="page-header">
+                                        <h4 class="text-primary">Secrets</h4>
+                                    </div>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p>这里是Secrets管理内容。您可以管理敏感信息和凭证。</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- 概览面板 -->
                         <div class="content-panel  d-none" id="overview-panel">
-                            <div class="page-header">
-                                <h4 class="text-primary">概览</h4>
-                            </div>
                             <div class="card">
                                 <div class="card-body">
-                                    <p>这里是系统概览内容。您可以查看系统状态和资源使用情况。</p>
+                                    <div class="page-header">
+                                        <h4 class="text-primary">概览</h4>
+                                    </div>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p>这里是系统概览内容。您可以查看系统状态和资源使用情况。</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- 虚拟机详情 -->
                         <div class="content-panel  d-none" id="vm-detail-panel">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h2 class="text-primary">虚拟机详情</h2>
@@ -1731,7 +2154,12 @@
 {% endblock %}
 
 {% block javascript %}
-<script src="{% static './js/mainpage.js' %}"></script>
+<script src="{% static './js/upgrade.js' %}"></script>
+<script src="{% static './js/licence.js' %}"></script>
+<script src="{% static './js/leftpanel.js' %}"></script>
 <script src="{% static './js/storagepool.js' %}"></script>
+<script src="{% static './js/netpool.js' %}"></script>
+<script src="{% static './js/vminstance.js' %}"></script>
+<script src="{% static './js/mainpage.js' %}"></script>
 
 {% endblock %}
