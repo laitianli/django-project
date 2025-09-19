@@ -1,0 +1,41 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加书籍</title>
+    <link rel="stylesheet" href="{% static 'bootstrap-3.4.1-dist/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'bootstrap-3.4.1-dist/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'bootstrap-3.4.1-dist/css/bootstrap-theme.css' %}">
+    <link rel="stylesheet" href="{% static 'bootstrap-3.4.1-dist/css/bootstrap-theme.min.css' %}">
+    <script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+    <script src="{% static 'bootstrap-3.4.1-dist/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'bootstrap-3.4.1-dist/js/bootstrap.js' %}"></script>
+    <script src="{% static 'bootstrap-3.4.1-dist/js/npm.js' %}"></script>
+</head>
+<body>
+    <form action="/addBook/" method="post">
+         <div class="form-group">
+            <label class="col-sm-2 control-label">书   名:</label>
+            <input type="text" name="title" class="form-control " placeholder="输入书名">
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">价   格:</label>
+            <input type="text" name="price" class="form-control" placeholder="输入书籍价格0.00">
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">出 版 社：</label>
+            <input type="text" name="publish" class="form-control" placeholder="输入书籍出版社">
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">出版日期：</label>
+            <input type="text" name="pub_date" class="form-control" placeholder="输入书籍出版日期YYYY-MM-DD">
+        </div>
+        <div class="form-group">
+            <input type="submit" value="添加" class="btn btn-primary btn-lg">
+        </div>
+    </form>
+</body>
+</html>
