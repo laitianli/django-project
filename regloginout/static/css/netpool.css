@@ -1,0 +1,58 @@
+.sub-view {
+    display: none;
+    padding: 20px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    background-color: #fff;
+    margin-top: 20px;
+}
+
+.table-scroll {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.back-button {
+    margin-bottom: 15px;
+}
+
+.progress {
+    height: 10px;
+    margin: 10px 0;
+}
+
+.action-buttons .btn {
+    margin-right: 5px;
+}
+
+.nav-tabs .nav-link.active {
+    font-weight: bold;
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.form-section {
+    background-color: var(--light-bg);
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.editable-cell {
+    cursor: pointer;
+}
+
+.editable-cell:hover {
+    background-color: #f8f9fa;
+}
+
+.edit-input {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.editing-row {
+    background-color: #fffde7;
+}

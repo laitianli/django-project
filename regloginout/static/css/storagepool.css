@@ -1,0 +1,91 @@
+ body {
+     font-family: 'Microsoft YaHei', sans-serif;
+     background-color: #f8f9fa;
+ }
+
+ .sidebar {
+     background-color: #ffffff;
+     border-right: 1px solid #dee2e6;
+     height: calc(100vh - 60px);
+ }
+
+ .sidebar .nav-link {
+     color: #495057;
+     border-radius: 0;
+     padding: 12px 20px;
+ }
+
+ .sidebar .nav-link.active {
+     background-color: #e9ecef;
+     color: #2c3e50;
+     font-weight: bold;
+     border-left: 4px solid #2c3e50;
+ }
+
+ .sidebar .nav-link:hover {
+     background-color: #e9ecef;
+ }
+
+ .main-content {
+     padding: 20px;
+     background-color: #ffffff;
+     border-radius: 5px;
+     box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+ }
+
+ /* .storage-card {
+     cursor: pointer;
+     transition: all 0.3s;
+     height: 100%;
+ } */
+
+ .storage-card {
+     cursor: pointer;
+     transition: all 0.3s;
+     height: 100%;
+     margin-bottom: 20px;
+     border: 1px solid #dee2e6;
+     border-radius: 8px;
+     overflow: hidden;
+ }
+
+ /* .storage-card:hover {
+     transform: translateY(-5px);
+     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+ } */
+
+ .storage-card:hover {
+     transform: translateY(-5px);
+     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+     border-color: var(--secondary-color);
+ }
+
+ .storage-card .card-body {
+     padding: 20px;
+ }
+
+ .storage-card .card-header {
+     background-color: var(--primary-color);
+     color: #2c3e50;
+     font-weight: bold;
+ }
+
+ .storage-card .card-title {
+     color: #2c3e50;
+     font-weight: bold;
+ }
+
+ .storage-card .card-text {
+     color: #6c757d;
+ }
+
+ .sub-tab-content {
+     padding: 20px;
+     border: 1px solid #dee2e6;
+     border-radius: 0 0 5px 5px;
+     background-color: #ffffff;
+ }
+
+ .directory-table th {
+     background-color: #f8f9fa;
+ }

@@ -1,0 +1,9 @@
+
+qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 4096 -boot c  -hda ./tvm1.qcom2 -cdrom /mnt/d/os/ubuntu-22.04.5-desktop-amd64.iso -vnc 0:0
+
+conda config --set auto_activate_base true
+
+
+qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 4096 -boot c  -net nic -net tap -hda ./tvm1.qcom2 -cdrom /mnt/d/os/ubuntu-22.04.5-desktop-amd64.iso -vnc 0:0
+
+

@@ -1,0 +1,130 @@
+    .sidebar {
+        background-color: #f8f9fa;
+        border-right: 1px solid #dee2e6;
+        height: calc(100vh - 120px);
+        padding-top: 20px;
+    }
+
+    .sidebar .list-group-item {
+        border: none;
+        border-radius: 0;
+        padding: 12px 20px;
+        color: #495057;
+    }
+
+    .sidebar .list-group-item.active {
+        background-color: #e9ecef;
+        color: #2c3e50;
+        font-weight: bold;
+        border-left: 4px solid #2c3e50;
+    }
+
+    .sidebar .list-group-item:hover {
+        background-color: #e9ecef;
+    }
+
+    .main-content {
+        padding: 20px;
+        height: calc(100vh - 120px);
+        overflow-y: auto;
+    }
+
+    .nav-tabs .nav-link {
+        color: #495057;
+        font-weight: 500;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: #2c3e50;
+        font-weight: bold;
+    }
+
+    .vm-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+    }
+
+    .vm-detail-link {
+        color: #0d6efd;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .vm-detail-link:hover {
+        text-decoration: underline;
+    }
+
+    .action-btn {
+        margin-right: 5px;
+        cursor: pointer;
+    }
+
+    .language-dropdown {
+        min-width: 100px;
+    }
+
+    #licenceKey {
+        font-family: monospace;
+    }
+
+    .upgrade-card {
+        border-left: 4px solid #0d6efd;
+    }
+
+    .progress {
+        height: 8px;
+    }
+
+    .upgrade-option {
+        transition: all 0.3s;
+    }
+
+    .upgrade-option:hover {
+        background-color: #f8f9fa;
+    }
+
+    /* 虚拟机详情 */
+    .tab-content {
+        padding: 20px;
+        border: 1px solid #dee2e6;
+        border-top: none;
+        border-radius: 0 0 5px 5px;
+        background-color: #ffffff;
+    }
+
+    .nav-tabs .nav-link {
+        color: #495057;
+    }
+
+    .nav-tabs .nav-link.active {
+        font-weight: bold;
+        color: #2c3e50;
+    }
+
+    .sub-tab-content {
+        padding: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        margin-top: 10px;
+        background-color: #ffffff;
+    }
+
+    .chart-container {
+        height: 300px;
+        margin-bottom: 20px;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+
+    .progress {
+        height: 25px;
+        margin: 15px 0;
+    }
+
+    .progress-bar {
+        line-height: 25px;
+        font-weight: bold;
+    }
