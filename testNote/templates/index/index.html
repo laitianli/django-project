@@ -18,7 +18,7 @@
             <a href="/user/logout">退出登录</a>
         </p>
         <p>
-            <a href="">进入我的笔记</a>
+            <a href="/note/add">进入我的笔记</a>
         </p>
     {% else %}
         {% if request.COOKIES.username %}
@@ -30,7 +30,7 @@
             </p>
 
             <p>
-                <a href="">进入我的笔记</a>
+                <a href="/note/add">进入我的笔记</a>
             </p>
         {% else %}
             <p>

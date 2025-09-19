@@ -26,8 +26,8 @@ def add_note(request):
     elif request.method == 'POST':
         uid = request.session['uid']
         title = request.POST['title']
-        contend = request.POST['content']
+        content = request.POST['content']
 
-        Note.objects.create(title=title, contend=contend, user_id=uid)
+        Note.objects.create(title=title, content=content, user_id=uid)
 
         return HttpResponse('添加笔记成功')
