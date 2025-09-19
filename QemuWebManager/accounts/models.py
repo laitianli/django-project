@@ -1,8 +1,6 @@
 from django.db import models
-
-# Create your models here.
 from django.contrib.auth.models import AbstractUser
-from django.db import models
+# Create your models here.
 
 class CustomUser(AbstractUser):
-    phone = models.CharField(max_length=15, unique=True, verbose_name="ÊÖ»úºÅ")
+    phone = models.CharField(max_length=15, unique=True, verbose_name="æ‰‹æœºå·")

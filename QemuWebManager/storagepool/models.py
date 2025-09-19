@@ -4,36 +4,36 @@ from django.db import models
 
 class isoCustompool(models.Model):
     """
-    ISO ´æ´¢³ØÄ£ĞÍ
-    isopoolname: ´æ´¢³ØÃû³Æ£¬±ØĞëÎ¨Ò»ÇÒ²»ÄÜÎª¿Õ
-    isopoolpath: ´æ´¢³ØÂ·¾¶£¬²»ÄÜÎª¿Õ
+    ISO å­˜å‚¨æ± æ¨¡å‹
+    isopoolname: å­˜å‚¨æ± åç§°ï¼Œå¿…é¡»å”¯ä¸€ä¸”ä¸èƒ½ä¸ºç©º
+    isopoolpath: å­˜å‚¨æ± è·¯å¾„ï¼Œä¸èƒ½ä¸ºç©º
     """
     isopoolname = models.CharField(max_length=100, unique=True, null=False, blank=False)
     isopoolpath = models.CharField(max_length=255, null=False, blank=False)
 
     class Meta:
-        # ¿ÉÑ¡£ºÉèÖÃÊı¾İ¿â±íÃû£¬Èç¹û²»ÉèÖÃ£¬Django »áÄ¬ÈÏÊ¹ÓÃ appname_modelname
+        # å¯é€‰ï¼šè®¾ç½®æ•°æ®åº“è¡¨åï¼Œå¦‚æœä¸è®¾ç½®ï¼ŒDjango ä¼šé»˜è®¤ä½¿ç”¨ appname_modelname
         db_table = 'isoCustompool' 
 
 
     def __str__(self):
-        # ÉèÖÃ¶ÔÏóµÄ×Ö·û´®±íÊ¾£¬±ãÓÚÔÚAdmin»òÆäËûµØ·½Ê¶±ğ
+        # è®¾ç½®å¯¹è±¡çš„å­—ç¬¦ä¸²è¡¨ç¤ºï¼Œä¾¿äºåœ¨Adminæˆ–å…¶ä»–åœ°æ–¹è¯†åˆ«
         return self.isopoolname + '|' + self.isopoolpath
     
 class localCustompool(models.Model):
     """
-    local ´æ´¢³ØÄ£ĞÍ
-    localpoolname: ´æ´¢³ØÃû³Æ£¬±ØĞëÎ¨Ò»ÇÒ²»ÄÜÎª¿Õ
-    localpoolpath: ´æ´¢³ØÂ·¾¶£¬²»ÄÜÎª¿Õ
+    local å­˜å‚¨æ± æ¨¡å‹
+    localpoolname: å­˜å‚¨æ± åç§°ï¼Œå¿…é¡»å”¯ä¸€ä¸”ä¸èƒ½ä¸ºç©º
+    localpoolpath: å­˜å‚¨æ± è·¯å¾„ï¼Œä¸èƒ½ä¸ºç©º
     """
     localpoolname = models.CharField(max_length=100, unique=True, null=False, blank=False)
     localpoolpath = models.CharField(max_length=255, null=False, blank=False)
 
     class Meta:
-        # ¿ÉÑ¡£ºÉèÖÃÊı¾İ¿â±íÃû£¬Èç¹û²»ÉèÖÃ£¬Django »áÄ¬ÈÏÊ¹ÓÃ appname_modelname
+        # å¯é€‰ï¼šè®¾ç½®æ•°æ®åº“è¡¨åï¼Œå¦‚æœä¸è®¾ç½®ï¼ŒDjango ä¼šé»˜è®¤ä½¿ç”¨ appname_modelname
         db_table = 'localCustompool' 
 
 
     def __str__(self):
-        # ÉèÖÃ¶ÔÏóµÄ×Ö·û´®±íÊ¾£¬±ãÓÚÔÚAdmin»òÆäËûµØ·½Ê¶±ğ
+        # è®¾ç½®å¯¹è±¡çš„å­—ç¬¦ä¸²è¡¨ç¤ºï¼Œä¾¿äºåœ¨Adminæˆ–å…¶ä»–åœ°æ–¹è¯†åˆ«
         return self.localpoolname + '|' + self.localpoolpath
