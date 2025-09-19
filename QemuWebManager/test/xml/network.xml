@@ -1,0 +1,118 @@
+
+<!-- NAT -->
+<interface type="network">
+    <mac address="52:54:00:c7:dc:18" />
+    <source network="default" />
+    <model type="virtio" />
+    <address type="pci" domain="0x0000" bus="0x01" slot="0x00" function="0x0" />
+</interface>
+
+
+<!-- bridge -->
+<interface type="bridge">
+    <mac address="52:54:00:c7:dc:18" />
+    <source network="br0" />
+    <model type="virtio" />
+    <address type="pci" domain="0x0000" bus="0x01" slot="0x00" function="0x0" />
+</interface>
+
+<!-- Macvtap -->
+<interface type="direct">
+    <mac address="52:54:00:c7:dc:18" />
+    <source network="macvtap_br0" mode="bridge"/>
+    <model type="virtio" />
+    <address type="pci" domain="0x0000" bus="0x01" slot="0x00" function="0x0" />
+</interface>
+
+<!-- NAT
+BRIDGE
+OPEN
+CLOSE
+SR_IOV -->
+
+<!--
+WARNING: THIS IS AN AUTO-GENERATED FILE. CHANGES TO IT ARE LIKELY TO BE
+OVERWRITTEN AND LOST. Changes to this xml configuration should be made using:
+  virsh net-edit default
+or other application using the libvirt API.
+-->
+
+<network>
+  <name>default</name>
+  <uuid>b604aa17-1459-4369-ae06-9cbf8d142111</uuid>
+  <forward mode='nat'/>
+  <bridge name='virbr0' stp='on' delay='0'/>
+  <mac address='52:54:00:83:1e:50'/>
+  <ip address='192.168.122.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.122.2' end='192.168.122.254'/>
+    </dhcp>
+  </ip>
+</network>
+
+<!-- NAT-phyNIC: ens3 -->
+<network>
+  <name>network-NAT</name>
+  <uuid>b604aa17-1459-4369-ae06-9cbf8d142111</uuid>
+  <forward dev="ens3" mode='nat'>
+    <nat>
+        <port start="1024" end="65535"/>
+    </nat>
+  </forward>
+  <bridge name='virbr1' stp='on' delay='0'/>
+  <mac address='52:54:00:83:1e:50'/>
+  <domain name="network-NAT"/>
+  <ip address='192.168.122.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.122.2' end='192.168.122.254'/>
+    </dhcp>
+  </ip>
+</network>
+
+<!-- Route-phyNIC: ens3 -->
+<network>
+  <name>network-Route</name>
+  <uuid>b604aa17-1459-4369-ae06-9cbf8d142111</uuid>
+  <forward dev="ens3" mode='route'>
+    <interface dev="ens3"/>
+  </forward>
+  <bridge name='virbr1' stp='on' delay='0'/>
+  <mac address='52:54:00:83:1e:50'/>
+  <domain name="network-Route"/>
+  <ip address='192.168.100.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.100.2' end='192.168.100.254'/>
+    </dhcp>
+  </ip>
+</network>
+
+<!-- OPEN -->
+<network>
+  <name>network-OPEN</name>
+  <uuid>b604aa17-1459-4369-ae06-9cbf8d142111</uuid>
+  <forward mode='open'/>
+  <bridge name='virbr1' stp='on' delay='0'/>
+  <mac address='52:54:00:83:1e:50'/>
+  <domain name="network-OPEN"/>
+  <ip address='192.168.100.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.100.2' end='192.168.100.254'/>
+    </dhcp>
+  </ip>
+</network>
+
+<!-- isolated -->
+<network>
+  <name>network-isolated</name>
+  <uuid>b604aa17-1459-4369-ae06-9cbf8d142111</uuid>
+  <bridge name='virbr1' stp='on' delay='0'/>
+  <mac address='52:54:00:83:1e:50'/>
+  <domain name="network-OPEN"/>
+  <ip address='192.168.100.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.100.2' end='192.168.100.254'/>
+    </dhcp>
+  </ip>
+</network>
+
+<!-- SR-IOV -->

@@ -1,0 +1,407 @@
+<div class="content-panel  d-none" id="network-panel">
+    <div class="card">
+        <div class="card-body">
+            <div class="content-section" id="network-main">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="text-primary">网络池管理</h4>
+                    <button class="btn btn-primary" id="createNetworkPoolBtn">
+                        <i class="fas fa-plus me-2"></i>新建网络池
+                    </button>
+                </div>
+                <div class="row">
+                    <!-- NAT网络池卡片 -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card storage-card" data-type="nat">
+                            <div class="card-header">
+                                <i class="fas fa-exchange-alt me-2"></i>NAT网络池
+                            </div>
+                            <div class="card-body">
+                                <div class="table-scroll">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>网卡名</th>
+                                                <th>子网信息</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>virbr0</td>
+                                                <td>192.168.122.0/24</td>
+                                            </tr>
+                                            <tr>
+                                                <td>virbr1</td>
+                                                <td>172.16.123.0/24</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bridge网络池卡片 -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card storage-card" data-type="bridge">
+                            <div class="card-header">
+                                <i class="fas fa-bridge me-2"></i>Bridge网络池
+                            </div>
+                            <div class="card-body">
+                                <div class="table-scroll">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>网桥名</th>
+                                                <th>MAC地址</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>bridge0</td>
+                                                <td>00:10.ab:12:a1:2c</td>
+                                            </tr>
+                                            <tr>
+                                                <td>bridge1</td>
+                                                <td>00:20.ab:12:a1:2c</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Host网络池卡片 -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card storage-card" data-type="host">
+                            <div class="card-header">
+                                <i class="fas fa-server me-2"></i>Host网络池
+                            </div>
+                            <div class="card-body">
+                                <div class="table-scroll">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>网卡名</th>
+                                                <th>IP地址</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>enp3s0</td>
+                                                <td>192.168.10.1</td>
+                                            </tr>
+                                            <tr>
+                                                <td>enp4s0</td>
+                                                <td>172.15.88.1</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- OpenVSwitch网络池卡片 -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card storage-card" data-type="ovs">
+                            <div class="card-header">
+                                <i class="fas fa-network-wired me-2"></i>OpenVSwitch池
+                            </div>
+                            <div class="card-body">
+                                <div class="table-scroll">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>网桥名</th>
+                                                <th>MAC地址</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>ovs0</td>
+                                                <td>10:10.ab:12:a1:2c</td>
+                                            </tr>
+                                            <tr>
+                                                <td>ovs1</td>
+                                                <td>10:20.ab:12:a1:2c</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 各网络池子页面 -->
+
+            <!-- NAT网络池子页面 -->
+            <div class="content-section d-none" id="nat-content">
+                <!-- 内容会在JS中动态生成 -->
+                <div class="sub-page-header mb-4">
+                    <button class="btn btn-secondary back-to-main">
+                        <i class="fas fa-arrow-left me-2"></i>返回
+                    </button>
+                    <h4 class="d-inline-block ms-3">NAT网络池管理</h4>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">新建NAT网络池</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="natPoolForm">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="natInterface" class="form-label">网卡名</label>
+                                        <input type="text" class="form-control" id="natInterface" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="natSubnet" class="form-label">子网信息</label>
+                                        <input type="text" class="form-control" id="natSubnet"
+                                            placeholder="192.168.1.0/24" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">DHCP</label>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="natDHCP">
+                                            <label class="form-check-label" for="natDHCP">启用DHCP</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">新建</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">NAT网络池列表</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>网卡名</th>
+                                        <th>子网信息</th>
+                                        <th>DHCP</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="natPoolTable">
+                                    <!-- 动态生成的行 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bridge网络池子页面 -->
+            <div class="content-section d-none" id="bridge-content">
+                <!-- 内容会在JS中动态生成 -->
+                <div class="sub-page-header mb-4">
+                    <button class="btn btn-secondary back-to-main">
+                        <i class="fas fa-arrow-left me-2"></i>返回
+                    </button>
+                    <h4 class="d-inline-block ms-3">Bridge网络池管理</h4>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">新建Bridge网络池</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="bridgePoolForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="bridgeName" class="form-label">网桥名</label>
+                                        <input type="text" class="form-control" id="bridgeName" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="bridgeMAC" class="form-label">MAC地址</label>
+                                        <input type="text" class="form-control" id="bridgeMAC"
+                                            placeholder="00:00:00:00:00:00" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">新建</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Bridge网络池列表</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>网桥名</th>
+                                        <th>MAC地址</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bridgePoolTable">
+                                    <!-- 动态生成的行 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Host网络池子页面 -->
+            <div class="content-section d-none" id="host-content">
+                <!-- 内容会在JS中动态生成 -->
+                <div class="sub-page-header mb-4">
+                    <button class="btn btn-secondary back-to-main">
+                        <i class="fas fa-arrow-left me-2"></i>返回
+                    </button>
+                    <h4 class="d-inline-block ms-3">Host网络池管理</h4>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">新建Host网络池</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="hostPoolForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="hostInterface" class="form-label">物理网卡</label>
+                                        <select class="form-select" id="hostInterface" required>
+                                            <option value="">选择物理网卡</option>
+                                            <option value="enp3s0">enp3s0</option>
+                                            <option value="enp4s0">enp4s0</option>
+                                            <option value="eth0">eth0</option>
+                                            <option value="eth1">eth1</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="hostIP" class="form-label">IP地址</label>
+                                        <input type="text" class="form-control" id="hostIP" placeholder="192.168.1.1"
+                                            required>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">新建</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Host网络池列表</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>物理网卡名</th>
+                                        <th>IP地址</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hostPoolTable">
+                                    <!-- 动态生成的行 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OpenVSwitch网络池子页面 -->
+            <div class="content-section d-none" id="ovs-content">
+                <!-- 内容会在JS中动态生成 -->
+                <div class="sub-page-header mb-4">
+                    <button class="btn btn-secondary back-to-main">
+                        <i class="fas fa-arrow-left me-2"></i>返回
+                    </button>
+                    <h4 class="d-inline-block ms-3">OpenVSwitch网络池管理</h4>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">新建OpenVSwitch网络池</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="ovsPoolForm">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="ovsName" class="form-label">网桥名</label>
+                                        <input type="text" class="form-control" id="ovsName" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="ovsMAC" class="form-label">MAC地址</label>
+                                        <input type="text" class="form-control" id="ovsMAC"
+                                            placeholder="00:00:00:00:00:00" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">DPDK</label>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="ovsDPDK">
+                                            <label class="form-check-label" for="ovsDPDK">启用DPDK</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">新建</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">OpenVSwitch网络池列表</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>网桥名</th>
+                                        <th>MAC地址</th>
+                                        <th>DPDK</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ovsPoolTable">
+                                    <!-- 动态生成的行 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

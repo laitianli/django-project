@@ -1,0 +1,100 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}默认标题{% endblock %}</title>
+    <!-- 引入静态文件 -->
+    <!-- Bootstrap CSS -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"> -->
+    <!-- Font Awesome 图标 -->
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> -->
+    <link rel="icon" href="{% static './images/favicon.ico' %}" type="image/x-icon">
+    <link href="{% static './bootstrap-5.3.0-alpha1/dist/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static './css/all.min.css' %}" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .navbar {
+            background-color: #2c3e50;
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+
+    {% block css %}{% endblock %}
+</head>
+
+<body>
+    <header>
+        <!-- 顶部导航条 -->
+        <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">Qemu虚拟机管理系统</span>
+
+            <div class="d-flex align-items-center">
+                <div class="dropdown me-3">
+                    <button class="btn btn-outline-light dropdown-toggle language-dropdown" type="button"
+                        id="languageDropdown" data-bs-toggle="dropdown">
+                        中文
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item language-option" href="#" data-lang="zh">中文</a></li>
+                        <li><a class="dropdown-item language-option" href="#" data-lang="en">English</a></li>
+                        <li><a class="dropdown-item language-option" href="#" data-lang="es">Español</a></li>
+                    </ul>
+                </div>
+
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user-circle me-1"></i> haizhi
+                </span>
+
+                <button class="btn btn-outline-light btn-sm" id="userLogoutBtn">
+                    <i class="fas fa-sign-out-alt me-1"></i> 退出
+                </button>
+            </div>
+        </div>
+    </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        <!-- 主内容区将由子模板填充 -->
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; {% now "Y" %} 我的网站. 保留所有权利.</p>
+    </footer>
+
+    <!-- 公共JS文件 -->
+    <script src="{% static './bootstrap-5.3.0-alpha1/dist/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static './js/jquery-3.6.0.min.js' %}"></script>
+
+    {% block javascript %}
+    <!-- 子模板可以在此添加页面特定的JS -->
+    {% endblock %}
+
+    <script>
+        document.getElementById('userLogoutBtn').addEventListener('click', function() {
+            window.location.href = '/accounts/logout';
+        });
+            // 语言切换
+        $('.language-option').click(function (e) {
+            e.preventDefault();
+            const lang = $(this).data('lang');
+            $('#languageDropdown').text($(this).text());
+
+            // 这里可以添加实际的语言切换逻辑
+            console.log('jQuery切换到语言: ' + lang);
+        });
+    </script>
+</body>
+
+</html>
