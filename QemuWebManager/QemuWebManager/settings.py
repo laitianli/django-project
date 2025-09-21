@@ -43,6 +43,12 @@ INSTALLED_APPS = [
     'storagepool',
 ]
 
+AUTH_USER_MODEL = 'accounts.CustomUser'  # your_app为应用名称
+# AUTH_USER_MODEL = 'auth.User'  # 使用Django内置用户模型
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
