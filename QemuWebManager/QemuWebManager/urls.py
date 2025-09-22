@@ -26,5 +26,6 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('createvmwizard/', include('createvmwizard.urls')),
     path('storagepool/', include('storagepool.urls')),
+    path('iface/', include('ifacepool.urls')),
 ]
 # + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

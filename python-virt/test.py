@@ -96,7 +96,7 @@ def test_if(conn):
     print('-' * 100 )
     
 def test_createXML(conn):
-    vm_name='text-vm-centos'
+    vm_name='text-vm-centos-2'
     listVMName = conn.listDefinedDomains()
     if vm_name not in listVMName:
         xmlobj = createVMXML(vm_name)

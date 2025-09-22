@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
-
 ##通过request.user.is_authenticated变量判断用户是有用户登录
 # def logout_view(request):
 #     is_login = request.user.is_authenticated
@@ -16,7 +15,7 @@ from django.contrib.auth.decorators import login_required
 def mainPage(request):
     host_with_port = request.get_host() 
     print(host_with_port)
-    #调用libvirt.py库查询虚拟机,交将结果返回到页面中
+    #调用libvirt.py库查询虚拟机,交将结果返回到页面中   
     #1)查询虚拟机
     #2)查询存储池
     #3)查询网络池

@@ -15,7 +15,7 @@ function initInterface() {
 }
 
 // 模拟数据 - 物理网卡信息
-const networkInterfaces = [
+var g_networkInterfaces = [
     { id: 1, name: 'eth0', type: 'Ethernet', mac: '00:1A:2B:3C:4D:5E', status: 'up', ipv4: '192.168.1.10', ipv6: 'fe80::21a:2bff:fe3c:4d5e' },
     { id: 2, name: 'eth1', type: 'Ethernet', mac: '00:1A:2B:3C:4D:5F', status: 'up', ipv4: '192.168.2.10', ipv6: 'fe80::21a:2bff:fe3c:4d5f' },
     { id: 3, name: 'wlan0', type: 'Wireless', mac: '00:1C:B3:4D:5E:6F', status: 'up', ipv4: '192.168.3.10', ipv6: 'fe80::21c:b3ff:fe4d:5e6f' },
@@ -28,13 +28,51 @@ const networkInterfaces = [
     { id: 10, name: 'br0', type: 'Bridge', mac: '00:22:4D:5E:6F:70', status: 'up', ipv4: '192.168.0.1', ipv6: 'fe80::222:4dff:fe5e:6f70' }
 ];
 
+function sendReqeust2ifacepool(jsonData, successFunc, failFunc) {
+    $.ajax({
+        url: '/iface/pool/', // 替换为您的API端点
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(jsonData),
+        success: function (response) {
+            // console.log('服务器响应:', response);
+            // 处理成功响应
+            if (response.result === 'success') {
+                successFunc(response);
+                return true;
+            } else {
+                // 注册失败，显示错误信息
+                console.log("向服务器提交请求失败: " + response.message);
+                failFunc(response);
+                return false;
+            }
+        },
+        error: function (xhr, status, error) {
+            // 处理错误
+            // alert('向服务器提交请求时出错: ' + error);
+            console.error('错误详情:', xhr.responseText);
+            return false;
+        }
+    });
+}
+
 // 渲染网络接口卡片
 function renderNetworkInterfaceCards() {
-    console.log('--renderNetworkInterfaceCards--');
+    $('#nic-detail-view').hide();
+    var jsonData = {
+        action: 'query',
+    }
+    sendReqeust2ifacepool(jsonData, doQuerySuccess, function () { })
+}
+
+// 渲染网络接口卡片
+function doQuerySuccess(response) {
+    console.log('--doQuerySuccess--');
     const container = $('#nic-container');
     container.empty();
-
-    networkInterfaces.forEach(nic => {
+    g_networkInterfaces = response.response_json;
+    console.log(g_networkInterfaces)
+    g_networkInterfaces.forEach(nic => {
         const col = $('<div>').addClass('col-md-3 mb-4');
         const card = `
                 <div class="card storage-card" data-id="${nic.id}">
@@ -62,7 +100,7 @@ function renderNetworkInterfaceCards() {
 
 // 显示接口详细信息
 function showInterfaceDetails(id) {
-    const nic = networkInterfaces.find(i => i.id === id);
+    const nic = g_networkInterfaces.find(i => i.id === id);
     if (!nic) return;
 
     // 填充详细信息

@@ -7,6 +7,7 @@ import os
 from . import models
 from . import toolset
 
+from APILibvirt.LVconnect import ConnectLibvirtd
 
 def _get_local_default_from_libvirt():
     res_json_data = {
