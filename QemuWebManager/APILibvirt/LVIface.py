@@ -13,13 +13,15 @@ class CLVIface(ConnectLibvirtd):
         for inface in ifaceconn.listDefinedInterfaces():
             interfaces.append(inface)
             
-        print('interface: %s' % interfaces)
+        # print('interface: %s' % interfaces)
         id = 0
         for ifaceName in interfaces:
             iface = ifaceconn.interfaceLookupByName(ifaceName)
             xml = iface.XMLDesc(0)
-            print('%s: %s' % (ifaceName, xml))
+            # print('%s: %s' % (ifaceName, xml))
             oneIface = self._getOneIface(id + 1, xml)
+            if len(oneIface) == 0:
+                continue
             networkInterfaces.append(oneIface)
             id = id + 1
             
@@ -31,6 +33,8 @@ class CLVIface(ConnectLibvirtd):
     def _getOneIface(self, id, xml):
         name = util.get_xml_path(xml, '/interface/@name')
         type = util.get_xml_path(xml, '/interface/@type')
+        if type != "ethernet":
+            return {}
         state = util.get_xml_path(xml, '/interface/link/@state')
         mac = util.get_xml_path(xml, '/interface/mac/@address')
         ip_info = util.get_network_info(name)
