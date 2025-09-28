@@ -1,0 +1,43 @@
+from django.shortcuts import render
+import json
+from django.http import JsonResponse
+from APILibvirt.LVIface import CLVIface
+
+def getNetpoolData():
+    networkPools = {
+        'nat': [
+            { 'id': 1, 'interface': 'virbr0', 'subnet': '192.168.122.0/24', 'nic': 'enp2s0', 'dhcp': 'true'},
+            { 'id': 2, 'interface': 'virbr1', 'subnet': '172.16.123.0/24', 'nic': 'enp27s0f0np0', 'dhcp': 'false'},
+            { 'id': 3, 'interface': 'virbr2', 'subnet': '192.168.13.0/24', 'nic': 'enp27s0f2np2', 'dhcp': 'true'},
+        ],
+        'bridge': [
+            { 'id': 1, 'name': 'bridge0', 'mac': '00:10.ab:12:a1:2c' },
+            { 'id': 2, 'name': 'bridge1', 'mac': '00:20.ab:12:a1:2c' },
+            { 'id': 3, 'name': 'bridge2', 'mac': '00:30.ab:12:a1:2c' },
+        ],
+        'host': [
+            { 'id': 1, 'interface': 'enp3s0', 'ip': '192.168.10.1' },
+            { 'id': 2, 'interface': 'enp4s0', 'ip': '172.15.88.1' }
+        ],
+        'ovs': [
+            { 'id': 1, 'name': 'ovs0', 'mac': '10:10.ab:12:a1:2c', 'dpdk': 'false' },
+            { 'id': 2, 'name': 'ovs1', 'mac': '10:20.ab:12:a1:2c', 'dpdk': 'true' }
+        ]
+    }
+    return networkPools
+      
+
+# Create your views here.
+def doNetPool(request):
+    if request.method == "POST":
+        raw_data = request.body  # 获取原始字节流
+        json_data = json.loads(raw_data.decode("utf-8"))  # 解码并解析JSON
+        print(json_data)
+        if json_data["action"] == "query":
+            data = {
+                "result": "success",
+                "message": "%s action success." % json_data["action"],
+                "response_json": getNetpoolData(),
+            }
+            print(data)
+            return JsonResponse(data)

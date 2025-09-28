@@ -940,24 +940,24 @@
                                             </div>
                                             <div class="card-body">
                                                 <form id="natPoolForm">
-                                                    <div class="row">
-                                                        <div class="col-md-4">
+                                                    <div class="row" id="virNetInfo">
+                                                        <div class="col-md-3">
                                                             <div class="mb-3">
                                                                 <label for="natInterface" class="form-label">网卡名</label>
                                                                 <input type="text" class="form-control"
-                                                                    id="natInterface" required>
+                                                                    placeholder="virbr1" id="natInterface" required>
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-4">
+                                                        <div class="col-md-3">
                                                             <div class="mb-3">
                                                                 <label for="natSubnet" class="form-label">子网信息</label>
                                                                 <input type="text" class="form-control" id="natSubnet"
-                                                                    placeholder="192.168.1.0/24" required>
+                                                                    placeholder="192.168.1.1/24" required>
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-4">
+                                                        <div class="col-md-3">
                                                             <div class="mb-3">
-                                                                <label class="form-label">DHCP</label>
+                                                                <!-- <label class="form-label">DHCP</label> -->
                                                                 <div class="form-check">
                                                                     <input type="checkbox" class="form-check-input"
                                                                         id="natDHCP">
@@ -966,7 +966,26 @@
                                                                 </div>
                                                             </div>
                                                         </div>
+                                                        <div class="col-md-3">
+                                                            <dev class="row">
+                                                                <div class="col-md-12">
+                                                                    <div class="mb-3">
+                                                                        <!-- <label class="form-label">是否绑定物理网卡</label> -->
+                                                                        <div class="form-check">
+                                                                            <input type="checkbox"
+                                                                                class="form-check-input" id="natPHYnic">
+                                                                            <label class="form-check-label"
+                                                                                for="natPHYnic">绑定物理网卡</label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-12 d-none"  id="phyNetInfo">
+                                                                    <p>显示所有的物理网卡</p>
+                                                                </div>
+                                                            </dev>
+                                                        </div>
                                                     </div>
+
                                                     <button type="submit" class="btn btn-primary">新建</button>
                                                 </form>
                                             </div>
@@ -984,6 +1003,7 @@
                                                                 <th>ID</th>
                                                                 <th>网卡名</th>
                                                                 <th>子网信息</th>
+                                                                <th>物理网卡</th>
                                                                 <th>DHCP</th>
                                                                 <th>操作</th>
                                                             </tr>

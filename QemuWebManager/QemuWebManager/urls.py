@@ -27,5 +27,6 @@ urlpatterns = [
     path('createvmwizard/', include('createvmwizard.urls')),
     path('storagepool/', include('storagepool.urls')),
     path('iface/', include('ifacepool.urls')),
+    path('net/', include('netpool.urls')),
 ]
 # + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

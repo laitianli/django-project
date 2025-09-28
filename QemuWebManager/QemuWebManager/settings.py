@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'createvmwizard',
     'storagepool',
     'ifacepool',
+    'netpool',
 ]
 
 AUTH_USER_MODEL = 'accounts.CustomUser'  # your_app为应用名称

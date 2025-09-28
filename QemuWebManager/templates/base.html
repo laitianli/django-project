@@ -24,6 +24,10 @@
         .navbar {
             background-color: #2c3e50;
         }
+
+        ::placeholder {
+            font-style: italic; /* 可以设置为斜体 */
+        }
     </style>
 
     {% block extra_css %}{% endblock %}
@@ -35,32 +39,32 @@
     <header>
         <!-- 顶部导航条 -->
         <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1">Qemu虚拟机管理系统</span>
+            <div class="container-fluid">
+                <span class="navbar-brand mb-0 h1">Qemu虚拟机管理系统</span>
 
-            <div class="d-flex align-items-center">
-                <div class="dropdown me-3">
-                    <button class="btn btn-outline-light dropdown-toggle language-dropdown" type="button"
-                        id="languageDropdown" data-bs-toggle="dropdown">
-                        中文
+                <div class="d-flex align-items-center">
+                    <div class="dropdown me-3">
+                        <button class="btn btn-outline-light dropdown-toggle language-dropdown" type="button"
+                            id="languageDropdown" data-bs-toggle="dropdown">
+                            中文
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item language-option" href="#" data-lang="zh">中文</a></li>
+                            <li><a class="dropdown-item language-option" href="#" data-lang="en">English</a></li>
+                            <li><a class="dropdown-item language-option" href="#" data-lang="es">Español</a></li>
+                        </ul>
+                    </div>
+
+                    <span class="navbar-text me-3">
+                        <i class="fas fa-user-circle me-1"></i> haizhi
+                    </span>
+
+                    <button class="btn btn-outline-light btn-sm" id="userLogoutBtn">
+                        <i class="fas fa-sign-out-alt me-1"></i> 退出
                     </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item language-option" href="#" data-lang="zh">中文</a></li>
-                        <li><a class="dropdown-item language-option" href="#" data-lang="en">English</a></li>
-                        <li><a class="dropdown-item language-option" href="#" data-lang="es">Español</a></li>
-                    </ul>
                 </div>
-
-                <span class="navbar-text me-3">
-                    <i class="fas fa-user-circle me-1"></i> haizhi
-                </span>
-
-                <button class="btn btn-outline-light btn-sm" id="userLogoutBtn">
-                    <i class="fas fa-sign-out-alt me-1"></i> 退出
-                </button>
             </div>
-        </div>
-    </nav>
+        </nav>
     </header>
 
     <main>
@@ -82,10 +86,10 @@
     {% endblock %}
 
     <script>
-        document.getElementById('userLogoutBtn').addEventListener('click', function() {
+        document.getElementById('userLogoutBtn').addEventListener('click', function () {
             window.location.href = '/accounts/logout';
         });
-            // 语言切换
+        // 语言切换
         $('.language-option').click(function (e) {
             e.preventDefault();
             const lang = $(this).data('lang');

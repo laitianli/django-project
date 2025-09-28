@@ -1,10 +1,8 @@
-function initNetpool() {
-    console.log('initNetpool....')
-    const networkPools = {
+    var networkPools = {
         nat: [
-            { id: 1, interface: 'virbr0', subnet: '192.168.122.0/24', dhcp: true },
-            { id: 2, interface: 'virbr1', subnet: '172.16.123.0/24', dhcp: false },
-            { id: 3, interface: 'virbr2', subnet: '192.168.13.0/24', dhcp: true },
+            { id: 1, interface: 'virbr0', subnet: '192.168.122.0/24', nic: 'enp2s0', dhcp: true},
+            { id: 2, interface: 'virbr1', subnet: '172.16.123.0/24', nic: 'enp3s0', dhcp: false},
+            { id: 3, interface: 'virbr2', subnet: '192.168.13.0/24', nic: 'enp4s0', dhcp: true},
         ],
         bridge: [
             { id: 1, name: 'bridge0', mac: '00:10.ab:12:a1:2c' },
@@ -21,6 +19,56 @@ function initNetpool() {
         ]
     };
 
+function sendReqeust2netpool(jsonData, successFunc, failFunc) {
+    $.ajax({
+        url: '/net/pool/', // 替换为您的API端点
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(jsonData),
+        success: function (response) {
+            // console.log('服务器响应:', response);
+            // 处理成功响应
+            if (response.result === 'success') {
+                successFunc(response);
+                return true;
+            } else {
+                // 注册失败，显示错误信息
+                console.log("向服务器提交请求失败: " + response.message);
+                failFunc(response);
+                return false;
+            }
+        },
+        error: function (xhr, status, error) {
+            // 处理错误
+            // alert('向服务器提交请求时出错: ' + error);
+            console.error('错误详情:', xhr.responseText);
+            return false;
+        }
+    });
+}
+
+// 渲染网络接口卡片
+function doQueryNetPoolSuccess(response) {
+    console.log('--sendReqeust2netpool doQuerySuccess-');
+    networkPools = response.response_json;
+    if (networkPools.length === 0) {
+        console.log('networkPools is null');
+        return;
+    }
+    // console.log(g_networkInterfaces)
+    sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+}
+
+// 渲染网络接口卡片
+function renderNetworkCards() {
+    var jsonData = {
+        action: 'query',
+    }
+    sendReqeust2netpool(jsonData, doQueryNetPoolSuccess, function () { })
+}
+function initNetpool() {
+    console.log('initNetpool....')
+    renderNetworkCards();
     function showContent(target) {
         // 根据目标显示相应内容
         if (target === 'network-pool') {
@@ -81,13 +129,49 @@ function initNetpool() {
         alert('新建网络池功能（模拟）');
     });
 
+    function showPHYSelect(container) {
+        // 创建下拉列表
+        const selectElement = $('<select>', {
+            id: 'networkCardSelect',
+            class: 'form-select form-select-sm',
+            html: '<option value="">请选择物理网卡...</option>'
+        });
+        let intface_json_data = JSON.parse(sessionStorage.getItem("networkInterfaces_json"));
+        intface_json_data.forEach(nic => {
+             $('<option>', {
+                    value: nic.name,
+                    text: nic.name
+                }).appendTo(selectElement);
+
+        });
+        // 清空容器并添加下拉列表
+        container.html('').append(selectElement);
+    }
+    $('#natPHYnic').on('change', function () {
+        // 判断逻辑同上
+        console.log('当前状态:', $(this).prop('checked'));
+        var status = $(this).prop('checked');
+        var phyNetInfo = $('#phyNetInfo');
+        if (status == true) {
+            phyNetInfo.removeClass('d-none');
+            showPHYSelect(phyNetInfo);
+        }
+        else {
+            phyNetInfo.addClass('d-none');
+        }
+    });
+
     // NAT表单提交处理
     $('#natPoolForm').on('submit', function (e) {
         e.preventDefault();
         const interface = $('#natInterface').val();
         const subnet = $('#natSubnet').val();
         const dhcp = $('#natDHCP').is(':checked');
+        var phyNic = $('#networkCardSelect').val();
+        if (phyNic === null || phyNic === undefined)
+            phyNic = "ALL"
 
+        
         // 生成新ID
         const newId = networkPools.nat.length > 0 ? Math.max(...networkPools.nat.map(p => p.id)) + 1 : 1;
 
@@ -96,6 +180,7 @@ function initNetpool() {
             id: newId,
             interface: interface,
             subnet: subnet,
+            nic: phyNic,
             dhcp: dhcp
         });
 
@@ -119,6 +204,7 @@ function initNetpool() {
                     <td>${pool.id}</td>
                     <td class="editable-cell" data-field="interface">${pool.interface}</td>
                     <td class="editable-cell" data-field="subnet">${pool.subnet}</td>
+                    <td class="editable-cell" data-field="nic">${pool.nic}</td>
                     <td class="editable-cell" data-field="dhcp">${pool.dhcp ? '是' : '否'}</td>
                     <td>
                         <button class="btn btn-sm btn-primary me-1 edit-btn">编辑</button>
@@ -342,12 +428,28 @@ function initNetpool() {
             const cell = $(this);
             const field = cell.data('field');
             let value = pool[field];
-
+            // 获取单元格的宽度和高度
+            const cellWidth = cell.width();
+            const cellHeight = cell.height();
             if (field === 'dhcp' || field === 'dpdk') {
                 value = value ? '是' : '否';
             }
 
             cell.html(`<input type="text" class="edit-input" value="${value}" data-field="${field}">`);
+            // 获取新创建的输入框
+            const input = cell.find('.edit-input');
+
+            // 设置输入框的尺寸和样式
+            input.css({
+                'width': cellWidth + 'px',
+                'height': cellHeight + 'px',
+                'box-sizing': 'border-box', // 确保宽高包含padding和border
+                'padding': '0', // 移除内边距，或与单元格保持一致
+                'border': '1px solid #ccc', // 可根据需要调整边框
+                'margin': '0', // 移除外边距
+                'font-size': cell.css('font-size'), // 继承单元格字体大小
+                'font-family': cell.css('font-family') // 继承单元格字体
+            });
         });
     }
 
