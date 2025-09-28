@@ -42,7 +42,8 @@ def get_xml_path(xml, path=None, func=None):
                             result = ret[0].content
                 else:
                     result = ret
-                    
+            else:
+                return None                    
         elif func:
             result = func(ctx)
         else:

@@ -1,7 +1,7 @@
 from django.shortcuts import render
 import json
 from django.http import JsonResponse
-from APILibvirt.LVIface import CLVIface
+from APILibvirt.LVNetwork import CLVNetwork
 
 def getNetpoolData():
     networkPools = {
@@ -24,6 +24,10 @@ def getNetpoolData():
             { 'id': 2, 'name': 'ovs1', 'mac': '10:20.ab:12:a1:2c', 'dpdk': 'true' }
         ]
     }
+    network = CLVNetwork()
+    
+    networkPools['nat']=network.getNATNetworkData()
+    # print(networkPools)
     return networkPools
       
 
@@ -39,5 +43,4 @@ def doNetPool(request):
                 "message": "%s action success." % json_data["action"],
                 "response_json": getNetpoolData(),
             }
-            print(data)
             return JsonResponse(data)
