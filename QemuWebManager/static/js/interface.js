@@ -67,11 +67,16 @@ function renderNetworkInterfaceCards() {
 
 // 渲染网络接口卡片
 function doQuerySuccess(response) {
-    console.log('--doQuerySuccess--');
+    console.log('--doQuerySuccess-');
+    g_networkInterfaces = response.response_json;
+    if (g_networkInterfaces.length === 0) {
+        console.log('networkInterface is null');
+        return;
+    }
     const container = $('#nic-container');
     container.empty();
-    g_networkInterfaces = response.response_json;
-    console.log(g_networkInterfaces)
+    // console.log(g_networkInterfaces)
+    sessionStorage.setItem("networkInterfaces_json", JSON.stringify(g_networkInterfaces));
     g_networkInterfaces.forEach(nic => {
         const col = $('<div>').addClass('col-md-3 mb-4');
         const card = `
