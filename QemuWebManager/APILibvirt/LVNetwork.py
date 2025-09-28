@@ -14,8 +14,8 @@ class CLVNetwork(ConnectLibvirtd):
         networkInterfaces = []
         for network in networkconn.listNetworks():
             networks.append(network)
-        # for network in networkconn.listDefinedNetworks():
-        #     networks.append(network)
+        for network in networkconn.listDefinedNetworks():
+            networks.append(network)
             
         # print('network: %s' % networks)
         id = 0
