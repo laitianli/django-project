@@ -1055,18 +1055,25 @@
                                             <div class="card-body">
                                                 <form id="bridgePoolForm">
                                                     <div class="row">
-                                                        <div class="col-md-6">
+                                                        <div class="col-md-3">
                                                             <div class="mb-3">
-                                                                <label for="bridgeName" class="form-label">网桥名</label>
+                                                                <label for="bridgeName" class="form-label">名字</label>
                                                                 <input type="text" class="form-control" id="bridgeName"
-                                                                    required>
+                                                                    placeholder="bridge0" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div class="mb-3">
+                                                                <label for="bridgeIfaceName" class="form-label">网桥名</label>
+                                                                <input type="text" class="form-control" id="bridgeIfaceName"
+                                                                    placeholder="br0" required>
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <div class="mb-3">
                                                                 <label for="bridgeMAC" class="form-label">MAC地址</label>
                                                                 <input type="text" class="form-control" id="bridgeMAC"
-                                                                    placeholder="00:00:00:00:00:00" required>
+                                                                    placeholder="52:54:00:6b:90:a8" required>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1085,6 +1092,7 @@
                                                         <thead>
                                                             <tr>
                                                                 <th>ID</th>
+                                                                <th>名字</th>
                                                                 <th>网桥名</th>
                                                                 <th>MAC地址</th>
                                                                 <th>操作</th>

@@ -5,9 +5,9 @@ var networkPools = {
         { id: 3, name: 'vir2', interface: 'virbr2', subnet: '192.168.13.0/24', nic: 'enp4s0', dhcp: true },
     ],
     bridge: [
-        { id: 1, name: 'bridge0', mac: '00:10.ab:12:a1:2c' },
-        { id: 2, name: 'bridge1', mac: '00:20.ab:12:a1:2c' },
-        { id: 3, name: 'bridge2', mac: '00:30.ab:12:a1:2c' },
+        { id: 1, name: 'bridge0', ifacename: 'br0', mac: '00:10.ab:12:a1:2c' },
+        { id: 2, name: 'bridge1', ifacename: 'br1', mac: '00:20.ab:12:a1:2c' },
+        { id: 3, name: 'bridge2', ifacename: 'br2', mac: '00:30.ab:12:a1:2c' },
     ],
     host: [
         { id: 1, interface: 'enp3s0', ip: '192.168.10.1' },
@@ -19,9 +19,9 @@ var networkPools = {
     ]
 };
 
-function sendReqeust2natpool(jsonData, successFunc, failFunc) {
+function sendRequest(url, jsonData, successFunc, failFunc) {
     $.ajax({
-        url: '/net/natpool/', // 替换为您的API端点
+        url: url, // 替换为您的API端点
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(jsonData),
@@ -47,9 +47,26 @@ function sendReqeust2natpool(jsonData, successFunc, failFunc) {
     });
 }
 
+function sendReqeust2natpool(jsonData, successFunc, failFunc) {
+    return sendRequest('/net/natpool/', jsonData, successFunc, failFunc);
+}
+
+function sendReqeust2bridgepool(jsonData, successFunc, failFunc) {
+    return sendRequest('/net/bridgepool/', jsonData, successFunc, failFunc);
+}
+
+function sendReqeust2hostpool(jsonData, successFunc, failFunc) {
+    return sendRequest('/net/hostpool/', jsonData, successFunc, failFunc);
+}
+
+
+function sendReqeust2ovspool(jsonData, successFunc, failFunc) {
+    return sendRequest('/net/ovspool/', jsonData, successFunc, failFunc);
+}
+
 // 渲染网络接口卡片
 function doQueryNetPoolSuccess(jsonData, response) {
-    console.log('--sendReqeust2netpool doQuerySuccess-');
+    // console.log('--sendReqeust2netpool doQuerySuccess-');
     networkPools = response.response_json;
     if (networkPools.length === 0) {
         console.log('networkPools is null');
@@ -204,6 +221,35 @@ function initNetpool() {
         }
         sendReqeust2natpool(jsonData, doDelNATPoolSuccess, function () { alert('NAT网络池删除失败！'); })
     }
+    function doAddBridgePoolSuccess(jsonData, response) {
+        console.log('---doAddBridgePoolSuccess-----')
+        // 添加到数据数组
+        networkPools.bridge.push(jsonData.data);
+
+        // 重新渲染表格
+        renderBridgePoolTable();
+        // 重置表单
+        $('#bridgePoolForm')[0].reset();
+        // $('#phyNetInfo').addClass('d-none');
+        sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+        alert('Bridge网络池创建成功！');
+    }
+    function addBridge(data) {
+        var jsonData = {
+            action: 'add',
+            type: 'bridge',
+            data: data
+        }
+        sendReqeust2natpool(jsonData, doAddBridgePoolSuccess, function () { alert('Bridge网络池创建失败！'); })
+    }
+    function delBridge(data) {
+        var jsonData = {
+            action: 'del',
+            type: 'bridge',
+            name: data
+        }
+        sendReqeust2natpool(jsonData, doDelBridgePoolSuccess, function () { alert('Bridge网络池创建失败！'); })
+    }
     // NAT表单提交处理
     $('#natPoolForm').on('submit', function (e) {
         e.preventDefault();
@@ -292,25 +338,29 @@ function initNetpool() {
     $('#bridgePoolForm').on('submit', function (e) {
         e.preventDefault();
         const name = $('#bridgeName').val();
+        const ifacename = $('#bridgeIfaceName').val();
         const mac = $('#bridgeMAC').val();
 
         // 生成新ID
         const newId = networkPools.bridge.length > 0 ? Math.max(...networkPools.bridge.map(p => p.id)) + 1 : 1;
 
-        // 添加到数据数组
-        networkPools.bridge.push({
+        var newData = {
             id: newId,
             name: name,
+            ifacename: ifacename,
             mac: mac
-        });
+        };
+        addBridge(newData);
+        // // 添加到数据数组
+        // networkPools.bridge.push(newData);
 
-        // 重新渲染表格
-        renderBridgePoolTable();
+        // // 重新渲染表格
+        // renderBridgePoolTable();
 
-        // 重置表单
-        $(this)[0].reset();
+        // // 重置表单
+        // $(this)[0].reset();
 
-        alert('Bridge网络池创建成功！');
+        // alert('Bridge网络池创建成功！');
     });
 
     // 渲染Bridge网络池表格
@@ -323,6 +373,7 @@ function initNetpool() {
                 <tr data-id="${pool.id}">
                     <td class="id-cell">${pool.id}</td>
                     <td class="editable-cell" data-field="name">${pool.name}</td>
+                    <td class="editable-cell" data-field="name">${pool.ifacename}</td>
                     <td class="editable-cell" data-field="mac">${pool.mac}</td>
                     <td>
                         <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
@@ -445,7 +496,7 @@ function initNetpool() {
             $(this).find('.id-cell').text(index + 1);
         });
         var index = 1;
-        networkPools.nat.forEach(pool=> {
+        networkPools.nat.forEach(pool => {
             pool.id = index;
             index += 1;
         });
@@ -466,6 +517,25 @@ function initNetpool() {
                 /* 更新id值 */
                 //updateNatRowIds("natPoolTable");
                 alert('网络池删除成功！');
+            }
+        });
+    }
+
+        function doDelBridgePoolSuccess(jsonData, response) {
+        $('#bridgePoolTable tr').each(function (index) {
+            const name = $(this).find('td').eq(1).text().trim();
+            // console.log('---------name:' + name + ":" + jsonData['name'])
+            if (name === jsonData['name']) {
+                const row = $(this).closest('tr');
+                const id = row.data('id');
+                // 从数据数组中删除
+                networkPools['bridge'] = networkPools['bridge'].filter(p => p.id !== id);
+                // 从DOM中删除行
+                row.remove();
+                sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+                /* 更新id值 */
+                //updateNatRowIds("natPoolTable");
+                alert('Bridge网络池删除成功！');
             }
         });
     }

@@ -11,9 +11,9 @@ def getNetpoolData():
             { 'id': 3, 'name': 'vir2', 'interface': 'virbr2', 'subnet': '192.168.13.0/24', 'nic': 'enp27s0f2np2', 'dhcp': 'true', 'is_default': 'false'},
         ],
         'bridge': [
-            { 'id': 1, 'name': 'bridge0', 'mac': '00:10.ab:12:a1:2c' },
-            { 'id': 2, 'name': 'bridge1', 'mac': '00:20.ab:12:a1:2c' },
-            { 'id': 3, 'name': 'bridge2', 'mac': '00:30.ab:12:a1:2c' },
+            { 'id': 1, 'name': 'bridge0', 'ifacename': 'br0', 'mac': '00:10.ab:12:a1:2c' },
+            { 'id': 2, 'name': 'bridge1', 'ifacename': 'br1', 'mac': '00:20.ab:12:a1:2c' },
+            { 'id': 3, 'name': 'bridge2', 'ifacename': 'br2', 'mac': '00:30.ab:12:a1:2c' },
         ],
         'host': [
             { 'id': 1, 'interface': 'enp3s0', 'ip': '192.168.10.1' },
@@ -32,7 +32,130 @@ def getNetpoolData():
       
 
 # Create your views here.
-def doNetPool(request):
+def doNatPool(request):
+    if request.method == "POST":
+        raw_data = request.body  # 获取原始字节流
+        json_data = json.loads(raw_data.decode("utf-8"))  # 解码并解析JSON
+        # print(json_data)
+        if json_data["action"] == "query":
+            data = {
+                "result": "success",
+                "message": "%s action success." % json_data["action"],
+                "response_json": getNetpoolData(),
+            }
+            return JsonResponse(data)
+        elif json_data['action'] == 'add':
+            data = json_data.get("data")
+            if len(data) == 0:
+                return JsonResponse('{"result": "failed", "message": "data is None"}')
+            # print('data: %s' % data)
+            network = CLVNetwork()
+            if network.addNATNetworkData(data) == True:
+                data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"]}
+            else:
+                data = {"result": "failed", 
+                    "message": "%s action failed!" % json_data["action"]}
+            return JsonResponse(data)
+        
+        elif json_data['action'] == 'del':
+            name = json_data.get("name")
+            # print('name: %s' % name)
+            if name == "":
+                return JsonResponse('{"result": "failed", "message": "name is None"}')
+            
+            network = CLVNetwork()
+            if network.delNATNetworkData(name) == True:
+                data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"]}
+            else:
+                data = {"result": "failed", 
+                    "message": "%s action failed!" % json_data["action"]}
+            return JsonResponse(data)
+
+def doBridgePool(request):
+    if request.method == "POST":
+        raw_data = request.body  # 获取原始字节流
+        json_data = json.loads(raw_data.decode("utf-8"))  # 解码并解析JSON
+        # print(json_data)
+        if json_data["action"] == "query":
+            data = {
+                "result": "success",
+                "message": "%s action success." % json_data["action"],
+                "response_json": getNetpoolData(),
+            }
+            return JsonResponse(data)
+        elif json_data['action'] == 'add':
+            data = json_data.get("data")
+            if len(data) == 0:
+                return JsonResponse('{"result": "failed", "message": "data is None"}')
+            # print('data: %s' % data)
+            network = CLVNetwork()
+            if network.addNATNetworkData(data) == True:
+                data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"]}
+            else:
+                data = {"result": "failed", 
+                    "message": "%s action failed!" % json_data["action"]}
+            return JsonResponse(data)
+        
+        elif json_data['action'] == 'del':
+            name = json_data.get("name")
+            # print('name: %s' % name)
+            if name == "":
+                return JsonResponse('{"result": "failed", "message": "name is None"}')
+            
+            network = CLVNetwork()
+            if network.delNATNetworkData(name) == True:
+                data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"]}
+            else:
+                data = {"result": "failed", 
+                    "message": "%s action failed!" % json_data["action"]}
+            return JsonResponse(data)
+
+def doHostPool(request):
+    if request.method == "POST":
+        raw_data = request.body  # 获取原始字节流
+        json_data = json.loads(raw_data.decode("utf-8"))  # 解码并解析JSON
+        # print(json_data)
+        if json_data["action"] == "query":
+            data = {
+                "result": "success",
+                "message": "%s action success." % json_data["action"],
+                "response_json": getNetpoolData(),
+            }
+            return JsonResponse(data)
+        elif json_data['action'] == 'add':
+            data = json_data.get("data")
+            if len(data) == 0:
+                return JsonResponse('{"result": "failed", "message": "data is None"}')
+            # print('data: %s' % data)
+            network = CLVNetwork()
+            if network.addNATNetworkData(data) == True:
+                data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"]}
+            else:
+                data = {"result": "failed", 
+                    "message": "%s action failed!" % json_data["action"]}
+            return JsonResponse(data)
+        
+        elif json_data['action'] == 'del':
+            name = json_data.get("name")
+            # print('name: %s' % name)
+            if name == "":
+                return JsonResponse('{"result": "failed", "message": "name is None"}')
+            
+            network = CLVNetwork()
+            if network.delNATNetworkData(name) == True:
+                data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"]}
+            else:
+                data = {"result": "failed", 
+                    "message": "%s action failed!" % json_data["action"]}
+            return JsonResponse(data)
+
+def doOVSPool(request):
     if request.method == "POST":
         raw_data = request.body  # 获取原始字节流
         json_data = json.loads(raw_data.decode("utf-8"))  # 解码并解析JSON
