@@ -116,3 +116,11 @@ or other application using the libvirt API.
 </network>
 
 <!-- SR-IOV -->
+
+<!-- bridge -->
+<network>
+  <name>vm1_network</name>
+  <uuid>d6e01520-9c10-4cd1-8163-a488293790a3</uuid>
+  <forward mode='bridge'/>
+  <bridge name='br0'/>
+</network>
