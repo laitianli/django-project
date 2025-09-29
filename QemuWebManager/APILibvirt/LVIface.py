@@ -41,11 +41,11 @@ class CLVIface(ConnectLibvirtd):
         ipv6s = ""
         ipv4s = ""
         for ipv6 in ip_info[name]['IPv6']:
-            if ipv6s is not "":
+            if ipv6s != "":
                 ipv6s += "%s" % "\n"
             ipv6s += "%s" % ipv6['address']
         for ipv4 in ip_info[name]['IPv4']:
-            if ipv4s is not "":
+            if ipv4s != "":
                 ipv4s += "%s" % "\n"
             ipv4s += "%s" % ipv4['address']
         if ipv4s == "":
