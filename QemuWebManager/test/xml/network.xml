@@ -124,3 +124,11 @@ or other application using the libvirt API.
   <forward mode='bridge'/>
   <bridge name='br0'/>
 </network>
+
+<network>
+  <name>br2</name>
+  <uuid>a0da8c0c-1e26-430b-ade9-fc581d598241</uuid>
+  <forward mode='bridge'/>
+  <bridge name='br2'/>
+  <virtualport type='openvswitch'/>
+</network>
