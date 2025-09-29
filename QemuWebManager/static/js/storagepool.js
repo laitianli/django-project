@@ -771,9 +771,6 @@ function doISOStoragepollRemove(button) {
                     // 移除Tab和内容面板
                     $associatedTab.remove();
                     $associatedContent.remove();
-
-
-
                     // (可选) 如果删除的是当前活动的标签页，激活另一个标签页，例如第一个标签页
                     $('#isoImageTabs li.nav-item:first button').tab('show');
                 }

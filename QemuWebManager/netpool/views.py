@@ -6,9 +6,9 @@ from APILibvirt.LVNetwork import CLVNetwork
 def getNetpoolData():
     networkPools = {
         'nat': [
-            { 'id': 1, 'interface': 'virbr0', 'subnet': '192.168.122.0/24', 'nic': 'enp2s0', 'dhcp': 'true'},
-            { 'id': 2, 'interface': 'virbr1', 'subnet': '172.16.123.0/24', 'nic': 'enp27s0f0np0', 'dhcp': 'false'},
-            { 'id': 3, 'interface': 'virbr2', 'subnet': '192.168.13.0/24', 'nic': 'enp27s0f2np2', 'dhcp': 'true'},
+            { 'id': 1, 'name': 'default', 'interface': 'virbr0', 'subnet': '192.168.122.0/24', 'nic': 'enp2s0', 'dhcp': 'true', 'is_default': 'true'},
+            { 'id': 2, 'name': 'vir1', 'interface': 'virbr1', 'subnet': '172.16.123.0/24', 'nic': 'enp27s0f0np0', 'dhcp': 'false', 'is_default': 'false'},
+            { 'id': 3, 'name': 'vir2', 'interface': 'virbr2', 'subnet': '192.168.13.0/24', 'nic': 'enp27s0f2np2', 'dhcp': 'true', 'is_default': 'false'},
         ],
         'bridge': [
             { 'id': 1, 'name': 'bridge0', 'mac': '00:10.ab:12:a1:2c' },
@@ -36,11 +36,39 @@ def doNetPool(request):
     if request.method == "POST":
         raw_data = request.body  # 获取原始字节流
         json_data = json.loads(raw_data.decode("utf-8"))  # 解码并解析JSON
-        print(json_data)
+        # print(json_data)
         if json_data["action"] == "query":
             data = {
                 "result": "success",
                 "message": "%s action success." % json_data["action"],
                 "response_json": getNetpoolData(),
             }
+            return JsonResponse(data)
+        elif json_data['action'] == 'add':
+            data = json_data.get("data")
+            if len(data) == 0:
+                return JsonResponse('{"result": "failed", "message": "data is None"}')
+            # print('data: %s' % data)
+            network = CLVNetwork()
+            if network.addNATNetworkData(data) == True:
+                data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"]}
+            else:
+                data = {"result": "failed", 
+                    "message": "%s action failed!" % json_data["action"]}
+            return JsonResponse(data)
+        
+        elif json_data['action'] == 'del':
+            name = json_data.get("name")
+            # print('name: %s' % name)
+            if name == "":
+                return JsonResponse('{"result": "failed", "message": "name is None"}')
+            
+            network = CLVNetwork()
+            if network.delNATNetworkData(name) == True:
+                data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"]}
+            else:
+                data = {"result": "failed", 
+                    "message": "%s action failed!" % json_data["action"]}
             return JsonResponse(data)

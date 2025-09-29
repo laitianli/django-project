@@ -941,7 +941,15 @@
                                             <div class="card-body">
                                                 <form id="natPoolForm">
                                                     <div class="row" id="virNetInfo">
-                                                        <div class="col-md-3">
+                                                        <div class="col-md-2">
+                                                            <div class="mb-3">
+                                                                <label for="natInterfaceName"
+                                                                    class="form-label">名字</label>
+                                                                <input type="text" class="form-control"
+                                                                    placeholder="vir1" id="natInterfaceName" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-2">
                                                             <div class="mb-3">
                                                                 <label for="natInterface" class="form-label">网卡名</label>
                                                                 <input type="text" class="form-control"
@@ -955,18 +963,30 @@
                                                                     placeholder="192.168.1.1/24" required>
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-3">
-                                                            <div class="mb-3">
-                                                                <!-- <label class="form-label">DHCP</label> -->
-                                                                <div class="form-check">
-                                                                    <input type="checkbox" class="form-check-input"
-                                                                        id="natDHCP">
-                                                                    <label class="form-check-label"
-                                                                        for="natDHCP">启用DHCP</label>
+                                                        <div class="col-md-2">
+                                                            <dev class="row">
+                                                                <div class="col-md-12">
+                                                                    <div class="mb-3">
+                                                                        <!-- <label class="form-label">DHCP</label> -->
+                                                                        <div class="form-check">
+                                                                            <input type="checkbox"
+                                                                                class="form-check-input" id="natDHCP">
+                                                                            <label class="form-check-label"
+                                                                                for="natDHCP">启用DHCP</label>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
+                                                                <div class="col-md-12 mb-1">
+                                                                    <input type="text" class="form-control d-none"
+                                                                        id="dhcpStart" placeholder="192.168.1.2">
+                                                                </div>
+                                                                <div class="col-md-12 mb-1">
+                                                                    <input type="text" class="form-control d-none"
+                                                                        id="dhcpEnd" placeholder="192.168.1.254">
+                                                                </div>
                                                         </div>
-                                                        <div class="col-md-3">
+
+                                                        <div class="col-md-2">
                                                             <dev class="row">
                                                                 <div class="col-md-12">
                                                                     <div class="mb-3">
@@ -979,13 +999,12 @@
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <div class="col-md-12 d-none"  id="phyNetInfo">
+                                                                <div class="col-md-12 d-none" id="phyNetInfo">
                                                                     <p>显示所有的物理网卡</p>
                                                                 </div>
                                                             </dev>
                                                         </div>
                                                     </div>
-
                                                     <button type="submit" class="btn btn-primary">新建</button>
                                                 </form>
                                             </div>
@@ -1001,10 +1020,12 @@
                                                         <thead>
                                                             <tr>
                                                                 <th>ID</th>
+                                                                <th>名字</th>
                                                                 <th>网卡名</th>
                                                                 <th>子网信息</th>
                                                                 <th>物理网卡</th>
                                                                 <th>DHCP</th>
+                                                                <th>DHCP范围</th>
                                                                 <th>操作</th>
                                                             </tr>
                                                         </thead>
