@@ -1,0 +1,34 @@
+<!-- cdrom -- 从光盘驱动器启动，常用于安装操作系统。
+hd    -- 从硬盘驱动器启动，这是安装完成后最常用的启动方式。
+network --  从网络启动（如PXE），常用于无盘工作站或网络安装。
+fd --  从软盘驱动器启动，现在较少使用。 -->
+
+
+<os>
+  <type arch='x86_64' machine='pc'>hvm</type>
+  <boot dev='cdrom'/> <!-- 优先尝试从光盘启动 -->
+  <boot dev='hd'/>    <!-- 若光盘启动失败，则尝试从硬盘启动 -->
+</os>
+<os>
+  <type arch='x86_64' machine='pc'>hvm</type>
+  <boot dev='hd'/> <!-- 主要从硬盘启动 -->
+  <!-- 可以保留其他启动项作为后备，但通常只保留 hd 即可 -->
+</os>
+
+<disk type='file' device='disk'>
+  <driver name='qemu' type='qcow2'/>
+  <source file='/path/to/your/disk.qcow2'/>
+  <target dev='vda' bus='virtio'/>
+  <boot order='1'/> <!-- 将此硬盘的启动顺序设置为1，即最高优先级 -->
+</disk>
+
+<interface type='network'>
+  <mac address='52:54:00:xx:xx:xx'/>
+  <source network='default'/>
+  <model type='virtio'/>
+  <boot order='2'/> <!-- 将此网络接口的启动顺序设置为2 -->
+</interface>
+
+
+<!-- 修改配置后，​需要销毁（destroy）或关闭（shutdown）当前运行的虚拟机，然后重新定义（define）域名，再启动（start）它，以使新的启动顺序生效
+请注意​：全局的 <boot dev>设置和每个设备的 <boot order>设置是互斥的，不能在同一配置文件中共存。Libvirt 会优先识别设备的 order属性。通常建议使用 <boot order>方式进行更清晰和灵活的管理。 -->
