@@ -1,4 +1,29 @@
+function initCreateVMWizard() {
+    // diskPartStoragePoolSelect
+
+    let iosstorage_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
+    let localstorage_json_data = JSON.parse(sessionStorage.getItem("localstoragepool_json"));
+    $.each(localstorage_json_data.default, function (key, value) {
+        // console.log('key:' + key + " value:" + value)
+        if (key === 'poolPath') {
+            $('#diskPartStoragePoolSelect').empty().append($('<option>', {
+                value: value,
+                text: 'defalut'
+            }));
+        }
+    });
+    $.each(localstorage_json_data.custom, function (key, value) {
+        $('#diskPartStoragePoolSelect').append($('<option>', {
+            value: value.poolPath,
+            text: key
+        }));
+    });
+}
+
+
 $(document).ready(function () {
+    initCreateVMWizard();
+
     // 【左边框】设备选择切换
     $('.device-item').click(function () {
         $('.device-item').removeClass('active');
@@ -7,6 +32,21 @@ $(document).ready(function () {
         var device = $(this).data('device');
         $('.device-settings').addClass('d-none');
         $('#' + device + '-settings').removeClass('d-none');
+    });
+
+    //【虚拟机】启动顺序复选框的处理流程
+    $('#checkVMSystemBootType').on('change', function () {
+        // 判断逻辑同上
+        // console.log('当前状态:', $(this).prop('checked'));
+        var status = $(this).prop('checked');
+        if (status == true) {
+            $('#VMSystemBootType').removeClass('d-none');
+            $('#VMSystemBootPart').addClass('d-none');
+        }
+        else {
+            $('#VMSystemBootType').addClass('d-none');
+            $('#VMSystemBootPart').removeClass('d-none');
+        }
     });
 
     // 【内存】选项点击
@@ -163,13 +203,31 @@ $(document).ready(function () {
         showDiskNameList();
     })
 
+    //
+    $('#checkVMSystemBootPart').on('change', function () {
+        var status = $(this).prop('checked');
+        if (status == true) {
+
+        }
+        else {
+
+        }
+    });
+
     // 磁盘添加按钮事件
     $('#addDiskBtn').click(function () {
         const diskName = $('#diskPartSelect').val();
         const diskPartType = $('#diskPartTypeSelect').val();
         const diskSize = $('#diskPartSize').val();
         const diskBus = $('#diskPartBusTypeSelect').val();
-
+        // const diskLocalStoragePool = $('#diskPartStoragePoolSelect').val();
+        const diskLocalStoragePool = $('#diskPartStoragePoolSelect').find('option:selected').text();
+        const diskBoot = $('#checkVMSystemBootPart').prop('checked') == true ? "Yes" : "No";
+        $('#checkVMSystemBootPart').prop('checked', false);
+        if (diskBoot === "Yes") {
+            $('#VMSystemBootPart').addClass('d-none');
+            $('#VMSystemBootTypeConfig').addClass('d-none');
+        }
         if (!diskName) {
             $('#addDiskBtn').addClass('disabled');
             return;
@@ -180,6 +238,8 @@ $(document).ready(function () {
                     <td>${diskPartType}</td>
                     <td>${diskSize}G</td>
                     <td>${diskBus}</td>
+                    <td>${diskLocalStoragePool}</td>
+                    <td class="id-diskboot">${diskBoot}</td>
                     <td>
                          <button class="btn btn-sm btn-danger btn-delete">删除</button>
                     </td>
@@ -188,12 +248,18 @@ $(document).ready(function () {
         $('#diskTab tbody').append(newRow);
         updateDiskOptions();
         checkSelectStatus();
+
     });
 
     // 使用事件委托处理删除按钮点击
     $('#diskTab').on('click', '.btn-delete', function () {
         const diskName = $(this).closest('tr').find('td:first').text();
         $(this).closest('tr').fadeOut(300, function () {
+            const diskboot = $(this).find('.id-diskboot').text();
+            if (diskboot === "Yes") {
+                $('#VMSystemBootPart').removeClass('d-none');
+                $('#VMSystemBootTypeConfig').removeClass('d-none');
+            }
             $(this).remove();
 
             // 将删除的选项添加回下拉菜单

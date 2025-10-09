@@ -66,7 +66,8 @@
                         <div class="row mt-1">
                             <label class="col-md-3  text-end form-lable col-form-label">虚拟机名:</label>
                             <div class="col-md-9">
-                                <input type="text" id="setVMNameID" class=" input-text" value="" placeholder="请输入虚拟机名称">
+                                <input type="text" id="setVMNameID" class=" input-text" value=""
+                                    placeholder="请输入虚拟机名称:vm-os">
                             </div>
 
                         </div>
@@ -83,21 +84,23 @@
                         </div>
                     </div>
 
-                    <div class="section-box">
-                        <div class="section-title">系统启动方式</div>
-                        <!-- <div class="vmname-info">
-                            <div class="vmname-label">虚拟机名:</div>
-                            <input type="text" style="width: 320px;" id="setVMNameID" value="vm-centos8.4"
-                                placeholder="请输入虚拟机名称">
+                    <div class="section-box" id="VMSystemBootTypeConfig">
+                        <div class="section-title">系统启动方式配置</div>
+                        <div class="checkbox-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="checkVMSystemBootType">
+                                <label class="form-check-label" for="checkVMSystemBootType">
+                                    启动顺序
+                                </label>
+                            </div>
                         </div>
-                        <div class="vmname-info">
-                            <div class="vmname-label mt-3">虚拟机类型:</div>
-                            <select class="form-control user-defined-form-control" id="VMSystemType">
-                                <option selected>Linux</option>
-                                <option>Unix</option>
-                                <option>Microsoft Windows</option>
+                        <div id="VMSystemBootType" class="d-none">
+                            <select class="ms-4 form-control user-defined-form-control" id="selectVMSystemBootType">
+                                <option selected value="cdrom">光驱启动</option>
+                                <option value="hd">硬盘启动</option>
+                                <option value="network">PXE启动</option>
                             </select>
-                        </div> -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -238,6 +241,27 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3 row">
+                                        <label for="diskPartStoragePool"
+                                            class="col-md-4 text-end form-lable col-form-label">存储池:</label>
+                                        <div class="col-md-6">
+                                            <select class="form-select" id="diskPartStoragePoolSelect">
+                                                <option value="default">default</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" id="VMSystemBootPart">
+                                    <div class="checkbox-group">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="checkVMSystemBootPart">
+                                            <label class="form-check-label" for="checkVMSystemBootPart">
+                                                是否为启动盘
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="text-end form-lable col-form-label">
                                 <button class="btn btn-primary" id="addDiskBtn">添加</button>
@@ -254,6 +278,8 @@
                                         <th>格式</th>
                                         <th>大小</th>
                                         <th>总线</th>
+                                        <th>存储池</th>
+                                        <th>启动盘</th>
                                         <th>操作</th>
                                     </tr>
                                 </thead>
@@ -338,8 +364,7 @@
                                         readonly>
                                 </div> -->
                                 <div class="input-group mt-2">
-                                    <button class="btn btn-outline-secondary" type="button"
-                                        id="browseBtn">浏览</button>
+                                    <button class="btn btn-outline-secondary" type="button" id="browseBtn">浏览</button>
                                     <input type="text" class="form-control" id="isoPath" placeholder="iso文件">
                                 </div>
                             </div>
@@ -836,6 +861,6 @@
 {% block javascript %}
 <script src="{% static './js/createvm-wizard.js' %}"></script>
 <script>
-    
+
 </script>
 {% endblock %}
