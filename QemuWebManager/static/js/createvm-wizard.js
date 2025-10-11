@@ -1,6 +1,4 @@
 function initCreateVMWizard() {
-    // diskPartStoragePoolSelect
-
     let iosstorage_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
     let localstorage_json_data = JSON.parse(sessionStorage.getItem("localstoragepool_json"));
     $.each(localstorage_json_data.default, function (key, value) {
@@ -17,6 +15,37 @@ function initCreateVMWizard() {
             value: value.poolPath,
             text: key
         }));
+    });
+
+    var isodefalutPoolPath;
+    $.each(iosstorage_json_data.default, function (key, value) {
+        // console.log('key:' + key + " value:" + value)
+        if (key === 'poolPath') {
+            isodefalutPoolPath = value;
+            $('#isodiskPartStoragePoolSelect').empty().append($('<option>', {
+                value: value,
+                text: 'isodefalut'
+            }));
+        }
+    });
+    $.each(iosstorage_json_data.custom, function (key, value) {
+        $('#isodiskPartStoragePoolSelect').append($('<option>', {
+            value: value.poolPath,
+            text: key
+        }));
+    });
+
+    $.each(iosstorage_json_data.default, function (key, value) {
+        if (key === 'fileList') {
+            $('#isodiskPartStoragePoolFileSelect').empty();
+            $.each(value, function (index) {
+                console.log('--poolPath:' + isodefalutPoolPath + ' ---fileName:' + value[index]["fileName"]);
+                $('#isodiskPartStoragePoolFileSelect').append($('<option>', {
+                    value: isodefalutPoolPath,
+                    text: value[index]["fileName"]
+                }));
+            });
+        }
     });
 }
 
@@ -203,17 +232,6 @@ $(document).ready(function () {
         showDiskNameList();
     })
 
-    //
-    $('#checkVMSystemBootPart').on('change', function () {
-        var status = $(this).prop('checked');
-        if (status == true) {
-
-        }
-        else {
-
-        }
-    });
-
     // 磁盘添加按钮事件
     $('#addDiskBtn').click(function () {
         const diskName = $('#diskPartSelect').val();
@@ -275,50 +293,156 @@ $(document).ready(function () {
     });
 
     // 【新CD/DVD(SATA)】
-    // 单选框状态变化
-    $('#IDphysicalISO input[type="radio"]').change(function () {
-        var status = $('#isoImage').prop('checked')
-        $('.iso-options > #browseBtn').prop('disabled', !status)
-    })
-    // 浏览按钮点击事件
-    $('#browseBtn').click(function () {
-        if (true == $('#isoImage').prop('checked'))
-            $('#isoModal').modal('show');
+    initISODisk();
+    function initISODisk() {
+        showISODiskNameList();
+    }
+    function addISODiskName(prefix) {
+        for (var i = 0; i < 8; i++) {
+            var num = 97 + i;
+            var char = String.fromCharCode(num); // 返回 'a'
+            var diskName = `${prefix}${char}`
+            // console.log(diskName)
+            $('#isodiskPartSelect').append($('<option>', {
+                value: diskName,
+                text: diskName
+            }));
+        }
+    }
+    function showISODiskNameList() {
+        // console.log(diskBus);
+        $('#isodiskPartSelect').empty();
+        addISODiskName('hd');
+    }
+
+    $('#isodiskPartStoragePoolSelect').on('change', function () {
+        var text = $(this).find('option:selected').text();
+        var val = $(this).val();
+        console.log('---------text:' + text + ' val: ' + val);
+
+        $('#isodiskPartStoragePoolFileSelect').empty();
+        let iosstorage_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
+        if (text === "isodefalut") {
+            var poolPath;
+            $.each(iosstorage_json_data.default, function (key, value) {
+                console.log('key:' + key + " value:" + value);
+                if (key === 'poolPath') {
+                    poolPath = value;
+                }
+            });
+
+            $.each(iosstorage_json_data.default, function (key, value) {
+                if (key === 'fileList') {                    
+                    $.each(value, function (index) {
+                        console.log('--poolPath:' + poolPath + ' ---fileName:' + value[index]["fileName"]);
+                        $('#isodiskPartStoragePoolFileSelect').append($('<option>', {
+                            value: poolPath,
+                            text: value[index]["fileName"]
+                        }));
+                    });
+                }
+            });
+        }
+        else {
+            $.each(iosstorage_json_data.custom, function (key, value) {
+                 $.each(iosstorage_json_data.custom[key], function (subkey, subvalue) {
+
+                 });
+                $('#isodiskPartStoragePoolFileSelect').append($('<option>', {
+                    value: value.poolPath,
+                    text: key
+                }));
+            });
+        }
     });
 
-    // 高级按钮点击事件
-    $('#advancedBtn').click(function () {
-        $('#advancedModal').modal('show');
-    });
+    // 检查下拉框状态函数
+    function checkISOSelectStatus() {
+        const select = $('#isodiskPartSelect');
+        const addButton = $('#addISODiskBtn');
 
-    // 确认ISO文件选择
-    $('#confirmIso').click(function () {
-        var fileInput = document.getElementById('isoFile');
-        if (fileInput.files.length > 0) {
-            // $('#isoPath').text(fileInput.files[0].name);
-            $('#isoPath').val(fileInput.files[0].name)
+        if (select.find('option').length === 0) {
+            // 下拉框为空，禁用按钮
+            addButton.prop('disabled', true);
+            // statusIndicator.html('<span class="status-indicator status-inactive"></span><span>下拉列表已无可用选项</span>');
         } else {
-            // $('#isoPath').text('E:\\os\\ubuntu-20.04.iso');
-            $('#isoPath').val('E:\\os\\ubuntu-20.04.iso');
+            // 下拉框不为空，启用按钮
+            addButton.prop('disabled', false);
+            // statusIndicator.html('<span class="status-indicator status-active"></span><span>下拉列表有可用选项</span>');
         }
-        $('#isoModal').modal('hide');
-        $('#isoImage').prop('checked', true);
+    }
+
+    // 更新下拉选项函数：移除已添加的硬盘名称
+    function updateISODiskOptions() {
+        // 获取所有已添加的硬盘名称
+        const addedDisks = [];
+        $('#isoDiskTab tbody tr').each(function () {
+            addedDisks.push($(this).find('td:first').text());
+        });
+
+        // 遍历下拉选项，移除已添加的
+        $('#isodiskPartSelect option').each(function () {
+            if (addedDisks.includes($(this).val())) {
+                $(this).remove();
+            }
+        });
+    }
+
+    // 磁盘添加按钮事件
+    $('#addISODiskBtn').click(function () {
+        const diskName = $('#isodiskPartSelect').val();
+        // const diskLocalStoragePool = $('#diskPartStoragePoolSelect').val();
+        const diskLocalStoragePool = $('#isodiskPartStoragePoolSelect').find('option:selected').text();
+        const isoFile = $('#isodiskPartStoragePoolFileSelect').find('option:selected').text();
+        const diskBoot = $('#isocheckVMSystemBootPart').prop('checked') == true ? "Yes" : "No";
+        $('#isocheckVMSystemBootPart').prop('checked', false);
+        if (diskBoot === "Yes") {
+            $('#VMSystemBootPart').addClass('d-none');
+            $('#VMSystemBootTypeConfig').addClass('d-none');
+        }
+        if (!diskName) {
+            $('#addDiskBtn').addClass('disabled');
+            return;
+        }
+        const newRow = `
+                <tr>
+                    <td>${diskName}</td>
+                    <td>${diskLocalStoragePool}</td>
+                    <td class="id-diskboot">${diskBoot}</td>
+                    <td>${isoFile}</td>
+                    <td>
+                         <button class="btn btn-sm btn-danger btn-delete">删除</button>
+                    </td>
+                </tr>
+            `;
+        $('#isoDiskTab tbody').append(newRow);
+        updateISODiskOptions();
+        checkISOSelectStatus();
     });
 
-    // 最近文件选择
-    $('.list-group-item').click(function () {
-        // $('#isoPath').text($(this).text());
-        $('#isoPath').val($(this).text())
-        $('#isoModal').modal('hide');
-        $('#isoImage').prop('checked', true);
+    // 使用事件委托处理删除按钮点击
+    $('#isoDiskTab').on('click', '.btn-delete', function () {
+        const diskName = $(this).closest('tr').find('td:first').text();
+        $(this).closest('tr').fadeOut(300, function () {
+            const diskboot = $(this).find('.id-diskboot').text();
+            if (diskboot === "Yes") {
+                $('#VMSystemBootPart').removeClass('d-none');
+                $('#VMSystemBootTypeConfig').removeClass('d-none');
+            }
+            $(this).remove();
+
+            // 将删除的选项添加回下拉菜单
+            $('#isodiskPartSelect').append($('<option>', {
+                value: diskName,
+                text: diskName
+            }));
+
+            // 按字母顺序重新排序选项
+            sortSelectOptions('#isodiskPartSelect');
+            checkISOSelectStatus();
+        });
     });
 
-    // 文件输入变化
-    $('#isoFile').change(function () {
-        if (this.files.length > 0) {
-            $('#isoPath').text(this.files[0].name);
-        }
-    });
 
     //【网络适配器】
     // 生成随机十六进制数

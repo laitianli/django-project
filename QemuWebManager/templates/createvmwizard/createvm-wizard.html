@@ -311,66 +311,86 @@
             <!-- 【CD/DVD 驱动器】设置面板（默认隐藏） -->
             <div class="device-settings d-none" id="cdrom-settings">
                 <div class="settings-panel">
-                    <!-- 设备状态设置框 -->
+                    <!-- 【硬盘】设置框 -->
                     <div class="section-box">
-                        <div class="section-title">设备状态</div>
-                        <div class="checkbox-group">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="connected">
-                                <label class="form-check-label" for="connected">
-                                    已连接
-                                </label>
+                        <div class="section-title">添加ISO镜像</div>
+                        <div class="tab-pane" id="addISODisk" role="tabpanel">
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <!-- <div class="mb-3 row">
+                                        <label for="isodiskPartBusType"
+                                            class="col-md-4 text-end form-lable col-form-label">总线:</label>
+                                        <div class="col-md-6">
+                                            <select class="form-select" id="isodiskPartBusTypeSelect">
+                                                <option value="virtio">virtio</option>
+                                                <option value="ide" selected>ide</option>
+                                                <option value="sata">sata</option>
+                                                <option value="scsi">scsi</option>
+                                            </select>
+                                        </div>
+                                    </div> -->
+                                    <div class="mb-3 row">
+                                        <label for="isodiskPart"
+                                            class="col-md-3 text-end form-lable col-form-label">盘符:</label>
+                                        <div class="col-md-6">
+                                            <select class="form-select" id="isodiskPartSelect">
+                                                <!-- <option value="vda">vda</option> -->
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="mb-3 row">
+                                        <label for="isodiskPartStoragePool"
+                                            class="col-md-3 text-end form-lable col-form-label">存储池:</label>
+                                        <div class="col-md-6">
+                                            <select class="form-select" id="isodiskPartStoragePoolSelect">
+                                                <option value="default">isodefault</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                     <div class="mb-3 row">
+                                        <label for="isoStoragePoolFile"
+                                            class="col-md-3 text-end form-lable col-form-label">ISO文件:</label>
+                                        <div class="col-md-9">
+                                            <select class="form-select" id="isodiskPartStoragePoolFileSelect">
+                                                <option value="CentOS-7-x86_64-Everything-1708.iso">CentOS-7-x86_64-Everything-1708.iso</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" id="isoVMSystemBootPart">
+                                    <div class="ms-5 checkbox-group">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="isocheckVMSystemBootPart">
+                                            <label class="form-check-label" for="isocheckVMSystemBootPart">
+                                                是否为启动盘
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="checkbox-group">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="connectAtPowerOn" checked>
-                                <label class="form-check-label" for="connectAtPowerOn">
-                                    启动时连接
-                                </label>
+                            <div class="text-end form-lable col-form-label">
+                                <button class="btn btn-primary" id="addISODiskBtn">添加</button>
                             </div>
                         </div>
                     </div>
-
-                    <!-- 连接设置框 -->
-                    <div class="section-box" id="IDphysicalISO">
-                        <div class="section-title">连接</div>
-                        <div class="radio-group">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="connectionType" id="physicalDrive"
-                                    checked>
-                                <label class="form-check-label" for="physicalDrive">
-                                    使用物理驱动器:
-                                </label>
-                                <div class="drive-options  mt-2">
-                                    <select class="form-control user-defined-form-control" id="driveSelector">
-                                        <option>自动检测</option>
-                                        <option>/dev/sr0</option>
-                                        <!-- <option>E: CD驱动器</option> -->
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="radio-group">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="connectionType" id="isoImage">
-                                <label class="form-check-label" for="isoImage">
-                                    使用ISO映像文件:
-                                </label>
-                                <!-- <div class="iso-options row">
-                                    <div class="col-md-3"></div>
-                                    <button class="btn btn-outline-secondary btn-sm" id="browseBtn" disabled>浏览</button>
-                                    <input type="text" class="iso-path input-text" id="isoPath" value="未选择"
-                                        readonly>
-                                </div> -->
-                                <div class="input-group mt-2">
-                                    <button class="btn btn-outline-secondary" type="button" id="browseBtn">浏览</button>
-                                    <input type="text" class="form-control" id="isoPath" placeholder="iso文件">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-3">
-                            <button class="btn btn-outline-secondary" id="advancedBtn">高级(V)...</button>
+                    <div class="section-box">
+                        <div class="section-title">ISO镜像列表</div>
+                        <div class="tab-pane" id="iso-disk-list" role="tabpanel">
+                            <table class="table table-hover" id="isoDiskTab">
+                                <thead>
+                                    <tr>
+                                        <th>盘符</th>
+                                        <th>存储池</th>
+                                        <th>启动盘</th>
+                                        <th>文件</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
