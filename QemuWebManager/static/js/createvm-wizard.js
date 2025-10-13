@@ -659,6 +659,7 @@ $(document).ready(function () {
 
     // 为创建按钮绑定点击事件
     $('#createHardwareBtn').click(function () {
+        if (0) {
         // 获取所有表单数据
         const formData = getAllFormData(false);
 
@@ -668,6 +669,11 @@ $(document).ready(function () {
 
         // 发送到服务器
         submitFormData(formData);
+        }
+        else {
+            const formData = getNewVMData(false);
+            console.log(formData);
+        }
     });
 
     // 为创建按钮绑定点击事件
@@ -684,39 +690,52 @@ $(document).ready(function () {
     });
 
     function getVM() {
-
+        return {
+            name: $('#setVMNameID').val().trim(),
+            type: $('#VMSystemType').val(),
+            isBootType: $('#checkVMSystemBootType').prop('checked'),
+            booType: $('#selectVMSystemBootType').val()
+        };
     }
 
     function getVMMemory() {
-        
+        return {currMemory: parseInt($('#memorySize').val().trim()) * 1024 * 1024 * 1024,
+            maxMemory: 0
+        };        
     }
 
     function getVMCPU() {
-        
+        return {countProcessor: parseInt($('#processorCount').val()),
+                coresPerProcessor: parseInt($('#coresPerProcessor').val()),
+                totalCores: parseInt($('#totalCores').val()),
+                virtualization: {
+                    vt: $('#virtualizationVT').is(':checked'),
+                    cpu: $('#virtualizationCPU').is(':checked')
+                }};
     }
 
     function getVMDisk() {
-        
+        return {};        
     }
 
     function getVMISO() {
-        
+        return {};        
     }
 
     function getVMNet() {
-        
+        return {};        
     }
 
     function getVMUsb() {
-        
+        return {};        
     }
 
     function getVMSound() {
-        
+        return {};        
     }
 
     function getVMDisplay() {
-        
+        return {};        
     }
     function getNewVMData(status){
         const vmData = {
@@ -739,6 +758,7 @@ $(document).ready(function () {
         vmData.vmusb = getVMUsb();
         vmData.vmsound = getVMSound();
         vmData.vmdisplay = getVMDisplay();
+        return vmData;
     }
 
     // 获取所有表单数据的函数
