@@ -302,7 +302,6 @@ $(document).ready(function () {
             var num = 97 + i;
             var char = String.fromCharCode(num); // 返回 'a'
             var diskName = `${prefix}${char}`
-            // console.log(diskName)
             $('#isodiskPartSelect').append($('<option>', {
                 value: diskName,
                 text: diskName
@@ -318,11 +317,10 @@ $(document).ready(function () {
     $('#isodiskPartStoragePoolSelect').on('change', function () {
         var text = $(this).find('option:selected').text();
         var val = $(this).val();
-        // console.log('---------text:' + text + ' val: ' + val);
         $('#isodiskPartStoragePoolFileSelect').empty();
         let iosstorage_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
+        var poolPath;
         if (text === "isodefalut") {
-            var poolPath;
             $.each(iosstorage_json_data.default, function (key, value) {
                 console.log('key:' + key + " value:" + value);
                 if (key === 'poolPath') {
@@ -333,7 +331,6 @@ $(document).ready(function () {
             $.each(iosstorage_json_data.default, function (key, value) {
                 if (key === 'fileList') {
                     $.each(value, function (index) {
-                        console.log('--poolPath:' + poolPath + ' ---fileName:' + value[index]["fileName"]);
                         $('#isodiskPartStoragePoolFileSelect').append($('<option>', {
                             value: poolPath,
                             text: value[index]["fileName"]
@@ -344,8 +341,6 @@ $(document).ready(function () {
         }
         else {
             $.each(iosstorage_json_data.custom, function (key, value) {
-                // console.log('---------key:' + key + ' value: ' + value);
-                var poolPath;
                 $.each(iosstorage_json_data.custom[key], function (subkey, subvalue) {
                     if (subkey === 'poolPath') {
                         poolPath = subvalue;
@@ -354,12 +349,10 @@ $(document).ready(function () {
                 });
 
                 $.each(iosstorage_json_data.custom[key], function (subkey, subvalue) {
-                    // console.log('---------subkey:' + subkey + ' subvalue: ' + subvalue);
                     if (subkey === 'fileList') {
                         $.each(subvalue, function (index) {
-                            // console.log('--poolPath:' + poolPath + ' ---fileName:' + subvalue[index]["fileName"]);
                             $('#isodiskPartStoragePoolFileSelect').append($('<option>', {
-                                subvalue: poolPath,
+                                value: poolPath,
                                 text: subvalue[index]["fileName"]
                             }));
                         });
@@ -500,12 +493,14 @@ $(document).ready(function () {
         // const nicName = 1;
         const nicMAC = $('#vmNICMACID').val();
         const nicConnType = $('#nicConnectTypeSelect').val();
+        const netPoolName = $('#nicNetPoolSelect').find('option:selected').val();
 
         const newRow = `
                 <tr>
                     <td class="id-cell">${nextId}</td>
                     <td class="mac-cell">${nicMAC}</td>
                     <td class="connType-cell">${nicConnType}</td>
+                    <td class="poolName-cell">${netPoolName}</td>
                     <td>
                          <button class="btn btn-sm btn-danger btn-delete">删除</button>
                     </td>
@@ -514,7 +509,26 @@ $(document).ready(function () {
         $('#vmNICTab tbody').append(newRow);
         nextId += 1;
     }
+
+    function showNetPoolSelect() {
+        var netPoolType = $('#nicConnectTypeSelect').find('option:selected').val();
+        // console.log('--netPoolType: ' + netPoolType);
+        $('#nicNetPoolSelect').empty();
+        let res_json_data = JSON.parse(sessionStorage.getItem("network_json"));
+        $.each(res_json_data[netPoolType], function (index) {
+            $('#nicNetPoolSelect').append($('<option>', {
+                value: res_json_data[netPoolType][index].name,
+                text: res_json_data[netPoolType][index].name
+            }));
+
+            if (res_json_data[netPoolType][index].name === 'default') {
+                $('#nicNetPoolSelect').val(res_json_data[netPoolType][index].name);
+            }
+        });
+    }
+
     function setDefautNIC() {
+        showNetPoolSelect();
         /* 默认生成一个MAC地址 */
         setMAC();
         updateNetwork2DeviceSummary($('#vmNICMACID').val());
@@ -522,6 +536,8 @@ $(document).ready(function () {
 
         setMAC();
         updateDeleteButtonsState();
+
+        
     }
     setDefautNIC();
 
@@ -587,6 +603,9 @@ $(document).ready(function () {
         $('[data-device="network"] .device-summary').text(value);
     }
 
+     $('#nicConnectTypeSelect').on('change', function () {
+        showNetPoolSelect();
+     });
 
     //【usb控制器】
     function updateUSB2DeviceSummary(value) {
@@ -634,66 +653,6 @@ $(document).ready(function () {
     $('#maxResolution').prop('disabled', true);
     $('input[name="stretchOption"]').prop('disabled', true);
 
-    //添加硬件按钮
-    // 添加硬件按钮点击事件
-    $('#addHardwareBtn').click(function () {
-        $('#hardwareWizardModal').modal('show');
-    });
-
-    // 硬件类型选择
-    $('.hardware-item').click(function () {
-        $('.hardware-item').removeClass('selected');
-        $(this).addClass('selected');
-
-        var hardwareType = $(this).data('type');
-        updateHardwareExplanation(hardwareType);
-    });
-
-    function updateHardwareExplanation(type) {
-        var explanations = {
-            'cdrom': '添加CD/DVD驱动器。',
-            'floppy': '添加软盘驱动器。',
-            'network': '添加网络适配器。',
-            'usb': '添加USB控制器。',
-            'sound': '添加声卡。',
-            'parallel': '添加并行端口。',
-            'serial': '添加串行端口。',
-            'scsi': '添加通用SCSI设备。'
-        };
-
-        $('#hardwareExplanation').text(explanations[type] || '');
-    }
-
-    $('#completeAddHardwareBtn').click(function () {
-        const selectedHardware = $('.hardware-item.selected').data('type');
-        if ('cdrom' == selectedHardware) {
-            console.log('cdrom')
-        }
-        else if ('floppy' == selectedHardware) {
-            console.log('floppy')
-        }
-        else if ('network' == selectedHardware) {
-            console.log('network')
-            // 添加新网络适配器的逻辑
-            addNewNetworkAdapter();
-        }
-        else if ('usb' == selectedHardware) {
-            // 添加USB控制器的逻辑
-            addNewUSBController();
-        }
-    })
-
-    // 添加新网络适配器的示例函数
-    function addNewNetworkAdapter() {
-        // 这里只是示例，实际实现需要创建新的UI元素
-        console.log('添加新网络适配器');
-
-        // 在实际实现中，您需要：
-        // 1. 创建新的网络适配器UI元素
-        // 2. 为它们分配唯一的ID
-        // 3. 确保getAllHardwareConfig()能获取到新硬件的配置
-    }
-
     $('#cancelCreateHardwareBtn').click(function () {
         window.location.href = '/index';
     })
@@ -723,6 +682,64 @@ $(document).ready(function () {
         // 发送到服务器
         submitFormData(formData);
     });
+
+    function getVM() {
+
+    }
+
+    function getVMMemory() {
+        
+    }
+
+    function getVMCPU() {
+        
+    }
+
+    function getVMDisk() {
+        
+    }
+
+    function getVMISO() {
+        
+    }
+
+    function getVMNet() {
+        
+    }
+
+    function getVMUsb() {
+        
+    }
+
+    function getVMSound() {
+        
+    }
+
+    function getVMDisplay() {
+        
+    }
+    function getNewVMData(status){
+        const vmData = {
+            vm: {},
+            vmmemory: {},
+            vmcpu: {},
+            vmdisk: {},
+            vmiso: {},
+            vmnet: {},
+            vmusb: {},
+            vmsound: {},
+            vmdisplay: {}
+        }
+        vmData.vm = getVM();
+        vmData.vmmemory = getVMMemory();
+        vmData.vmcpu = getVMCPU();
+        vmData.vmdisk = getVMDisk();
+        vmData.vmiso = getVMISO();
+        vmData.vmnet = getVMNet();
+        vmData.vmusb = getVMUsb();
+        vmData.vmsound = getVMSound();
+        vmData.vmdisplay = getVMDisplay();
+    }
 
     // 获取所有表单数据的函数
     function getAllFormData(status) {

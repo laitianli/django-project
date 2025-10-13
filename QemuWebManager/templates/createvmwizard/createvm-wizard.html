@@ -416,10 +416,19 @@
                                     class="col-md-2 text-end form-lable col-form-label">类型:</label>
                                 <div class="col-md-7">
                                     <select class="form-select" id="nicConnectTypeSelect">
-                                        <option value="Bridge">Bridge模式:直接连接物理网络</option>
-                                        <option value="NAT">NAT模式:共享主机的IP地址</option>
-                                        <option value="Host">Host模式:共享主机的专用网络</option>
-                                        <option value="OpenvSwitch">自定义:特定虚拟网络</option>
+                                        <option value="bridge">Bridge模式:直接连接物理网络</option>
+                                        <option value="nat" selected>NAT模式:共享主机的IP地址</option>
+                                        <option value="host">Host模式:共享主机的专用网络</option>
+                                        <option value="ovs">自定义:特定虚拟网络</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <label for="nicNetPoolSelect"
+                                    class="col-md-2 text-end form-lable col-form-label">网络池:</label>
+                                <div class="col-md-7">
+                                    <select class="form-select" id="nicNetPoolSelect">
+                                        <option value="default">demo-default</option>
                                     </select>
                                 </div>
                             </div>
@@ -437,6 +446,7 @@
                                         <th>#ID</th>
                                         <th>MAC</th>
                                         <th>连接方式</th>
+                                        <th>网络池</th>
                                         <th>操作</th>
                                     </tr>
                                 </thead>
@@ -694,184 +704,6 @@
             <button class="btn btn-primary btn-custom" id="createHardwareRunBtn">创建运行</button>
             <button class="btn btn-primary btn-custom" id="createHardwareBtn">创建</button>
             <button class="btn btn-outline-secondary btn-custom" id="cancelCreateHardwareBtn">取消</button>
-        </div>
-    </div>
-</div>
-
-
-<!-- CD/DVD: ISO浏览模态框 -->
-<div class="modal fade" id="isoModal" tabindex="-1" data-backdrop="static" data-keyboard="false">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">选择ISO映像文件</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label for="isoFile" class="form-label">选择ISO文件:</label>
-                    <input type="file" class="form-control" id="isoFile" accept=".iso">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">或从最近使用的文件中选择:</label>
-                    <div class="list-group">
-                        <button type="button"
-                            class="list-group-item list-group-item-action">E:\os\ubuntu-20.04.iso</button>
-                        <button type="button"
-                            class="list-group-item list-group-item-action">E:\os\windows10.iso</button>
-                        <button type="button"
-                            class="list-group-item list-group-item-action">D:\downloads\debian.iso</button>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" id="confirmIso">确定</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- CD/DVD:高级设置模态框 -->
-<div class="modal fade" id="advancedModal" tabindex="-1" data-backdrop="static" data-keyboard="false">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">CD/DVD高级设置</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="section-box">
-                    <div class="section-title">虚拟设备节点</div>
-                    <div class="radio-group">
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="deviceNode" id="sataOption" checked>
-                            <label class="form-check-label" for="sataOption">
-                                SATA
-                            </label>
-                            <div class="device-node-options">
-                                <select class="form-control  user-defined-form-control" id="sataSelector">
-                                    <option>SATA 0:1 新 CD/DVD (SATA)</option>
-                                    <option>SATA 0:2</option>
-                                    <option>SATA 0:3</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="radio-group">
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="deviceNode" id="scsiOption">
-                            <label class="form-check-label" for="scsiOption">
-                                SCSI
-                            </label>
-                            <div class="device-node-options">
-                                <select class="form-control user-defined-form-control" id="scsiSelector">
-                                    <option>SCSI 0:0 (已预留)</option>
-                                    <option>SCSI 0:1</option>
-                                    <option>SCSI 0:2</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="radio-group">
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="deviceNode" id="ideOption">
-                            <label class="form-check-label" for="ideOption">
-                                IDE
-                            </label>
-                            <div class="device-node-options">
-                                <select class="form-control  user-defined-form-control" id="ideSelector">
-                                    <option>IDE 0:0</option>
-                                    <option>IDE 0:1</option>
-                                    <option>IDE 1:0</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="section-box mt-3">
-                    <div class="section-title">故障排除</div>
-                    <div class="checkbox-group">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="legacyEmulation">
-                            <label class="form-check-label" for="legacyEmulation">
-                                旧版仿真(L)
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">确定</button>
-                <button type="button" class="btn btn-outline-secondary">帮助</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="hardwareWizardModal" tabindex="-1" data-backdrop="static" data-keyboard="false">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">添加硬件向导</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>您要安装哪类硬件?</p>
-
-                <div class="hardware-layout">
-                    <div class="hardware-section">
-                        <label class="form-label fw-bold">硬件类型(H):</label>
-                        <div class="hardware-types">
-                            <div class="hardware-item" data-type="cdrom">
-                                <div class="hardware-icon"></div>
-                                CD/DVD 驱动器
-                            </div>
-                            <div class="hardware-item" data-type="floppy">
-                                <div class="hardware-icon"></div>
-                                软盘驱动器
-                            </div>
-                            <div class="hardware-item selected" data-type="network">
-                                <div class="hardware-icon"></div>
-                                网络适配器
-                            </div>
-                            <div class="hardware-item" data-type="usb">
-                                <div class="hardware-icon"></div>
-                                USB 控制器
-                            </div>
-                            <div class="hardware-item" data-type="sound">
-                                <div class="hardware-icon"></div>
-                                声卡
-                            </div>
-                            <div class="hardware-item" data-type="parallel">
-                                <div class="hardware-icon"></div>
-                                并行端口
-                            </div>
-                            <div class="hardware-item" data-type="serial">
-                                <div class="hardware-icon"></div>
-                                串行端口
-                            </div>
-                            <div class="hardware-item" data-type="scsi">
-                                <div class="hardware-icon"></div>
-                                通用 SCSI 设备
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="hardware-section">
-                        <label class="form-label fw-bold">解释:</label>
-                        <div class="explanation-box">
-                            <div id="hardwareExplanation">添加网络适配器。</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" id="completeAddHardwareBtn">完成</button>
-            </div>
         </div>
     </div>
 </div>
