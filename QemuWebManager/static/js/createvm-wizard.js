@@ -318,8 +318,7 @@ $(document).ready(function () {
     $('#isodiskPartStoragePoolSelect').on('change', function () {
         var text = $(this).find('option:selected').text();
         var val = $(this).val();
-        console.log('---------text:' + text + ' val: ' + val);
-
+        // console.log('---------text:' + text + ' val: ' + val);
         $('#isodiskPartStoragePoolFileSelect').empty();
         let iosstorage_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
         if (text === "isodefalut") {
@@ -332,7 +331,7 @@ $(document).ready(function () {
             });
 
             $.each(iosstorage_json_data.default, function (key, value) {
-                if (key === 'fileList') {                    
+                if (key === 'fileList') {
                     $.each(value, function (index) {
                         console.log('--poolPath:' + poolPath + ' ---fileName:' + value[index]["fileName"]);
                         $('#isodiskPartStoragePoolFileSelect').append($('<option>', {
@@ -345,13 +344,28 @@ $(document).ready(function () {
         }
         else {
             $.each(iosstorage_json_data.custom, function (key, value) {
-                 $.each(iosstorage_json_data.custom[key], function (subkey, subvalue) {
+                // console.log('---------key:' + key + ' value: ' + value);
+                var poolPath;
+                $.each(iosstorage_json_data.custom[key], function (subkey, subvalue) {
+                    if (subkey === 'poolPath') {
+                        poolPath = subvalue;
+                    }
 
-                 });
-                $('#isodiskPartStoragePoolFileSelect').append($('<option>', {
-                    value: value.poolPath,
-                    text: key
-                }));
+                });
+
+                $.each(iosstorage_json_data.custom[key], function (subkey, subvalue) {
+                    // console.log('---------subkey:' + subkey + ' subvalue: ' + subvalue);
+                    if (subkey === 'fileList') {
+                        $.each(subvalue, function (index) {
+                            // console.log('--poolPath:' + poolPath + ' ---fileName:' + subvalue[index]["fileName"]);
+                            $('#isodiskPartStoragePoolFileSelect').append($('<option>', {
+                                subvalue: poolPath,
+                                text: subvalue[index]["fileName"]
+                            }));
+                        });
+                    }
+                });
+
             });
         }
     });
