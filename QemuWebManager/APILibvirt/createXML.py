@@ -5,8 +5,8 @@ Created on Wed Aug 20 14:36:41 2025
 @author: ltl
 """
 import libxml2
-import util
-import getCapabilities
+from APILibvirt import util
+from APILibvirt import getCapabilities
 
 class createVMXML():
     def __init__(self, name):
@@ -14,6 +14,9 @@ class createVMXML():
         self.memTotal = 131072  #128M
         self.memCurrent = 131072 #128M
         self.vcpu = 1
+        self.diskInfo = {}
+        self.isoInfo = {}
+        self.nicInfo = {}
         self.strXML = None
         
     def setMemory(self, memTotal, memCurrent):
@@ -22,6 +25,15 @@ class createVMXML():
     
     def setVCPU(self, vcpu_count):
         self.vcpu = vcpu_count
+        
+    def setDiskInfo(self, disk):
+        self.diskInfo = disk
+    
+    def setISOInfo(self, iso):
+        self.isoInfo = iso
+        
+    def setNicInfo(self, nic):
+        self.nicInfo = nic
     
     def __createMemoryNode(self, parentNode):
         if parentNode is not None:
@@ -74,6 +86,7 @@ class createVMXML():
             cpuNode = libxml2.newNode('cpu')
             if isHost == True:
                 cpuNode.setProp('mode','host')
+                parentNode.addChild(cpuNode)
             else:
                 cpuNode.setProp('mode','custom')
                 cpuNode.setProp('check', 'full')
@@ -132,8 +145,6 @@ class createVMXML():
             timerHPETNode.setProp('present', 'no')
             clockNode.addChild(timerHPETNode)
             
-            
-            
     def __createPMNode(self, parentNode):
         if parentNode is not None:
             pmNode = libxml2.newNode('pm')
@@ -147,8 +158,6 @@ class createVMXML():
             suspend2diskNode.setProp('enabled', 'no')
             pmNode.addChild(suspend2diskNode)
             
-                  
-    
     def __createDevice(self, parentNode):
         if parentNode is not None:
             devNode = libxml2.newNode('devices')
@@ -156,7 +165,10 @@ class createVMXML():
             parentNode.addChild(devNode)
             
             self.__addISODisk2Device(devNode)
+            
             self.__addDisk2Device(devNode)
+            
+            self.__addNIC2Device(devNode)
             
             self.__addEHCI2Device(devNode)
             
@@ -169,7 +181,7 @@ class createVMXML():
             
             self.__addPCIRootController2Device(devNode)
             
-            self.__addInterface2Device(devNode)
+            #self.__addInterface2Device(devNode)
             
             self.__addSerial2Device(devNode)
             
@@ -182,8 +194,12 @@ class createVMXML():
             self.__addGraphics2Device(devNode)
             
             self.__addMemballoon2Device(devNode)
-                
+            
     def __addISODisk2Device(self, devNode):
+        for e in self.isoInfo:
+            self.__addOneISODisk2Device(devNode, e['file'], e['dev'], e['bus'])
+                
+    def __addOneISODisk2Device(self, devNode, file, dev, bus):
         if devNode is not None:
             diskNode = libxml2.newNode('disk')
             diskNode.setProp('type', 'file')
@@ -192,16 +208,16 @@ class createVMXML():
             
             subDrvNode = libxml2.newNode('driver')
             subDrvNode.setProp('name', 'qemu')
-            subDrvNode.setProp('type', 'raw')
+            subDrvNode.setProp('type', 'raw') 
             diskNode.addChild(subDrvNode)
             
             subSrcFileNode = libxml2.newNode('source')
-            subSrcFileNode.setProp('file', '/home/os/CentOS-7-x86_64-Everything-1708.iso')
+            subSrcFileNode.setProp('file', file) # 1
             diskNode.addChild(subSrcFileNode)
             
             subTargetNode = libxml2.newNode('target')
-            subTargetNode.setProp('dev', 'hda')
-            subTargetNode.setProp('bus', 'ide')
+            subTargetNode.setProp('dev', dev) # 2
+            subTargetNode.setProp('bus', bus) # 3
             diskNode.addChild(subTargetNode)
             
             diskNode.newChild(None, 'readonly', None)
@@ -213,8 +229,12 @@ class createVMXML():
             subAddressNode.setProp('target', '0')
             subAddressNode.setProp('unit', '0')
             diskNode.addChild(subAddressNode)
-            
+    
     def __addDisk2Device(self, devNode):
+        for e in self.diskInfo:
+            self.__addOneDisk2Device(devNode, e['type'], e['file'], e['dev'], e['bus'])
+                
+    def __addOneDisk2Device(self, devNode, type, file, dev, bus):
         if devNode is not None:
             diskNode = libxml2.newNode('disk')
             diskNode.setProp('type', 'file')
@@ -223,16 +243,16 @@ class createVMXML():
             
             subDrvNode = libxml2.newNode('driver')
             subDrvNode.setProp('name', 'qemu')
-            subDrvNode.setProp('type', 'qcow2')
+            subDrvNode.setProp('type', type) # 1
             diskNode.addChild(subDrvNode)
             
             subSrcFileNode = libxml2.newNode('source')
-            subSrcFileNode.setProp('file', '/var/lib/libvirt/images/centos7.0.qcow2')
+            subSrcFileNode.setProp('file', file) # 2
             diskNode.addChild(subSrcFileNode)
             
             subTargetNode = libxml2.newNode('target')
-            subTargetNode.setProp('dev', 'vda')
-            subTargetNode.setProp('bus', 'virtio')
+            subTargetNode.setProp('dev', dev) # 3
+            subTargetNode.setProp('bus', bus) # 4
             diskNode.addChild(subTargetNode)
             
             subAddressNode = libxml2.newNode('address')
@@ -242,6 +262,36 @@ class createVMXML():
             subAddressNode.setProp('slot', '0')
             subAddressNode.setProp('function', '0')
             diskNode.addChild(subAddressNode)
+    def __addNIC2Device(self, devNode):
+        for e in self.nicInfo:
+            self.__addOneNIC2Device(devNode, e['type'], e['mac'], e['network'])
+        
+    def __addOneNIC2Device(self, devNode, type, mac, network):
+        if devNode is not None:
+            intfNode = libxml2.newNode('interface')
+            intfNode.setProp('type', type) # 1
+            devNode.addChild(intfNode)
+            
+            macNode = libxml2.newNode('mac')
+            macNode.setProp('address', mac) # 2
+            intfNode.addChild(macNode)
+            
+            srcNode = libxml2.newNode('source')
+            srcNode.setProp('network', network) # 3
+            intfNode.addChild(srcNode)
+            
+            modelNode = libxml2.newNode('model')
+            modelNode.setProp('type', 'virtio')
+            intfNode.addChild(modelNode)
+            
+            subAddressNode = libxml2.newNode('address')
+            subAddressNode.setProp('type', 'pci')
+            subAddressNode.setProp('domain', '0x0000')
+            subAddressNode.setProp('bus', '0')
+            subAddressNode.setProp('slot', '0')
+            subAddressNode.setProp('function', '0')
+            intfNode.addChild(subAddressNode)
+            
     
     def __addEHCI2Device(self, devNode):
         if devNode is not None:
@@ -450,7 +500,7 @@ class createVMXML():
         self.__createFeaturesNode(root)
         
         ##创建cpu节点
-        self.__createCPUNode(root, True)
+        self.__createCPUNode(root, False)
         
         ##创建clock节点
         self.__createClockNode(root)
@@ -480,6 +530,9 @@ class createVMXML():
         
         # 释放资源
         doc.freeDoc()
+    
+    def getStrXML(self):
+        return self.strXML
 
 
 if __name__ == '__main__':

@@ -28,8 +28,6 @@ class CLVIface(ConnectLibvirtd):
         self.connect_close()
         return networkInterfaces
     
-    
-      
     def _getOneIface(self, id, xml):
         name = util.get_xml_path(xml, '/interface/@name')
         type = util.get_xml_path(xml, '/interface/@type')

@@ -39,7 +39,7 @@ function initCreateVMWizard() {
         if (key === 'fileList') {
             $('#isodiskPartStoragePoolFileSelect').empty();
             $.each(value, function (index) {
-                console.log('--poolPath:' + isodefalutPoolPath + ' ---fileName:' + value[index]["fileName"]);
+                // console.log('--poolPath:' + isodefalutPoolPath + ' ---fileName:' + value[index]["fileName"]);
                 $('#isodiskPartStoragePoolFileSelect').append($('<option>', {
                     value: isodefalutPoolPath,
                     text: value[index]["fileName"]
@@ -53,6 +53,14 @@ function initCreateVMWizard() {
 $(document).ready(function () {
     initCreateVMWizard();
 
+    function activeSubSetting(item) {
+        $('.device-item').removeClass('active');
+        // $(this).addClass('active');
+        $(`[data-device="${item}"]`).addClass('active');
+
+        $('.device-settings').addClass('d-none');
+        $('#' + item + '-settings').removeClass('d-none');
+    }
     // 【左边框】设备选择切换
     $('.device-item').click(function () {
         $('.device-item').removeClass('active');
@@ -71,10 +79,12 @@ $(document).ready(function () {
         if (status == true) {
             $('#VMSystemBootType').removeClass('d-none');
             $('#VMSystemBootPart').addClass('d-none');
+            $('#isoVMSystemBootPart').addClass('d-none');
         }
         else {
             $('#VMSystemBootType').addClass('d-none');
             $('#VMSystemBootPart').removeClass('d-none');
+            $('#isoVMSystemBootPart').removeClass('d-none');
         }
     });
 
@@ -232,32 +242,45 @@ $(document).ready(function () {
         showDiskNameList();
     })
 
+    function generateUUID() {
+        return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+        );
+    }
     // 磁盘添加按钮事件
     $('#addDiskBtn').click(function () {
-        const diskName = $('#diskPartSelect').val();
+        const diskPartionName = $('#diskPartSelect').val();
         const diskPartType = $('#diskPartTypeSelect').val();
         const diskSize = $('#diskPartSize').val();
         const diskBus = $('#diskPartBusTypeSelect').val();
-        // const diskLocalStoragePool = $('#diskPartStoragePoolSelect').val();
+        const diskLocalStoragePoolPath = $('#diskPartStoragePoolSelect').val();
         const diskLocalStoragePool = $('#diskPartStoragePoolSelect').find('option:selected').text();
         const diskBoot = $('#checkVMSystemBootPart').prop('checked') == true ? "Yes" : "No";
         $('#checkVMSystemBootPart').prop('checked', false);
         if (diskBoot === "Yes") {
             $('#VMSystemBootPart').addClass('d-none');
+            $('#isoVMSystemBootPart').addClass('d-none');
             $('#VMSystemBootTypeConfig').addClass('d-none');
         }
-        if (!diskName) {
+        if (!diskPartionName) {
             $('#addDiskBtn').addClass('disabled');
             return;
         }
+        var vmName = $('#setVMNameID').val().trim();
+        if (vmName === '') {
+            vmName = 'vm';
+        }
+        //diskLocalStoragePoolPath + '/' + 
+        const diskName = vmName + '_' + generateUUID() + '.' + diskPartType;
+
         const newRow = `
                 <tr>
-                    <td>${diskName}</td>
-                    <td>${diskPartType}</td>
+                    <td>${diskPartionName}</td>                    
                     <td>${diskSize}G</td>
                     <td>${diskBus}</td>
                     <td>${diskLocalStoragePool}</td>
                     <td class="id-diskboot">${diskBoot}</td>
+                    <td data-value=${diskLocalStoragePoolPath}>${diskName}</td>
                     <td>
                          <button class="btn btn-sm btn-danger btn-delete">删除</button>
                     </td>
@@ -268,6 +291,28 @@ $(document).ready(function () {
         checkSelectStatus();
 
     });
+
+    function getDiskTabData() {
+        const tableData = [];
+
+        $('#diskTab tbody tr').each(function () {
+            const row = $(this);
+            const rowData = {
+                // 获取单元格文本内容
+                partitionName: row.find('td').eq(0).text().trim(),
+                size: parseInt(row.find('td').eq(1).text().trim()),
+                bus: row.find('td').eq(2).text().trim(),
+                storagePool: row.find('td').eq(3).text().trim(),
+                boot: row.find('td.id-diskboot').text().trim(), // 通过class选择器
+                diskName: row.find('td').eq(5).text().trim(),
+                // 获取data-value属性值
+                storagePoolPath: row.find('td').eq(5).data('value')
+            };
+            tableData.push(rowData);
+        });
+
+        return tableData;
+    }
 
     // 使用事件委托处理删除按钮点击
     $('#diskTab').on('click', '.btn-delete', function () {
@@ -395,26 +440,28 @@ $(document).ready(function () {
         });
     }
 
-    // 磁盘添加按钮事件
+    // ISO添加按钮事件
     $('#addISODiskBtn').click(function () {
-        const diskName = $('#isodiskPartSelect').val();
-        // const diskLocalStoragePool = $('#diskPartStoragePoolSelect').val();
+        const diskPartionName = $('#isodiskPartSelect').val();
+        const diskLocalStoragePoolPath = $('#isodiskPartStoragePoolSelect').val();
         const diskLocalStoragePool = $('#isodiskPartStoragePoolSelect').find('option:selected').text();
         const isoFile = $('#isodiskPartStoragePoolFileSelect').find('option:selected').text();
         const diskBoot = $('#isocheckVMSystemBootPart').prop('checked') == true ? "Yes" : "No";
         $('#isocheckVMSystemBootPart').prop('checked', false);
         if (diskBoot === "Yes") {
             $('#VMSystemBootPart').addClass('d-none');
+            $('#isoVMSystemBootPart').addClass('d-none');
             $('#VMSystemBootTypeConfig').addClass('d-none');
         }
-        if (!diskName) {
+        if (!diskPartionName) {
             $('#addDiskBtn').addClass('disabled');
             return;
         }
+        console.log('diskLocalStoragePoolPath:' + diskLocalStoragePoolPath + " diskLocalStoragePool:" + diskLocalStoragePool)
         const newRow = `
                 <tr>
-                    <td>${diskName}</td>
-                    <td>${diskLocalStoragePool}</td>
+                    <td>${diskPartionName}</td>
+                    <td data-value=${diskLocalStoragePoolPath}>${diskLocalStoragePool}</td>
                     <td class="id-diskboot">${diskBoot}</td>
                     <td>${isoFile}</td>
                     <td>
@@ -427,6 +474,26 @@ $(document).ready(function () {
         checkISOSelectStatus();
     });
 
+    function getISODiskTabData() {
+        const tableData = [];
+
+        $('#isoDiskTab tbody tr').each(function () {
+            const row = $(this);
+            const rowData = {
+                // 获取单元格文本内容
+                partitionName: row.find('td:eq(0)').text().trim(),
+                bus: 'ide',
+                storagePool: row.find('td').eq(1).text().trim(),
+                storagePoolPath: row.find('td').eq(1).data('value'),
+                isoFile: row.find('td').eq(3).text().trim(),
+                boot: row.find('td.id-diskboot').text().trim(), // 通过class选择器                
+            };
+            tableData.push(rowData);
+        });
+
+        return tableData;
+    }
+
     // 使用事件委托处理删除按钮点击
     $('#isoDiskTab').on('click', '.btn-delete', function () {
         const diskName = $(this).closest('tr').find('td:first').text();
@@ -434,6 +501,7 @@ $(document).ready(function () {
             const diskboot = $(this).find('.id-diskboot').text();
             if (diskboot === "Yes") {
                 $('#VMSystemBootPart').removeClass('d-none');
+                $('#isoVMSystemBootPart').removeClass('d-none');                
                 $('#VMSystemBootTypeConfig').removeClass('d-none');
             }
             $(this).remove();
@@ -510,6 +578,22 @@ $(document).ready(function () {
         nextId += 1;
     }
 
+    function getNICTabData() {
+        const tableData = [];
+
+        $('#vmNICTab tbody tr').each(function () {
+            const row = $(this);
+            const rowData = {
+                // 获取单元格文本内容
+                mac: row.find('td').eq(1).text().trim(),
+                nicConnType: row.find('td').eq(2).text().trim(),
+                netPoolName: row.find('td').eq(3).text().trim(),
+            };
+            tableData.push(rowData);
+        });
+
+        return tableData;
+    }
     function showNetPoolSelect() {
         var netPoolType = $('#nicConnectTypeSelect').find('option:selected').val();
         // console.log('--netPoolType: ' + netPoolType);
@@ -537,7 +621,7 @@ $(document).ready(function () {
         setMAC();
         updateDeleteButtonsState();
 
-        
+
     }
     setDefautNIC();
 
@@ -603,9 +687,9 @@ $(document).ready(function () {
         $('[data-device="network"] .device-summary').text(value);
     }
 
-     $('#nicConnectTypeSelect').on('change', function () {
+    $('#nicConnectTypeSelect').on('change', function () {
         showNetPoolSelect();
-     });
+    });
 
     //【usb控制器】
     function updateUSB2DeviceSummary(value) {
@@ -657,33 +741,69 @@ $(document).ready(function () {
         window.location.href = '/index';
     })
 
+    function checkFormInput() {
+
+        // 1.判断虚拟机名字是否空
+        var vmName = $('#setVMNameID').val().trim();
+        if (vmName.length == 0) {
+            activeSubSetting('vmname');
+            $('#setVMNameID').focus();
+            return false;
+        }
+
+        // 2.判断硬盘列表是否空
+        if ($('#diskTab tbody').children('tr').length === 0) {
+            // console.log('disk 表格tbody为空');
+            // 这里可以执行空表格时的操作，例如显示提示信息
+            activeSubSetting('disk');
+            return false;
+        } 
+
+        // 3.判断ISO列表是否空
+        if ($('#isoDiskTab tbody').children('tr').length === 0) {
+            // console.log('iso 表格tbody为空');
+            // 这里可以执行空表格时的操作，例如显示提示信息
+            activeSubSetting('cdrom');
+            return false;
+        }
+
+        // 4.判断网络列表是否空
+        if ($('#vmNICTab tbody').children('tr').length === 0) {
+            // console.log('nic 表格tbody为空');
+            // 这里可以执行空表格时的操作，例如显示提示信息
+            activeSubSetting('network');
+            return false;
+        }
+
+        return true;
+    }
+
     // 为创建按钮绑定点击事件
     $('#createHardwareBtn').click(function () {
-        if (0) {
-        // 获取所有表单数据
-        const formData = getAllFormData(false);
-
+        if (checkFormInput() == false) {
+            return false;
+        }
+        const formData = getNewVMData(false);
+        console.log(formData);
         // 转换为JSON字符串
         const jsonData = JSON.stringify(formData);
         console.log(jsonData); // 用于调试
 
         // 发送到服务器
         submitFormData(formData);
-        }
-        else {
-            const formData = getNewVMData(false);
-            console.log(formData);
-        }
     });
 
     // 为创建按钮绑定点击事件
     $('#createHardwareRunBtn').click(function () {
+        if (checkFormInput() == false) {
+            return false;
+        }
         // 获取所有表单数据
-        const formData = getAllFormData(true);
+        const formData = getNewVMData(true);
 
         // 转换为JSON字符串
         const jsonData = JSON.stringify(formData);
-        console.log(jsonData); // 用于调试
+        // console.log(jsonData); // 用于调试
 
         // 发送到服务器
         submitFormData(formData);
@@ -699,46 +819,68 @@ $(document).ready(function () {
     }
 
     function getVMMemory() {
-        return {currMemory: parseInt($('#memorySize').val().trim()) * 1024 * 1024 * 1024,
-            maxMemory: 0
-        };        
+        const memSize = parseInt($('#memorySize').val().trim()) * 1024 * 1024 * 1024;
+        return {
+            memCurrent: memSize,
+            memTotal: memSize
+        };
     }
 
     function getVMCPU() {
-        return {countProcessor: parseInt($('#processorCount').val()),
-                coresPerProcessor: parseInt($('#coresPerProcessor').val()),
-                totalCores: parseInt($('#totalCores').val()),
-                virtualization: {
-                    vt: $('#virtualizationVT').is(':checked'),
-                    cpu: $('#virtualizationCPU').is(':checked')
-                }};
+        return {
+            countProcessor: parseInt($('#processorCount').val()),
+            coresPerProcessor: parseInt($('#coresPerProcessor').val()),
+            totalCores: parseInt($('#totalCores').val()),
+            virtualization: {
+                vt: $('#virtualizationVT').is(':checked'),
+                cpu: $('#virtualizationCPU').is(':checked')
+            }
+        };
     }
 
     function getVMDisk() {
-        return {};        
+        return getDiskTabData();
     }
 
     function getVMISO() {
-        return {};        
+        return getISODiskTabData();
     }
 
     function getVMNet() {
-        return {};        
+        return getNICTabData();
     }
 
     function getVMUsb() {
-        return {};        
+        return {
+            compatibility: $('#usbCompatibility').val(),
+            showAllUsb: $('#showAllUsb').is(':checked')
+        };
     }
 
     function getVMSound() {
-        return {};        
+        return {
+            connected: $('#sound-settings input#connected').is(':checked'),
+            connectAtPowerOn: $('#sound-settings input#connectAtPowerOn').is(':checked'),
+            soundCardType: $('#sound-settings input[name="soundCardType"]:checked').attr('id'),
+            specificSoundCard: $('#soundCardSelector').val(),
+            echoCancellation: $('#echoCancellation').is(':checked')
+        };
     }
 
     function getVMDisplay() {
-        return {};        
+        return {
+            accelerate3D: $('#accelerate3D').is(':checked'),
+            monitorSetting: $('#display-settings input[name="monitorSetting"]:checked').attr('id'),
+            monitorCount: $('#monitorCount').val(),
+            maxResolution: $('#maxResolution').val(),
+            graphicsMemory: $('#graphicsMemory').val(),
+            stretchMode: $('#stretchMode').is(':checked'),
+            stretchOption: $('#display-settings input[name="stretchOption"]:checked').attr('id')
+        };
     }
-    function getNewVMData(status){
+    function getNewVMData(status) {
         const vmData = {
+            immediatelyRun: status,
             vm: {},
             vmmemory: {},
             vmcpu: {},
@@ -759,113 +901,6 @@ $(document).ready(function () {
         vmData.vmsound = getVMSound();
         vmData.vmdisplay = getVMDisplay();
         return vmData;
-    }
-
-    // 获取所有表单数据的函数
-    function getAllFormData(status) {
-        const formData = {
-            vmConfig: {},
-            hardware: [],
-            shouldrun: status
-        };
-
-        // 获取虚拟机基本配置
-        formData.vmConfig = getVMConfiguration();
-
-        // 获取所有硬件配置
-        formData.hardware = getAllHardwareConfig();
-
-        return formData;
-    }
-
-    // 获取虚拟机基本配置
-    function getVMConfiguration() {
-        return {
-            name: $('#setVMNameID').val().trim(),
-            type: $('#VMSystemType').val(),
-            memory: parseInt($('#memorySize').val()),
-            processor: {
-                count: parseInt($('#processorCount').val()),
-                coresPerProcessor: parseInt($('#coresPerProcessor').val()),
-                totalCores: parseInt($('#totalCores').val()),
-                virtualization: {
-                    vt: $('#virtualizationVT').is(':checked'),
-                    cpu: $('#virtualizationCPU').is(':checked')
-                }
-            }
-        };
-    }
-
-    // 获取所有硬件配置
-    function getAllHardwareConfig() {
-        const hardware = [];
-
-        // 获取每种硬件类型的配置
-        hardware.push(getHardwareConfig('cdrom'));
-        hardware.push(getHardwareConfig('network'));
-        hardware.push(getHardwareConfig('usb'));
-        hardware.push(getHardwareConfig('sound'));
-        hardware.push(getHardwareConfig('display'));
-
-        // 可以继续添加其他硬件类型...
-
-        return hardware.filter(item => item !== null);
-    }
-
-    // 获取特定硬件类型的配置
-    function getHardwareConfig(hardwareType) {
-        switch (hardwareType) {
-            case 'cdrom':
-                return {
-                    type: 'cdrom',
-                    connected: $('#cdrom-settings input#connected').is(':checked'),
-                    connectAtPowerOn: $('#cdrom-settings input#connectAtPowerOn').is(':checked'),
-                    connectionType: $('#cdrom-settings input[name="connectionType"]:checked').attr('id'),
-                    drive: $('#driveSelector').val(),
-                    isoPath: $('#isoPath').val()
-                };
-
-            case 'network':
-                return {
-                    type: 'network',
-                    connected: $('#network-settings input#connected').is(':checked'),
-                    connectAtPowerOn: $('#network-settings input#connectAtPowerOn').is(':checked'),
-                    networkType: $('#network-settings input[name="networkType"]:checked').attr('id'),
-                    customNetwork: $('#networkSelector').val()
-                };
-
-            case 'usb':
-                return {
-                    type: 'usb',
-                    compatibility: $('#usbCompatibility').val(),
-                    showAllUsb: $('#showAllUsb').is(':checked')
-                };
-
-            case 'sound':
-                return {
-                    type: 'sound',
-                    connected: $('#sound-settings input#connected').is(':checked'),
-                    connectAtPowerOn: $('#sound-settings input#connectAtPowerOn').is(':checked'),
-                    soundCardType: $('#sound-settings input[name="soundCardType"]:checked').attr('id'),
-                    specificSoundCard: $('#soundCardSelector').val(),
-                    echoCancellation: $('#echoCancellation').is(':checked')
-                };
-
-            case 'display':
-                return {
-                    type: 'display',
-                    accelerate3D: $('#accelerate3D').is(':checked'),
-                    monitorSetting: $('#display-settings input[name="monitorSetting"]:checked').attr('id'),
-                    monitorCount: $('#monitorCount').val(),
-                    maxResolution: $('#maxResolution').val(),
-                    graphicsMemory: $('#graphicsMemory').val(),
-                    stretchMode: $('#stretchMode').is(':checked'),
-                    stretchOption: $('#display-settings input[name="stretchOption"]:checked').attr('id')
-                };
-
-            default:
-                return null;
-        }
     }
 
     // 提交表单数据到服务器

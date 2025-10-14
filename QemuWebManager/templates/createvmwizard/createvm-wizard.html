@@ -67,7 +67,7 @@
                             <label class="col-md-3  text-end form-lable col-form-label">虚拟机名:</label>
                             <div class="col-md-9">
                                 <input type="text" id="setVMNameID" class=" input-text" value=""
-                                    placeholder="请输入虚拟机名称:vm-os">
+                                    placeholder="请输入虚拟机名称:vm-os" autofocus>
                             </div>
 
                         </div>
@@ -213,7 +213,7 @@
                                     </div>
                                     <div class="mb-3 row">
                                         <label for="diskPart"
-                                            class="col-md-4 text-end form-lable col-form-label">名称:</label>
+                                            class="col-md-4 text-end form-lable col-form-label">盘符:</label>
                                         <div class="col-md-6">
                                             <select class="form-select" id="diskPartSelect">
                                                 <!-- <option value="vda">vda</option> -->
@@ -274,34 +274,16 @@
                             <table class="table table-hover" id="diskTab">
                                 <thead>
                                     <tr>
-                                        <th>名称</th>
-                                        <th>格式</th>
+                                        <th>盘符</th>
                                         <th>大小</th>
                                         <th>总线</th>
                                         <th>存储池</th>
                                         <th>启动盘</th>
+                                        <th>文件名</th>
                                         <th>操作</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <!-- <tr>
-                                        <td>vda</td>
-                                        <td>qcow2</td>
-                                        <td>20G</td>
-                                        <td>virtio</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-danger btn-delete">删除</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>vdb</td>
-                                        <td>raw</td>
-                                        <td>20G</td>
-                                        <td>ide</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-danger btn-delete">删除</button>
-                                        </td>
-                                    </tr> -->
                                 </tbody>
                             </table>
                         </div>
