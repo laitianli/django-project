@@ -522,8 +522,8 @@ class createVMXML():
         self.strXML = doc.serialize(encoding="UTF-8", format=1)
         #xml_str.replace("\"", "\'")
         #print(self.strXML.decode('utf-8'))
-        print('---------------create.....')
-        print(self.strXML)
+        # print('---------------create.....')
+        # print(self.strXML)
         
         # 保存到文件（可选）
         # doc.saveFile("vm_config.xml")

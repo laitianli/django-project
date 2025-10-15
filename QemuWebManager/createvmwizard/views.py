@@ -71,9 +71,9 @@ def doCreateVMXML(data):
     xmlobj.setNicInfo(net)
     
     xmlobj.create()
-    print('-' * 80)
-    print(xmlobj.getStrXML())
-    print('-' * 80)
+    # print('-' * 80)
+    # print(xmlobj.getStrXML())
+    # print('-' * 80)
     return True, vm_name, xmlobj.getStrXML()
 
 def doCreateVM(data):
@@ -92,12 +92,11 @@ def VMWCreate(request):
     elif request.method == 'POST':
         raw_data = request.body  # 获取原始字节流
         json_data = json.loads(raw_data.decode('utf-8'))  # 解码并解析JSON
-        print(json_data)
+        # print(json_data)
         #1.生成xml
         #2.创建虚拟机
         #3.根据json['shoutrun']决定是否运行虚拟机
-        ret, strXML = doCreateVM(json_data)
-        
+        ret = doCreateVM(json_data)
         if ret == True:
             data = {'result': 'success', 'message': '创建虚拟机成功！'}
         else:
