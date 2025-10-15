@@ -1355,7 +1355,7 @@
                         <!-- 虚拟机详情 -->
                         <div class="content-panel  d-none" id="vm-detail-panel">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h2 class="text-primary">虚拟机详情</h2>
+                                <h2 class="text-primary" id="vm-detail-title">虚拟机详情</h2>
                                 <button class="btn btn-outline-secondary" id="backToVmList">
                                     <i class="fas fa-arrow-left me-2"></i>返回列表
                                 </button>
@@ -1366,15 +1366,15 @@
                                     <table class="table table-bordered vm-info-table">
                                         <tr>
                                             <th>名称</th>
-                                            <td id="detail-name">test-vm-centos</td>
+                                            <td id="vm-detail-name">test-vm-centos</td>
                                             <th>状态</th>
-                                            <td id="detail-status"><span class="badge bg-success">运行中</span></td>
+                                            <td id="vm-detail-status"><span class="badge bg-success">运行中</span></td>
                                         </tr>
                                         <tr>
                                             <th>VCPUs</th>
-                                            <td id="detail-vcpus">4</td>
+                                            <td id="vm-detail-vcpus">4</td>
                                             <th>内存</th>
-                                            <td id="detail-memory">8192MB</td>
+                                            <td id="vm-detail-memory">8192MB</td>
                                         </tr>
                                         <tr>
                                             <th>描述</th>

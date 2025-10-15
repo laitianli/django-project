@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'storagepool',
     'ifacepool',
     'netpool',
+    'vminstance',
 ]
 
 AUTH_USER_MODEL = 'accounts.CustomUser'  # your_app为应用名称

@@ -54,18 +54,18 @@ def create_disk_image(type, file, size):
             return True
         else:
             print("无法从 qemu-img create 输出中解析文件格式")
-            return None
+            return False
             
     except subprocess.CalledProcessError as e:
         print(f"qemu-img create 命令执行失败，返回码: {e.returncode}")
         print(f"错误输出: {e.stderr}")
-        return None
+        return False
     except FileNotFoundError:
         print("未找到 qemu-img 命令，请确保 QEMU 已安装并在系统 PATH 中")
-        return None
+        return False
     except Exception as e:
         print(f"执行过程中发生未知错误: {str(e)}")
-        return None
+        return False
 
 def format_size(size_bytes):
     """
