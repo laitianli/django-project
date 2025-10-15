@@ -122,7 +122,9 @@ class createVMXML():
                 self.__addcpufeatureNode(cpuNode, 'disable', 'ssbd')
                 self.__addcpufeatureNode(cpuNode, 'require', 'hypervisor')
                 self.__addcpufeatureNode(cpuNode, 'disable', 'arat')
-                self.__addcpufeatureNode(cpuNode, 'disable', 'spec-ctrl')            
+                self.__addcpufeatureNode(cpuNode, 'disable', 'spec-ctrl')
+                self.__addcpufeatureNode(cpuNode, 'disable', 'hle')
+                self.__addcpufeatureNode(cpuNode, 'disable', 'rtm')
         
     def __createClockNode(self, parentNode):
         if parentNode is not None:

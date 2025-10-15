@@ -819,7 +819,7 @@ $(document).ready(function () {
     }
 
     function getVMMemory() {
-        const memSize = parseInt($('#memorySize').val().trim()) * 1024 * 1024 * 1024;
+        const memSize = parseInt($('#memorySize').val().trim()) * 1024 * 1024;
         return {
             memCurrent: memSize,
             memTotal: memSize
