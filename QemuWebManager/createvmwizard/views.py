@@ -41,9 +41,8 @@ def doCreateVMXML(data):
         if ret == True:
             disk.append({'type': type, 'file': path_file, 'dev': e['partitionName'], 'bus': e['bus'], 'size': image_size, 'boot': e['boot']})
         
-    # print('disk: %s' % disk)
+    print('disk: %s' % disk)
     xmlobj.setDiskInfo(disk)
-    # TODO: create disk file
     
     vmISO = data['vmiso']
     iso = []

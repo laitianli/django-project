@@ -49,8 +49,8 @@ def create_disk_image(type, file, size):
         # 从命令输出中提取文件格式
         output = result.stdout
         # 使用正则表达式匹配 "file format: " 后面的内容
-        match = re.search(r'fmt=:\s*(\S+)', output)
-        if match and match == type:
+        match = re.search(r'fmt=(\w+)', output)
+        if match and match.group(1) == type:
             return True
         else:
             print("无法从 qemu-img create 输出中解析文件格式")

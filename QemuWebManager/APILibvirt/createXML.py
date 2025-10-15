@@ -62,8 +62,8 @@ class createVMXML():
             
             bootNode = libxml2.newNode('boot')
             # hd:从硬盘启动(Hard Disk)，fd: 从软盘启动(Floppy Disk)，cdrom: 从光驱启动(CD-ROM)，network:网络启动(PXE)
-            bootNode.setProp('dev', 'hd')
-            # bootNode.setProp('dev', 'cdrom')
+            #bootNode.setProp('dev', 'hd')
+            bootNode.setProp('dev', 'cdrom')
             osNode.addChild(bootNode)
             
             
@@ -125,6 +125,12 @@ class createVMXML():
                 self.__addcpufeatureNode(cpuNode, 'disable', 'spec-ctrl')
                 self.__addcpufeatureNode(cpuNode, 'disable', 'hle')
                 self.__addcpufeatureNode(cpuNode, 'disable', 'rtm')
+
+                self.__addcpufeatureNode(cpuNode, 'disable', 'avx512f')
+                self.__addcpufeatureNode(cpuNode, 'disable', 'avx512dq')
+                self.__addcpufeatureNode(cpuNode, 'disable', 'avx512cd')
+                self.__addcpufeatureNode(cpuNode, 'disable', 'avx512bw')
+                self.__addcpufeatureNode(cpuNode, 'disable', 'avx512vl')
         
     def __createClockNode(self, parentNode):
         if parentNode is not None:
