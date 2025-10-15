@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 from APILibvirt.createXML import createVMXML
-from APILibvirt.LVCreate import CLVCreate
+from APILibvirt.LVVMInstance import CLVCreate
 from storagepool import toolset
 
 # {'immediatelyRun': False, 
