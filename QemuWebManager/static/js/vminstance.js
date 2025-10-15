@@ -44,7 +44,7 @@ function doQueryVMInstanceSuccess(jsonData, response) {
         console.log('vminstance is null');
         return;
     }
-    console.log(vminstance);
+    // console.log(vminstance);
     $('#vmTableBody').empty();
     vminstance.forEach(vm => {
         const statusClass = vm['status'] === 'running' ? 'bg-success' : 'bg-secondary';
@@ -55,48 +55,145 @@ function doQueryVMInstanceSuccess(jsonData, response) {
                 <td>${vm['cpu']}</td>
                 <td>${vm['memory']}</td>
                 <td>                           
-                    <button class="btn btn-sm btn-outline-success action-btn" title="启动"><i class="fas fa-play"></i></button>
-                    <button class="btn btn-sm btn-outline-secondary action-btn" title="暂停"><i class="fas fa-pause"></i></button>
-                    <button class="btn btn-sm btn-outline-info action-btn" title="保存"><i class="fas fa-save"></i></button>
-                    <button class="btn btn-sm btn-outline-warning action-btn" title="关机"><i class="fas fa-power-off"></i></button>
-                    <button class="btn btn-sm btn-outline-danger action-btn" title="强制关机"><i class="fas fa-bolt"></i></button>
-                    <button class="btn btn-sm btn-outline-primary action-btn" title="控制台"><i class="fas fa-terminal"></i></button>
+                    <button class="btn btn-sm btn-outline-success action-btn" title="启动" operation="start"><i class="fas fa-play"></i></button>
+                    <button class="btn btn-sm btn-outline-info action-btn" title="挂起" operation="suspend"><i class="fas fa-save"></i></button>
+                    <button class="btn btn-sm btn-outline-secondary action-btn" title="唤醒" operation="resume"><i class="fas fa-pause"></i></button>                    
+                    <button class="btn btn-sm btn-outline-warning action-btn" title="关机"  operation="stop"><i class="fas fa-power-off"></i></button>
+                    <button class="btn btn-sm btn-outline-danger action-btn" title="强制关机" operation="destroy"><i class="fas fa-bolt"></i></button>
+                    <button class="btn btn-sm btn-outline-primary action-btn" title="控制台" operation="console"><i class="fas fa-terminal"></i></button>
                 </td>
             </tr>
         `;
         $('#vmTableBody').prepend(newRow);
     });
+    console.log('aaaaaaaaaaaa');
+    initVMInstanceBtn();
+}
+
+function initVMInstanceBtn() {
+    $('#vmTableBody  tr').each(function () {
+        const row = $(this);
+        const status = row.find('span.badge').text();
+        switch (status) {
+            case 'running':
+                changeActionBtn('start', row);
+                break;
+            case 'blocked':
+                changeActionBtn('start', row);
+                break;
+            case 'paused':
+                changeActionBtn('suspend', row);
+                break;
+            case 'shutdown':
+                changeActionBtn('stop', row);
+                break;
+            case 'shutoff':
+                changeActionBtn('destroy', row);
+                break;
+            case 'crashed':
+                changeActionBtn('destroy', row);
+                break;
+            case 'pmsuspended':
+                changeActionBtn('destroy', row);
+                break;
+            case 'Unknow':
+                break;
+        }
+
+        
+    });
 }
 
 // 新建虚拟实例
 function do_newVmBtn() {
-    // 示例：添加新行到表格
-    // const newRow = `
-    //         <tr>
-    //             <td><a href="#" class="vm-detail-link" data-vm-id="vm1">新虚拟机</a></td>
-    //             <td><span class="badge bg-secondary">已停止</span></td>
-    //             <td>2</td>
-    //             <td>2048MB</td>
-    //             <td>                           
-    //                 <button class="btn btn-sm btn-outline-success action-btn" title="启动"><i class="fas fa-play"></i></button>
-    //                 <button class="btn btn-sm btn-outline-secondary action-btn" title="暂停"><i class="fas fa-pause"></i></button>
-    //                 <button class="btn btn-sm btn-outline-info action-btn" title="保存"><i class="fas fa-save"></i></button>
-    //                 <button class="btn btn-sm btn-outline-warning action-btn" title="关机"><i class="fas fa-power-off"></i></button>
-    //                 <button class="btn btn-sm btn-outline-danger action-btn" title="强制关机"><i class="fas fa-bolt"></i></button>
-    //                 <button class="btn btn-sm btn-outline-primary action-btn" title="控制台"><i class="fas fa-terminal"></i></button>
-    //             </td>
-    //         </tr>
-    //     `;
-    // $('#vmTableBody').prepend(newRow);
-    console.log('--do_newVmBtn--');
     window.location.href = '/createvmwizard/createvm';
 }
 
+//1.start start/resume按钮不可用
+//2.suspend  suspend/start/console按钮不可用
+//3.resume  resume/start按钮不可用
+//4.stop  stop/suspend/destroy/console按钮不可用
+//5.destroy  destroy/stop/suspend/console按钮不可用
+//6.console  保持原样
+function changeActionBtn(action, row) {
+    const btn_start = row.find('button.btn').eq(0); //start
+    const btn_suspend = row.find('button.btn').eq(1); //suspend
+    const btn_resume = row.find('button.btn').eq(2); //resume
+    const btn_stop = row.find('button.btn').eq(3); //stop
+    const btn_destroy = row.find('button.btn').eq(4); //destroy
+    const btn_console = row.find('button.btn').eq(5); //console
+    row.find('button.btn').removeClass('disabled').css('opacity', '1');
+    switch (action) {
+        case "start":
+            btn_start.addClass('disabled').css('opacity', '0.3');
+            btn_resume.addClass('disabled').css('opacity', '0.3');
+            break;
+        case "suspend":
+            btn_suspend.addClass('disabled').css('opacity', '0.3');
+            btn_start.addClass('disabled').css('opacity', '0.3');
+            btn_console.addClass('disabled').css('opacity', '0.3');
+            break;
+        case "resume":
+            btn_resume.addClass('disabled').css('opacity', '0.3');
+            btn_start.addClass('disabled').css('opacity', '0.3');
+            break;
+        case "stop":
+            btn_stop.addClass('disabled').css('opacity', '0.3');
+            btn_suspend.addClass('disabled').css('opacity', '0.3');
+            btn_destroy.addClass('disabled').css('opacity', '0.3');
+            btn_console.addClass('disabled').css('opacity', '0.3');
+            break;
+        case "destroy":
+            btn_stop.addClass('disabled').css('opacity', '0.3');
+            btn_suspend.addClass('disabled').css('opacity', '0.3');
+            btn_resume.addClass('disabled').css('opacity', '0.3');
+            btn_destroy.addClass('disabled').css('opacity', '0.3');
+            btn_console.addClass('disabled').css('opacity', '0.3');
+            break;
+        case "console":
+            break;
+    }
+}
+
 // 虚拟机操作按钮
+
 function dovmInstanceActionBtn() {
+    const curr_btn = $(this);
     const action = $(this).attr('title');
+    const operation = $(this).attr('operation');
     const vmName = $(this).closest('tr').find('.vm-detail-link').text();
-    alert('将对 ' + vmName + ' 执行 ' + action + ' 操作');
+
+    const row = $(this).closest('tr');
+    // 2. 在行内查找 span.badge 元素
+    const targetSpan = row.find('span.badge');
+    row.find('button.btn').addClass('disabled');
+
+    var jsonData = {
+        action: 'control',
+        operation: operation,
+        vmname: vmName
+    }
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        vminstance = response.response_json;
+        if (vminstance.length === 0) {
+            console.log('vminstance is null');
+            return;
+        }
+        vminstance.forEach(vm => {
+            const statusClass = vm['status'] === 'running' ? 'bg-success' : 'bg-secondary';
+            targetSpan.removeClass('bg-success');
+            targetSpan.removeClass('bg-secondary');
+            targetSpan.text(vm['status']);
+            targetSpan.addClass(statusClass);
+        });
+
+        changeActionBtn(operation, row);
+
+    }, function () { alert(action + ' 虚拟实例失败！'); });
+}
+
+function doControlVMInstanceSuccess(jsonData, response) {
+
 }
 // 虚拟机名称点击事件 - 显示详情
 function dovmDetailLink(e) {

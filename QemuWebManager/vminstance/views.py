@@ -2,11 +2,17 @@ from django.shortcuts import render
 
 import json
 from django.http import JsonResponse
+from APILibvirt.LVVMInstance import CLVVMInstance
 # from APILibvirt.LVNetwork import CLVNetwork
 # Create your views here.
 
-def getVMInstance():
-    return [{'name':'Ubuntu2204', 'status':'running', 'cpu': 4, 'memory': '4096MB'}]
+def getVMInstance(vmName):
+    vmInst = CLVVMInstance()
+    return vmInst.queryVM(vmName)
+
+def opVMInstance(vmName, op):
+    vmInst = CLVVMInstance()
+    return vmInst.operationVM(vmName, op)
 
 def doVMInstance(request):
     if request.method == "POST":
@@ -17,6 +23,18 @@ def doVMInstance(request):
             data = {
                 "result": "success",
                 "message": "%s action success." % json_data["action"],
-                "response_json": getVMInstance(),
+                "response_json": getVMInstance("ALL"),
             }
+            return JsonResponse(data)
+        elif json_data["action"] == "control":
+            op = json_data["operation"]
+            vmName = json_data["vmname"]
+            if opVMInstance(vmName, op) == True:
+                data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"], 
+                    "response_json": getVMInstance(vmName),
+                    }
+            else:
+                data = {"result": "failed", 
+                    "message": "%s action failed!" % json_data["action"]}
             return JsonResponse(data)
