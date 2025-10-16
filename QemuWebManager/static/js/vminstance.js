@@ -173,18 +173,25 @@ function dovmInstanceActionBtn() {
         vmname: vmName
     }
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
-        vminstance = response.response_json;
-        if (vminstance.length === 0) {
-            console.log('vminstance is null');
-            return;
+        if (operation == 'console') {
+            console_info = response.response_json;
+            console.log(console_info);
+            //host: '172.16.123.50:8200' port: "5700"
         }
-        vminstance.forEach(vm => {
-            const statusClass = vm['status'] === 'running' ? 'bg-success' : 'bg-secondary';
-            targetSpan.removeClass('bg-success');
-            targetSpan.removeClass('bg-secondary');
-            targetSpan.text(vm['status']);
-            targetSpan.addClass(statusClass);
-        });
+        else {
+            vminstance = response.response_json;
+            if (vminstance.length === 0) {
+                console.log('vminstance is null');
+                return;
+            }
+            vminstance.forEach(vm => {
+                const statusClass = vm['status'] === 'running' ? 'bg-success' : 'bg-secondary';
+                targetSpan.removeClass('bg-success');
+                targetSpan.removeClass('bg-secondary');
+                targetSpan.text(vm['status']);
+                targetSpan.addClass(statusClass);
+            });
+        }
 
         changeActionBtn(operation, row);
 
@@ -234,7 +241,7 @@ function do_deleteButton() {
     if (confirm('确定要永久删除此虚拟机及其所有硬盘镜像吗？此操作不可撤销！')) {
         // alert('虚拟机删除请求已发送（模拟）');
 
-        const vmName =  $('#vm-detail-name').text();
+        const vmName = $('#vm-detail-name').text();
 
         var jsonData = {
             action: 'control',

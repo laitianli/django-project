@@ -100,6 +100,12 @@ class CLVVMInstance(ConnectLibvirtd):
                 print(f"rm file: {file} failed! {e}")
         return ret
     
+    def __getWebSocketPort(self, dom):
+        websocket_port = util.get_xml_path(dom.XMLDesc(0),
+                                           "/domain/devices/graphics[@type='vnc']/@websocket")
+        # print(f'---------websocket_port: {websocket_port}')
+        return websocket_port
+    
     def __operationOneVM(self, dom, op):
         if op == 'start':
             ret = dom.create()
@@ -112,7 +118,7 @@ class CLVVMInstance(ConnectLibvirtd):
         elif op == 'destroy':
             ret = dom.destroy()
         elif op == 'console':
-            ret = 0
+            ret = self.__getWebSocketPort(dom)
         elif op == 'deletevm':
             ret = self.__doDeleteVM(dom)
         return ret
@@ -132,4 +138,16 @@ class CLVVMInstance(ConnectLibvirtd):
             return True
         else:
             return False
+        
+    def operationVMConsole(self, vmName):
+        conn = self.get_conn()
+        dom = conn.lookupByName(vmName)
+        if dom is None:
+            self.connect_close()
+            return False
+        
+        ret = self.__operationOneVM(dom, 'console')
+        
+        self.connect_close()
+        return ret
         
