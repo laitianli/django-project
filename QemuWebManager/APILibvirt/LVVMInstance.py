@@ -1,7 +1,7 @@
 from APILibvirt.LVconnect import ConnectLibvirtd
 from APILibvirt import util
 import json
-
+import os
 class CLVCreate(ConnectLibvirtd):
     def createVM(self, vmName, strXML):
         conn = self.get_conn()
@@ -72,13 +72,36 @@ class CLVVMInstance(ConnectLibvirtd):
                     onevm.append(inst)
                     return onevm
             return []
+        
+    def __doDeleteVM(self, dom):
+        if (self.__get_status(dom) != 'shutoff'):
+            dom.destroy()
+        
+        def getDiskFileList(ctx):
+            
+            res = []
+            for type in ctx.xpathEval("/domain/devices/disk[@device='disk']/source/@file"):
+                res.append(type.content)
+            return res
+        
+        diskFileList = util.get_xml_path(dom.XMLDesc(0), None, getDiskFileList)
+        if len(diskFileList) != 0:
+            print(f'disFileList: {diskFileList}')
+            
+        ret = dom.undefine()
+        for file in diskFileList:
+            print(f'[Note]begin rm file: {file}')
+            try:
+                os.remove(file)
+            except FileNotFoundError:
+                print(f"rm file: {file} not Found!")
+            except PermissionError:
+                print(f"rm file: {file} PermissionError!")
+            except Exception as e:
+                print(f"rm file: {file} failed!")
+        return ret
     
-    def operationVM(self, vmName, op):
-        conn = self.get_conn()
-        dom = conn.lookupByName(vmName)
-        if dom is None:
-            self.connect_close()
-            return False
+    def __operationOneVM(self, dom, op):
         if op == 'start':
             ret = dom.create()
         elif op == 'suspend':
@@ -91,6 +114,18 @@ class CLVVMInstance(ConnectLibvirtd):
             ret = dom.destroy()
         elif op == 'console':
             ret = 0
+        elif op == 'deletevm':
+            ret = self.__doDeleteVM(dom)
+        return ret
+    
+    def operationVM(self, vmName, op):
+        conn = self.get_conn()
+        dom = conn.lookupByName(vmName)
+        if dom is None:
+            self.connect_close()
+            return False
+        
+        ret = self.__operationOneVM(dom, op)
         
         self.connect_close()
         print(f'operationVM {op} ret: {ret}')

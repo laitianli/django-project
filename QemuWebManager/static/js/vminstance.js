@@ -66,7 +66,6 @@ function doQueryVMInstanceSuccess(jsonData, response) {
         `;
         $('#vmTableBody').prepend(newRow);
     });
-    console.log('aaaaaaaaaaaa');
     initVMInstanceBtn();
 }
 
@@ -100,7 +99,7 @@ function initVMInstanceBtn() {
                 break;
         }
 
-        
+
     });
 }
 
@@ -233,6 +232,18 @@ function do_confirmDelete() {
 // 删除按钮点击事件
 function do_deleteButton() {
     if (confirm('确定要永久删除此虚拟机及其所有硬盘镜像吗？此操作不可撤销！')) {
-        alert('虚拟机删除请求已发送（模拟）');
+        // alert('虚拟机删除请求已发送（模拟）');
+
+        const vmName =  $('#vm-detail-name').text();
+
+        var jsonData = {
+            action: 'control',
+            operation: 'deletevm',
+            vmname: vmName
+        }
+        sendReqeust2vminstance(jsonData, function (jsonData, response) {
+            initVMInstance(); //重新显示列表
+            doBackToVmList(); //返回详细列表
+        }, function () { alert(action + ' 虚拟实例失败！'); });
     }
 }
