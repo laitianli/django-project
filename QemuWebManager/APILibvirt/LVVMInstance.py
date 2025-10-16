@@ -78,7 +78,6 @@ class CLVVMInstance(ConnectLibvirtd):
             dom.destroy()
         
         def getDiskFileList(ctx):
-            
             res = []
             for type in ctx.xpathEval("/domain/devices/disk[@device='disk']/source/@file"):
                 res.append(type.content)
@@ -98,7 +97,7 @@ class CLVVMInstance(ConnectLibvirtd):
             except PermissionError:
                 print(f"rm file: {file} PermissionError!")
             except Exception as e:
-                print(f"rm file: {file} failed!")
+                print(f"rm file: {file} failed! {e}")
         return ret
     
     def __operationOneVM(self, dom, op):

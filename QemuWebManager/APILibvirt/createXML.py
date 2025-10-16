@@ -85,7 +85,13 @@ class createVMXML():
         if parentNode is not None:
             cpuNode = libxml2.newNode('cpu')
             if isHost == True:
-                cpuNode.setProp('mode','host')
+                cpuNode.setProp('mode','host-model')
+                cpuNode.setProp('check','partial')
+                
+                modelNode = libxml2.newNode('model')
+                modelNode.setProp('fallback', 'allow')
+                cpuNode.addChild(modelNode)
+                
                 parentNode.addChild(cpuNode)
             else:
                 cpuNode.setProp('mode','custom')
@@ -508,7 +514,7 @@ class createVMXML():
         self.__createFeaturesNode(root)
         
         ##创建cpu节点
-        self.__createCPUNode(root, False)
+        self.__createCPUNode(root, True)
         
         ##创建clock节点
         self.__createClockNode(root)
