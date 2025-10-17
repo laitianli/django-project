@@ -34,13 +34,16 @@ def doVMInstance(request):
             op = json_data["operation"]
             vmName = json_data["vmname"]
             if op == 'console':
-                console_info = []
-                console_info.append({'host': request.get_host(), 'port': opVmConsole(vmName)})
-                print(f'console_info: {console_info}')
-                data = {"result": "success", 
-                    "message": "%s action success!" % json_data["action"], 
-                    "response_json": console_info,
-                    }
+                # console_info = []
+                # console_info.append({'host': request.get_host(), 'port': opVmConsole(vmName)})
+                # print(f'console_info: {console_info}')
+                # data = {"result": "success", 
+                #     "message": "%s action success!" % json_data["action"], 
+                #     "response_json": console_info,
+                #     }
+                host=request.get_host()
+                port=opVmConsole(vmName)
+                return render(request, 'vnc-console.html', locals())
             elif opVMInstance(vmName, op) == True:
                 data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"], 
@@ -50,3 +53,17 @@ def doVMInstance(request):
                 data = {"result": "failed", 
                     "message": "%s action failed!" % json_data["action"]}
             return JsonResponse(data)
+        
+def doVMConsole(request):
+    if request.method == "GET":
+        vmname = request.GET['vm']
+        print(f'--------GET---------')
+        host=request.get_host()
+        port=opVmConsole(vmname)
+        return render(request, 'vnc-console.html', locals())
+    elif request.method == "POST":
+        vmname = request.POST['vm']
+        print(f'--------POST---------vmname: {vmname}')
+        host=request.get_host()
+        port=opVmConsole(vmname)
+        return render(request, 'vnc-console.html', locals())

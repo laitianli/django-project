@@ -162,6 +162,12 @@ function dovmInstanceActionBtn() {
     const operation = $(this).attr('operation');
     const vmName = $(this).closest('tr').find('.vm-detail-link').text();
 
+    if (operation == 'console') {
+        url = `/vm/console?vm=${vmName}`
+        // window.open(url, '', 'width=850,height=485') //在新窗口显示
+        window.open(url)   //在新标签页面显示
+        return;
+    }
     const row = $(this).closest('tr');
     // 2. 在行内查找 span.badge 元素
     const targetSpan = row.find('span.badge');
