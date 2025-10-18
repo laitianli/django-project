@@ -57,7 +57,7 @@ const UI = {
 
         // Set up translations
         try {
-            await l10n.setup(LINGUAS, "app/locale/");
+            await l10n.setup(LINGUAS, "/static/js/noVNC/app/locale/");
         } catch (err) {
             Log.Error("Failed to load translations: " + err);
         }
@@ -248,6 +248,7 @@ const UI = {
         for (let i = 0;i < exps.length;i++) {
             exps[i].addEventListener('click', UI.toggleExpander);
         }
+        document.querySelector('#WebSocketID').classList.add('hidden');
     },
 
     addTouchSpecificHandlers() {

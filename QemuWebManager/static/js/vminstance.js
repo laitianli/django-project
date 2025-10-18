@@ -179,26 +179,18 @@ function dovmInstanceActionBtn() {
         vmname: vmName
     }
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
-        if (operation == 'console') {
-            console_info = response.response_json;
-            console.log(console_info);
-            //host: '172.16.123.50:8200' port: "5700"
+        vminstance = response.response_json;
+        if (vminstance.length === 0) {
+            console.log('vminstance is null');
+            return;
         }
-        else {
-            vminstance = response.response_json;
-            if (vminstance.length === 0) {
-                console.log('vminstance is null');
-                return;
-            }
-            vminstance.forEach(vm => {
-                const statusClass = vm['status'] === 'running' ? 'bg-success' : 'bg-secondary';
-                targetSpan.removeClass('bg-success');
-                targetSpan.removeClass('bg-secondary');
-                targetSpan.text(vm['status']);
-                targetSpan.addClass(statusClass);
-            });
-        }
-
+        vminstance.forEach(vm => {
+            const statusClass = vm['status'] === 'running' ? 'bg-success' : 'bg-secondary';
+            targetSpan.removeClass('bg-success');
+            targetSpan.removeClass('bg-secondary');
+            targetSpan.text(vm['status']);
+            targetSpan.addClass(statusClass);
+        });
         changeActionBtn(operation, row);
 
     }, function () { alert(action + ' 虚拟实例失败！'); });
