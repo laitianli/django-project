@@ -73,6 +73,40 @@ class CLVVMInstance(ConnectLibvirtd):
                     return onevm
             return []
         
+    def queryVMDetailInfo(self, vmName):
+        conn = self.get_conn()
+        vm = []
+        dom = conn.lookupByName(vmName)
+        if dom is not None:
+            mem = util.get_xml_path(dom.XMLDesc(0), "/domain/currentMemory")
+            mem = int(mem) / 1024
+            memMax = util.get_xml_path(dom.XMLDesc(0), "/domain/memory")
+            memMax = int(memMax) / 1024
+            cur_vcpu = util.get_xml_path(dom.XMLDesc(0), "/domain/vcpu/@current")
+            if cur_vcpu:
+                vcpu = cur_vcpu
+            else:
+                vcpu = util.get_xml_path(dom.XMLDesc(0), "/domain/vcpu")
+
+            consoleType = util.get_xml_path(dom.XMLDesc(0),
+                                "/domain/devices/graphics/@type")
+            vm.append({'name':dom.name(), 'status':self.__get_status(dom), 'cpu': vcpu, 'memory': int(mem), 'memMax': int(memMax), 
+                       'consoleType': consoleType, 
+                       })
+        self.connect_close()
+        return vm
+        
+    def queryVMXML(self, vmName):
+        conn = self.get_conn()
+        vm = []
+
+        if vmName in self.__get_instances(conn):
+            dom = conn.lookupByName(vmName)
+            vm.append({'name':dom.name(), 'xml':dom.XMLDesc(0)})
+
+        self.connect_close()
+        return vm
+        
     def __doDeleteVM(self, dom):
         if (self.__get_status(dom) != 'shutoff'):
             dom.destroy()
@@ -102,8 +136,10 @@ class CLVVMInstance(ConnectLibvirtd):
     
     def __getWebSocketPort(self, dom):
         websocket_port = util.get_xml_path(dom.XMLDesc(0),
-                                           "/domain/devices/graphics[@type='vnc']/@websocket")
-        # print(f'---------websocket_port: {websocket_port}')
+                            "/domain/devices/graphics[@type='vnc']/@websocket")
+        if websocket_port is None:
+            websocket_port = util.get_xml_path(dom.XMLDesc(0),
+                            "/domain/devices/graphics[@type='spice']/@websocket")
         return websocket_port
     
     def __operationOneVM(self, dom, op):
@@ -150,4 +186,17 @@ class CLVVMInstance(ConnectLibvirtd):
         
         self.connect_close()
         return ret
+    
+    def getVMConsoleType(self, vmName):
+        conn = self.get_conn()
+        dom = conn.lookupByName(vmName)
+        if dom is None:
+            self.connect_close()
+            return None
+    
+        consoleType = util.get_xml_path(dom.XMLDesc(0),
+                        "/domain/devices/graphics/@type")
+        
+        self.connect_close()
+        return consoleType
         

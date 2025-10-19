@@ -1,3 +1,6 @@
+
+var orginConsoleType;
+
 function initVMInstance() {
     console.log('--initVMInstance---')
     var jsonData = {
@@ -44,7 +47,6 @@ function doQueryVMInstanceSuccess(jsonData, response) {
         console.log('vminstance is null');
         return;
     }
-    // console.log(vminstance);
     $('#vmTableBody').empty();
     vminstance.forEach(vm => {
         const statusClass = vm['status'] === 'running' ? 'bg-success' : 'bg-secondary';
@@ -198,11 +200,10 @@ function doControlVMInstanceSuccess(jsonData, response) {
 }
 
 //1.start start/resume按钮不可用
-//2.suspend  suspend/start/console按钮不可用
+//2.suspend  suspend/start/按钮不可用
 //3.resume  resume/start按钮不可用
-//4.stop  stop/suspend/destroy/console按钮不可用
-//5.destroy  destroy/stop/suspend/console按钮不可用
-//6.console  保持原样
+//4.stop  stop/suspend/destroy按钮不可用
+//5.destroy  destroy/stop/suspend按钮不可用
 function changePowersubpageBtnByAction(action) {
     const btn_start = $('#power button.btn').eq(0); //start
     const btn_suspend = $('#power button.btn').eq(1); //suspend
@@ -273,20 +274,67 @@ function initPowersubpage(vmStatus) {
     }
 }
 
+function initConsolesubpage() {
+    orginConsoleType = $('#consoleType').val();
+    $('#setConsoleTypeBtn').addClass('disabled');
+}
+
+function getVMDetailInfo(vmName) {
+    var jsonData = {
+        action: 'queryDetail',
+        vmname: vmName
+    }
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        vminstance = response.response_json;
+        if (vminstance.length === 0) {
+            console.log('vminstance is null');
+            return;
+        }
+        vminstance.forEach(vm => {
+            console.log(vm);
+            $('#consoleType').val(vm['consoleType']);
+            $('#vcpuCount').val(vm['cpu']);
+            $('#memorySize').val(vm['memMax']);
+            $('#currMemorySize').val(vm['memory']);
+
+        });
+
+    }, function () { alert('查询虚拟实例详细信息失败！'); });
+}
+
+function getVMXMLInfo(vmName) {
+    var jsonData = {
+        action: 'queryXML',
+        vmname: vmName
+    }
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        vminstance = response.response_json;
+        if (vminstance.length === 0) {
+            console.log('vminstance is null');
+            return;
+        }
+        vminstance.forEach(vm => {
+            // console.log(vm);
+            $('#xmlContent').text(vm['xml']);
+        });
+
+    }, function () { alert('查询虚拟实例详细信息失败！'); });
+}
+
 // 虚拟机名称点击事件 - 显示详情
 function dovmDetailLink(e) {
     e.preventDefault();
     const vmId = $(this).data('vm-id');
     const vmName = $(this).text();
     const vmStatus = $(this).closest('tr').find('td:eq(1)').text();
-    const vmVcpus = $(this).closest('tr').find('td:eq(2)').text();
+    const vmVCPUs = $(this).closest('tr').find('td:eq(2)').text();
     const vmMemory = $(this).closest('tr').find('td:eq(3)').text();
     console.log('--vmId:' + vmId + ' vmName: ' + vmName + ' vmStatus:' + vmStatus);
     // 填充详情数据
     $('#vm-detail-title').text(vmName + ' 详情');
     $('#vm-detail-name').text(vmName);
     $('#vm-detail-status').text(vmStatus);
-    $('#vm-detail-vcpus').text(vmVcpus);
+    $('#vm-detail-vcpus').text(vmVCPUs);
     $('#vm-detail-memory').text(vmMemory);
 
     // 显示详情面板
@@ -294,6 +342,20 @@ function dovmDetailLink(e) {
     $('#vm-detail-panel').removeClass('d-none');
 
     initPowersubpage(vmStatus);
+    initConsolesubpage();
+    getVMDetailInfo(vmName);
+    getVMXMLInfo(vmName);
+}
+
+function doConsoleTypeChange(e) {
+    e.preventDefault();
+    console.log('change setConsoleTypeBtn....')
+    if (orginConsoleType == $(this).val()) {
+        $('#setConsoleTypeBtn').addClass('disabled');
+    }
+    else {
+        $('#setConsoleTypeBtn').removeClass('disabled');
+    }
 }
 
 function changeVMTableInPowersubpage(vm) {
@@ -332,7 +394,7 @@ function dovmInstanceActionPowerBtn(e) {
         vminstance.forEach(vm => {
             initPowersubpage(vm['status']);
             changeVMTableInPowersubpage(vm);
-        });        
+        });
 
     }, function () { alert(operation + ' 虚拟实例失败！'); });
 }

@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 import json
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseNotFound
 from APILibvirt.LVVMInstance import CLVVMInstance
 # from APILibvirt.LVNetwork import CLVNetwork
 # Create your views here.
@@ -10,6 +10,14 @@ def getVMInstance(vmName):
     vmInst = CLVVMInstance()
     return vmInst.queryVM(vmName)
 
+def getVMDetailInfo(vmName):
+    vmInst = CLVVMInstance()
+    return vmInst.queryVMDetailInfo(vmName)
+
+def getVMXML(vmName):
+    vmInst = CLVVMInstance()
+    return vmInst.queryVMXML(vmName)
+
 def opVMInstance(vmName, op):
     vmInst = CLVVMInstance()
     return vmInst.operationVM(vmName, op)
@@ -17,6 +25,11 @@ def opVMInstance(vmName, op):
 def opVmConsole(vmName):
     vmInst = CLVVMInstance()
     return vmInst.operationVMConsole(vmName)
+
+def opVmConsoleType(vmName):
+    vmInst = CLVVMInstance()
+    return vmInst.getVMConsoleType(vmName)
+
 
 def doVMInstance(request):
     if request.method == "POST":
@@ -53,18 +66,31 @@ def doVMInstance(request):
                 data = {"result": "failed", 
                     "message": "%s action failed!" % json_data["action"]}
             return JsonResponse(data)
+        elif json_data['action'] == 'queryDetail':
+            vmName = json_data["vmname"]
+            data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"], 
+                    "response_json": getVMDetailInfo(vmName),
+                    }
+            return JsonResponse(data)
+        elif json_data['action'] == 'queryXML':
+            vmName = json_data["vmname"]
+            data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"], 
+                    "response_json": getVMXML(vmName),
+                    }
+            return JsonResponse(data)
         
 def doVMConsole(request):
     if request.method == "GET":
         vmname = request.GET['vm']
-        print(f'--------GET---------')
         host=request.get_host().split(':')[0]
         port=opVmConsole(vmname)
         # return render(request, 'vnc-console-detail-vm.html', locals())
-        return render(request, 'vnc-console.html', locals())
-    elif request.method == "POST":
-        vmname = request.POST['vm']
-        print(f'--------POST---------vmname: {vmname}')
-        host=request.get_host()
-        port=opVmConsole(vmname)
-        return render(request, 'vnc-console.html', locals())
+        consoleType = opVmConsoleType(vmname)
+        if consoleType== 'vnc':
+            return render(request, 'vnc-console.html', locals())
+        elif consoleType == 'spice':
+            return render(request, 'spice-console.html', locals())
+        else:
+            return HttpResponseNotFound(request)
