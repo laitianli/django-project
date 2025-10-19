@@ -98,8 +98,6 @@ function initVMInstanceBtn() {
             case 'Unknow':
                 break;
         }
-
-
     });
 }
 
@@ -155,7 +153,6 @@ function changeActionBtn(action, row) {
 }
 
 // 虚拟机操作按钮
-
 function dovmInstanceActionBtn() {
     const curr_btn = $(this);
     const action = $(this).attr('title');
@@ -199,6 +196,83 @@ function dovmInstanceActionBtn() {
 function doControlVMInstanceSuccess(jsonData, response) {
 
 }
+
+//1.start start/resume按钮不可用
+//2.suspend  suspend/start/console按钮不可用
+//3.resume  resume/start按钮不可用
+//4.stop  stop/suspend/destroy/console按钮不可用
+//5.destroy  destroy/stop/suspend/console按钮不可用
+//6.console  保持原样
+function changePowersubpageBtnByAction(action) {
+    const btn_start = $('#power button.btn').eq(0); //start
+    const btn_suspend = $('#power button.btn').eq(1); //suspend
+    const btn_resume = $('#power button.btn').eq(2); //resume
+    const btn_stop = $('#power button.btn').eq(3); //stop
+    const btn_destroy = $('#power button.btn').eq(4); //destroy
+    $('#power button.btn').removeClass('disabled').css('opacity', '1');
+    switch (action) {
+        case "start":
+            btn_start.addClass('disabled').css('opacity', '0.3');
+            btn_resume.addClass('disabled').css('opacity', '0.3');
+            break;
+        case "suspend":
+            btn_suspend.addClass('disabled').css('opacity', '0.3');
+            btn_start.addClass('disabled').css('opacity', '0.3');
+            break;
+        case "resume":
+            btn_resume.addClass('disabled').css('opacity', '0.3');
+            btn_start.addClass('disabled').css('opacity', '0.3');
+            break;
+        case "stop":
+            btn_stop.addClass('disabled').css('opacity', '0.3');
+            btn_suspend.addClass('disabled').css('opacity', '0.3');
+            btn_destroy.addClass('disabled').css('opacity', '0.3');
+            break;
+        case "destroy":
+            btn_stop.addClass('disabled').css('opacity', '0.3');
+            btn_suspend.addClass('disabled').css('opacity', '0.3');
+            btn_resume.addClass('disabled').css('opacity', '0.3');
+            btn_destroy.addClass('disabled').css('opacity', '0.3');
+            break;
+        case "console":
+            break;
+    }
+}
+
+function initPowersubpage(vmStatus) {
+    var span = $('#power p span');
+    span.text(vmStatus);
+    span.removeClass('bg-success');
+    span.removeClass('bg-secondary');
+    const statusClass = vmStatus === 'running' ? 'bg-success' : 'bg-secondary';
+    span.addClass(statusClass);
+    switch (vmStatus) {
+        case 'running':
+            changePowersubpageBtnByAction('start');
+            break;
+        case 'blocked':
+            changePowersubpageBtnByAction('start');
+            break;
+        case 'paused':
+            changePowersubpageBtnByAction('suspend');
+            break;
+        case 'shutdown':
+            changePowersubpageBtnByAction('stop');
+            break;
+        case 'shutoff':
+            changePowersubpageBtnByAction('destroy');
+            break;
+        case 'crashed':
+            changePowersubpageBtnByAction('destroy');
+            break;
+        case 'pmsuspended':
+            changePowersubpageBtnByAction('destroy');
+            break;
+        case 'Unknow':
+            break;
+    }
+}
+
 // 虚拟机名称点击事件 - 显示详情
 function dovmDetailLink(e) {
     e.preventDefault();
@@ -218,6 +292,49 @@ function dovmDetailLink(e) {
     // 显示详情面板
     $('.content-panel').addClass('d-none');
     $('#vm-detail-panel').removeClass('d-none');
+
+    initPowersubpage(vmStatus);
+}
+
+function changeVMTableInPowersubpage(vm) {
+    $('#vmTableBody  tr').each(function () {
+        const row = $(this);
+        var linkText = row.find('td a').text();
+        console.log('linkText: ' + linkText);
+        if (linkText === vm['name']) {
+            var targetSpan = row.find('span.badge');
+            targetSpan.text(vm['status']);
+            const statusClass = vm['status'] === 'running' ? 'bg-success' : 'bg-secondary';
+            targetSpan.removeClass('bg-success');
+            targetSpan.removeClass('bg-secondary');
+            targetSpan.text(vm['status']);
+            targetSpan.addClass(statusClass);
+            initVMInstanceBtn();
+        }
+    });
+}
+
+function dovmInstanceActionPowerBtn(e) {
+    e.preventDefault();
+    const operation = $(this).attr('operation');
+    const vmName = $('#vm-detail-name').text();
+    var jsonData = {
+        action: 'control',
+        operation: operation,
+        vmname: vmName
+    }
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        vminstance = response.response_json;
+        if (vminstance.length === 0) {
+            console.log('vminstance is null');
+            return;
+        }
+        vminstance.forEach(vm => {
+            initPowersubpage(vm['status']);
+            changeVMTableInPowersubpage(vm);
+        });        
+
+    }, function () { alert(operation + ' 虚拟实例失败！'); });
 }
 
 // 返回虚拟机列表
@@ -226,11 +343,9 @@ function doBackToVmList() {
     $('#vm-detail-panel').addClass('d-none');
 }
 
-
 // 虚拟机详情->销毁->[删除]
 // 确认删除复选框事件
 function do_confirmDelete() {
-    console.log('---deleteButton--')
     $('#deleteButton').prop('disabled', !this.checked);
 }
 

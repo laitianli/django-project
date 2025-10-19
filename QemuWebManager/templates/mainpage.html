@@ -1347,13 +1347,15 @@
                                         <!-- <h5>电源管理</h5> -->
                                         <p>您可以在此控制虚拟机的电源状态。当前状态：<span class="badge bg-success">运行中</span></p>
                                         <div class="btn-group" role="group">
-                                            <button type="button" class="btn btn-primary"><i
+                                            <button type="button" class="btn btn-outline-primary action-power-btn" operation="start"><i
                                                     class="fas fa-play me-2"></i>开机</button>
-                                            <button type="button" class="btn btn-warning"><i
-                                                    class="fas fa-pause me-2"></i>暂停</button>
-                                            <button type="button" class="btn btn-secondary"><i
+                                            <button type="button" class="btn btn-outline-warning  action-power-btn" operation="suspend"><i
+                                                    class="fas fa-save me-2"></i>挂起</button>
+                                            <button type="button" class="btn btn-outline-info  action-power-btn" operation="resume"><i
+                                                    class="fas fa-pause me-2"></i>唤醒</button>
+                                            <button type="button" class="btn btn-outline-secondary  action-power-btn" operation="stop"><i
                                                     class="fas fa-stop me-2"></i>关机</button>
-                                            <button type="button" class="btn btn-danger"><i
+                                            <button type="button" class="btn btn-outline-danger  action-power-btn" operation="destroy"><i
                                                     class="fas fa-plug me-2"></i>强制关机</button>
                                         </div>
                                     </div>

@@ -38,6 +38,9 @@ $(document).ready(function () {
     // 虚拟机操作按钮
     $(document).on('click', '.action-btn', dovmInstanceActionBtn);
 
+    // 虚拟机【电源】按钮
+    $(document).on('click', '.action-power-btn', dovmInstanceActionPowerBtn);
+
     // 虚拟机详情->销毁->[删除]
     // 确认删除复选框事件
     $(document).on('change', '#confirmDelete', do_confirmDelete);
