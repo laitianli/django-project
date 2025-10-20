@@ -19,3 +19,6 @@ sudo apt install qemu-kvm qemu-system-x86 libvirt-daemon-system virt-manager
 
 # 安装 SPICE 服务器端组件、客户端工具和客户机代理
 sudo apt install spice-server spice-vdagent spice-client-gtk
+
+# Ubuntu/Debian
+sudo apt install spice-vdagent
