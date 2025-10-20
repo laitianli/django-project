@@ -135,12 +135,16 @@ class CLVVMInstance(ConnectLibvirtd):
         return ret
     
     def __getWebSocketPort(self, dom):
-        websocket_port = util.get_xml_path(dom.XMLDesc(0),
+        consoleType = util.get_xml_path(dom.XMLDesc(0),
+                        "/domain/devices/graphics/@type")
+        
+        if consoleType == 'vnc':
+            consolePort = util.get_xml_path(dom.XMLDesc(0),
                             "/domain/devices/graphics[@type='vnc']/@websocket")
-        if websocket_port is None:
-            websocket_port = util.get_xml_path(dom.XMLDesc(0),
-                            "/domain/devices/graphics[@type='spice']/@websocket")
-        return websocket_port
+        elif consoleType == 'spice':
+            consolePort = util.get_xml_path(dom.XMLDesc(0),
+                        "/domain/devices/graphics/@port")
+        return consolePort
     
     def __operationOneVM(self, dom, op):
         if op == 'start':

@@ -7,3 +7,15 @@ conda config --set auto_activate_base true
 qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 4096 -boot c  -net nic -net tap -hda ./tvm1.qcom2 -cdrom /mnt/d/os/ubuntu-22.04.5-desktop-amd64.iso -vnc 0:0
 
 
+<graphics type='spice' autoport='yes' listen='0.0.0.0'>
+     <listen type='address' address='0.0.0.0'/>
+</graphics>
+
+# 更新软件包列表
+sudo apt update
+
+# 安装 QEMU、KVM 和虚拟化管理工具
+sudo apt install qemu-kvm qemu-system-x86 libvirt-daemon-system virt-manager
+
+# 安装 SPICE 服务器端组件、客户端工具和客户机代理
+sudo apt install spice-server spice-vdagent spice-client-gtk

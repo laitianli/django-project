@@ -268,14 +268,14 @@ class createVMXML():
             subTargetNode.setProp('dev', dev) # 3
             subTargetNode.setProp('bus', bus) # 4
             diskNode.addChild(subTargetNode)
-            
-            subAddressNode = libxml2.newNode('address')
-            subAddressNode.setProp('type', 'pci')
-            subAddressNode.setProp('domain', '0x0000')
-            subAddressNode.setProp('bus', '0')
-            subAddressNode.setProp('slot', '0')
-            subAddressNode.setProp('function', '0')
-            diskNode.addChild(subAddressNode)
+            if (bus == 'virtio'):
+                subAddressNode = libxml2.newNode('address')
+                subAddressNode.setProp('type', 'pci')
+                subAddressNode.setProp('domain', '0x0000')
+                subAddressNode.setProp('bus', '0')
+                subAddressNode.setProp('slot', '0')
+                subAddressNode.setProp('function', '0')
+                diskNode.addChild(subAddressNode)
     def __addNIC2Device(self, devNode):
         for e in self.nicInfo:
             self.__addOneNIC2Device(devNode, e['type'], e['mac'], e['network'])
