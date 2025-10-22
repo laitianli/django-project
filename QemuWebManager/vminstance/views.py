@@ -30,6 +30,10 @@ def opVmConsoleType(vmName):
     vmInst = CLVVMInstance()
     return vmInst.getVMConsoleType(vmName)
 
+def changeVmConsoleType(vmName, type):
+    vmInst = CLVVMInstance()
+    return vmInst.changeVMConsoleType(vmName, type)
+
 
 def doVMInstance(request):
     if request.method == "POST":
@@ -78,6 +82,17 @@ def doVMInstance(request):
             data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"], 
                     "response_json": getVMXML(vmName),
+                    }
+            return JsonResponse(data)
+        elif json_data['action'] == 'setting':
+            vmName = json_data["vmname"]
+            subpage = json_data["subpage"]
+            if subpage == 'setting_console':
+                newval = json_data['value']
+                changeVmConsoleType(vmName, newval)
+            data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"], 
+                    "response_json": 'tmp',
                     }
             return JsonResponse(data)
         

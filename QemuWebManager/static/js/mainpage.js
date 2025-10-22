@@ -36,6 +36,7 @@ $(document).ready(function () {
     $(document).on('click', '.vm-detail-link', dovmDetailLink);
 
     $(document).on('change', '#consoleType', doConsoleTypeChange);
+    $(document).on('click', '#setConsoleTypeBtn', doSetConsoleTypeBtn);
 
     // 虚拟机操作按钮
     $(document).on('click', '.action-btn', dovmInstanceActionBtn);

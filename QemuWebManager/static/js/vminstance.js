@@ -299,6 +299,8 @@ function getVMDetailInfo(vmName) {
 
         });
 
+        initConsolesubpage();
+
     }, function () { alert('查询虚拟实例详细信息失败！'); });
 }
 
@@ -337,25 +339,55 @@ function dovmDetailLink(e) {
     $('#vm-detail-vcpus').text(vmVCPUs);
     $('#vm-detail-memory').text(vmMemory);
 
+    $('#setConsoleTypeNote').hide();
+
     // 显示详情面板
     $('.content-panel').addClass('d-none');
     $('#vm-detail-panel').removeClass('d-none');
 
     initPowersubpage(vmStatus);
-    initConsolesubpage();
+    
     getVMDetailInfo(vmName);
     getVMXMLInfo(vmName);
+
+
+    
 }
 
 function doConsoleTypeChange(e) {
     e.preventDefault();
-    console.log('change setConsoleTypeBtn....')
     if (orginConsoleType == $(this).val()) {
         $('#setConsoleTypeBtn').addClass('disabled');
     }
     else {
         $('#setConsoleTypeBtn').removeClass('disabled');
     }
+}
+
+function doSetConsoleTypeBtn(e) {
+    e.preventDefault();
+    const vmName = $('#vm-detail-name').text();
+    var jsonData = {
+        action: 'setting',
+        vmname: vmName,
+        subpage: 'setting_console',
+        value: $('#consoleType').val()
+    }
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        // vminstance = response.response_json;
+        // if (vminstance.length === 0) {
+        //     console.log('vminstance is null');
+        //     return;
+        // }
+        // vminstance.forEach(vm => {
+        //     // console.log(vm);
+        //     $('#xmlContent').text(vm['xml']);
+        // });
+        orginConsoleType = $('#consoleType').val();
+        $('#setConsoleTypeBtn').addClass('disabled');
+        $('#setConsoleTypeNote').show();
+
+    }, function () { alert('查询虚拟实例详细信息失败！'); });
 }
 
 function changeVMTableInPowersubpage(vm) {

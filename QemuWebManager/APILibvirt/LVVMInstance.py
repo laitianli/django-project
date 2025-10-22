@@ -2,6 +2,13 @@ from APILibvirt.LVconnect import ConnectLibvirtd
 from APILibvirt import util
 import json
 import os
+from xml.etree import ElementTree
+try:
+    from libvirt import libvirtError, VIR_DOMAIN_XML_SECURE, VIR_MIGRATE_LIVE, \
+        VIR_MIGRATE_UNSAFE, VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA
+except:
+    from libvirt import libvirtError, VIR_DOMAIN_XML_SECURE, VIR_MIGRATE_LIVE
+    
 class CLVCreate(ConnectLibvirtd):
     def createVM(self, vmName, strXML):
         conn = self.get_conn()
@@ -90,6 +97,7 @@ class CLVVMInstance(ConnectLibvirtd):
 
             consoleType = util.get_xml_path(dom.XMLDesc(0),
                                 "/domain/devices/graphics/@type")
+            # print(f'--consoleType: {consoleType}')
             vm.append({'name':dom.name(), 'status':self.__get_status(dom), 'cpu': vcpu, 'memory': int(mem), 'memMax': int(memMax), 
                        'consoleType': consoleType, 
                        })
@@ -173,7 +181,7 @@ class CLVVMInstance(ConnectLibvirtd):
         ret = self.__operationOneVM(dom, op)
         
         self.connect_close()
-        print(f'operationVM {op} ret: {ret}')
+        # print(f'operationVM {op} ret: {ret}')
         if ret == 0:
             return True
         else:
@@ -203,4 +211,28 @@ class CLVVMInstance(ConnectLibvirtd):
         
         self.connect_close()
         return consoleType
+    
+    def changeVMConsoleType(self, vmName, type):
+        conn = self.get_conn()
+        dom = conn.lookupByName(vmName)
+        if dom is None:
+            self.connect_close()
+            return False
+    
+        xml = dom.XMLDesc(VIR_DOMAIN_XML_SECURE)
+        root = ElementTree.fromstring(xml)
+        try:
+            graphic = root.find("/domain/devices/graphics[@type='%s']" % type)
+        except SyntaxError:
+            # Little fix for old version ElementTree
+            graphic = root.find("devices/graphics")
+        graphic.set('type', type)
+        if type == 'vnc':
+            graphic.set('websocket', '-1')            
+        newxml = ElementTree.tostring(root).decode()
+        # print(f'newxml:{newxml}')
+        conn.defineXML(newxml)
+        self.connect_close()
+        return True
+        
         
