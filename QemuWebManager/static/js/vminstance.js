@@ -323,6 +323,31 @@ function getVMXMLInfo(vmName) {
     }, function () { alert('查询虚拟实例详细信息失败！'); });
 }
 
+
+function getCurrentTime() {
+    const now = new Date();
+
+    // 获取时间的各个组成部分
+    const year = now.getFullYear();     // 获取四位数的年份（如：2025）
+    const month = String(now.getMonth() + 1).padStart(2, '0');   // 获取月份（注意：返回0-11，需加1得到1-12）
+    const day = String(now.getDate()).padStart(2, '0');          // 获取月份中的日期（1-31）
+    const hours = String(now.getHours()).padStart(2, '0');       // 获取小时（0-23）
+    const minutes = String(now.getMinutes()).padStart(2, '0');   // 获取分钟（0-59）
+    const seconds = String(now.getSeconds()).padStart(2, '0');   // 获取秒（0-59）
+    return `${year}${month}${day}${hours}${minutes}${seconds}`
+
+}
+
+function querySnapshot(vmName) {
+
+
+}
+
+function initSnapshot(vmName) {
+    $('#snapshotName').val('snapshot-' + vmName + '-' + getCurrentTime());
+    querySnapshot();
+}
+
 // 虚拟机名称点击事件 - 显示详情
 function dovmDetailLink(e) {
     e.preventDefault();
@@ -346,12 +371,11 @@ function dovmDetailLink(e) {
     $('#vm-detail-panel').removeClass('d-none');
 
     initPowersubpage(vmStatus);
-    
+
     getVMDetailInfo(vmName);
     getVMXMLInfo(vmName);
 
-
-    
+    initSnapshot(vmName);
 }
 
 function doConsoleTypeChange(e) {
@@ -374,15 +398,6 @@ function doSetConsoleTypeBtn(e) {
         value: $('#consoleType').val()
     }
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
-        // vminstance = response.response_json;
-        // if (vminstance.length === 0) {
-        //     console.log('vminstance is null');
-        //     return;
-        // }
-        // vminstance.forEach(vm => {
-        //     // console.log(vm);
-        //     $('#xmlContent').text(vm['xml']);
-        // });
         orginConsoleType = $('#consoleType').val();
         $('#setConsoleTypeBtn').addClass('disabled');
         $('#setConsoleTypeNote').show();
@@ -429,6 +444,23 @@ function dovmInstanceActionPowerBtn(e) {
         });
 
     }, function () { alert(operation + ' 虚拟实例失败！'); });
+}
+
+function doCreateSnapshotBtn(e) {
+
+    e.preventDefault();
+    const vmName = $('#vm-detail-name').text();
+    var jsonData = {
+        action: 'setting',
+        vmname: vmName,
+        subpage: 'create_snapshot',
+        value: $('#snapshotName').val()
+    }
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        alert('创建快照成功!');
+
+    }, function () { alert('查询虚拟实例详细信息失败！'); });
+
 }
 
 // 返回虚拟机列表

@@ -34,6 +34,10 @@ def changeVmConsoleType(vmName, type):
     vmInst = CLVVMInstance()
     return vmInst.changeVMConsoleType(vmName, type)
 
+def createVMSnapshot(vmName, snapshot_name):
+    vmInst = CLVVMInstance()
+    return vmInst.createVMSnapshot(vmName, snapshot_name)
+
 
 def doVMInstance(request):
     if request.method == "POST":
@@ -90,6 +94,9 @@ def doVMInstance(request):
             if subpage == 'setting_console':
                 newval = json_data['value']
                 changeVmConsoleType(vmName, newval)
+            elif subpage == 'create_snapshot':
+                snapshot_name = json_data['value']
+                createVMSnapshot(vmName, snapshot_name)
             data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"], 
                     "response_json": 'tmp',

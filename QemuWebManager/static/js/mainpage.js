@@ -35,8 +35,12 @@ $(document).ready(function () {
     // 虚拟机名称点击事件 - 显示详情
     $(document).on('click', '.vm-detail-link', dovmDetailLink);
 
+    // 虚拟机控制台
     $(document).on('change', '#consoleType', doConsoleTypeChange);
     $(document).on('click', '#setConsoleTypeBtn', doSetConsoleTypeBtn);
+
+    // 虚拟机快照
+    $(document).on('click', '#create-snapshot button', doCreateSnapshotBtn);
 
     // 虚拟机操作按钮
     $(document).on('click', '.action-btn', dovmInstanceActionBtn);

@@ -3,6 +3,8 @@ from APILibvirt import util
 import json
 import os
 from xml.etree import ElementTree
+import libvirt
+import time
 try:
     from libvirt import libvirtError, VIR_DOMAIN_XML_SECURE, VIR_MIGRATE_LIVE, \
         VIR_MIGRATE_UNSAFE, VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA
@@ -114,7 +116,17 @@ class CLVVMInstance(ConnectLibvirtd):
 
         self.connect_close()
         return vm
+    
+    def __getDiskDev(self, dom):
+        def getDiskDevList(ctx):
+            res = []
+            for type in ctx.xpathEval("/domain/devices/disk[@device='disk']/target/@dev"):
+                res.append(type.content)
+            return res
         
+        diskDevList = util.get_xml_path(dom.XMLDesc(0), None, getDiskDevList)
+        return diskDevList
+            
     def __doDeleteVM(self, dom):
         if (self.__get_status(dom) != 'shutoff'):
             dom.destroy()
@@ -126,8 +138,6 @@ class CLVVMInstance(ConnectLibvirtd):
             return res
         
         diskFileList = util.get_xml_path(dom.XMLDesc(0), None, getDiskFileList)
-        if len(diskFileList) != 0:
-            print(f'disFileList: {diskFileList}')
             
         ret = dom.undefine()
         for file in diskFileList:
@@ -234,5 +244,36 @@ class CLVVMInstance(ConnectLibvirtd):
         conn.defineXML(newxml)
         self.connect_close()
         return True
+    
+    def createVMSnapshot(self, vmName, snapshot_name, snapshot_description='snapshot create log'):
+        conn = self.get_conn()
+        dom = conn.lookupByName(vmName)
+        if dom is None:
+            self.connect_close()
+            return False
         
+        diskDevList = self.__getDiskDev(dom)
+        if len(diskDevList) == 0:
+            self.connect_close()
+            return False
+        vmstatus = self.__get_status(dom)
+        disks_xml = ""
+        for dev in diskDevList:
+            if vmstatus != 'running':
+                disks_xml += f"""\n            <disk name='{dev}' snapshot='internal'/>"""
+
+        snapshot_xml = f"""
+        <domainsnapshot>
+            <name>{snapshot_name}</name>
+            <state>{vmstatus}</state>
+            <creationTime>{time.time()}</creationTime>
+            <description>{snapshot_description}</description>
+            <disks>{disks_xml}
+            </disks>
+        </domainsnapshot>
+        """
+        flags = libvirt.VIR_DOMAIN_SNAPSHOT_CREATE_DISK_ONLY | libvirt.VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC
+        dom.snapshotCreateXML(snapshot_xml, flags=flags)
+        self.connect_close()
+        return True  
         
