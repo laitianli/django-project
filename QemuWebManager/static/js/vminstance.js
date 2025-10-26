@@ -7,6 +7,9 @@ function initVMInstance() {
         action: 'query',
     }
     sendReqeust2vminstance(jsonData, doQueryVMInstanceSuccess, function () { alert('查询虚拟实例失败！'); });
+
+    $(document).on('click', '#restoreSnapshotID', doRestoreSnapshotBtn);
+    $(document).on('click', '#deleteSnapshotID', doDeleteSnapshotBtn);
 }
 
 function sendRequest(url, jsonData, successFunc, failFunc) {
@@ -339,13 +342,51 @@ function getCurrentTime() {
 }
 
 function querySnapshot(vmName) {
+    var jsonData = {
+        action: 'querySnapshot',
+        vmname: vmName
+    }
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        snapshots = response.response_json;
+        if (snapshots.length === 0) {
+            console.log('snapshots is null');
+            return;
+        }
+        $('#vmSnapshotTableBody').empty()
+        snapshots.forEach(ss => {
+            // console.log(ss);
+            const newRow = `
+                <tr>
+                    <td>${ss['name']}</td>
+                    <td>${ss['createTime']}</td>
+                    <td>${ss['state']}</td>
+                    <td>${ss['description']}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" id="restoreSnapshotID">恢复</button>
+                            <button class="btn btn-sm btn-danger" id="deleteSnapshotID">删除</button>
+                        </td>
+                </tr>
+            `;
+            $('#vmSnapshotTableBody').prepend(newRow);
+        });
 
+    }, function () { alert('查询虚拟实例详细信息失败！'); });
 
+}
+
+function doRestoreSnapshotBtn(e) {
+    console.log('-------doRestoreSnapshotBtn---')
+
+}
+
+function doDeleteSnapshotBtn(e) {
+    console.log('-------doDeleteSnapshotBtn---')
+    
 }
 
 function initSnapshot(vmName) {
     $('#snapshotName').val('snapshot-' + vmName + '-' + getCurrentTime());
-    querySnapshot();
+    querySnapshot(vmName);
 }
 
 // 虚拟机名称点击事件 - 显示详情

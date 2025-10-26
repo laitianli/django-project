@@ -38,6 +38,10 @@ def createVMSnapshot(vmName, snapshot_name):
     vmInst = CLVVMInstance()
     return vmInst.createVMSnapshot(vmName, snapshot_name)
 
+def queryVMSnapshot(vmName):
+    vmInst = CLVVMInstance()
+    return vmInst.queryVMSnapshot(vmName)
+
 
 def doVMInstance(request):
     if request.method == "POST":
@@ -86,6 +90,13 @@ def doVMInstance(request):
             data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"], 
                     "response_json": getVMXML(vmName),
+                    }
+            return JsonResponse(data)
+        elif json_data['action'] == 'querySnapshot':
+            vmName = json_data["vmname"]
+            data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"], 
+                    "response_json": queryVMSnapshot(vmName),
                     }
             return JsonResponse(data)
         elif json_data['action'] == 'setting':

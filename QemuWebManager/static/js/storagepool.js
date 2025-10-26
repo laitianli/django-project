@@ -5,7 +5,8 @@ function initStroagepool() {
     $(document).on('click', '#createStoragePoolBtn', do_createStoragePoolBtn);
 
     // [storagepool]为删除按钮绑定点击事件（使用事件委托，适用于动态添加的元素）
-    $(document).on('click', '.btn-danger', doStoragepool_BtnDanger);
+    $(document).on('click', '#removeStoragepoolDirBtn', doStoragepool_BtnDanger);
+    $(document).on('click', '#deleteCustomImageBtn', doStoragepool_BtnDanger);
 
     // 上传ISO按钮点击事件
     $(document).on('click', '#uploadIsoBtn', do_uploadIsoBtn);

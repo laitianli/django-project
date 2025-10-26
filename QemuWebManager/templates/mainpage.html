@@ -1420,14 +1420,16 @@
                                                     <tr>
                                                         <th>名称</th>
                                                         <th>创建时间</th>
+                                                        <th>状态</th>
                                                         <th>描述</th>
                                                         <th>操作</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody>
+                                                <tbody  id="vmSnapshotTableBody">
                                                     <tr>
                                                         <td>snapshot-20231101</td>
                                                         <td>2023-11-01 10:30:25</td>
+                                                        <td>shutoff</td>
                                                         <td>系统初始安装完成</td>
                                                         <td>
                                                             <button class="btn btn-sm btn-primary">恢复</button>
@@ -1437,6 +1439,7 @@
                                                     <tr>
                                                         <td>snapshot-20231015</td>
                                                         <td>2023-10-15 14:20:10</td>
+                                                        <td>running</td>
                                                         <td>安装开发环境</td>
                                                         <td>
                                                             <button class="btn btn-sm btn-primary">恢复</button>

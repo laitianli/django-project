@@ -275,5 +275,27 @@ class CLVVMInstance(ConnectLibvirtd):
         flags = libvirt.VIR_DOMAIN_SNAPSHOT_CREATE_DISK_ONLY | libvirt.VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC
         dom.snapshotCreateXML(snapshot_xml, flags=flags)
         self.connect_close()
-        return True  
+        return True
+    
+    def queryVMSnapshot(self, vmName):
+        conn = self.get_conn()
+        snapshots = []
+        dom = conn.lookupByName(vmName)
+        if dom is None:
+            self.connect_close()
+            return False
+        ssList = dom.listAllSnapshots()
+        for ss in ssList:
+            ssName = ss.getName()
+            # print(f'ssName: {ssName}')
+            ssXML = ss.getXMLDesc(0)
+            # print(f'{ssXML}')
+            createTime = util.get_xml_path(ssXML, '/domainsnapshot/creationTime')
+            local_time = time.localtime(int(createTime))
+            format_time = time.strftime('%Y-%m-%d %H:%M:%s', local_time)
+            desc = util.get_xml_path(ssXML, '/domainsnapshot/description')
+            state = util.get_xml_path(ssXML, '/domainsnapshot/state')
+            snapshots.append({'name': ssName, 'createTime': format_time, 'state': state, 'description': desc})
+        self.connect_close()
+        return snapshots
         
