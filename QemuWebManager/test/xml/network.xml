@@ -132,3 +132,22 @@ or other application using the libvirt API.
   <bridge name='br2'/>
   <virtualport type='openvswitch'/>
 </network>
+
+<video>
+  <model type='qxl' vram='9126' heads='1'/>
+</video>
+
+<!-- 4K分辨率 -->
+<video>
+  <model type='qxl' ram='65536' vram='9126' vgamem='16384' heads='1'/>
+</video>
+
+<!-- 8K分辨率 -->
+<video>
+  <model type='qxl' ram='262144' vram='16384' vgamem='131072' heads='1'/>
+</video>
+
+
+<video>
+  <model type='qxl' ram='65536' vram='16384' vgamem='16384' heads='1' primary='yes'/>
+</video>

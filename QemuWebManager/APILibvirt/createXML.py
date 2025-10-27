@@ -59,11 +59,19 @@ class createVMXML():
             typeNode.setProp('machine', 'pc-i440fx-6.2')
             typeNode.setContent('hvm')
             osNode.addChild(typeNode)
+            bootNode = libxml2.newNode('boot')
+            # hd:从硬盘启动(Hard Disk)，fd: 从软盘启动(Floppy Disk)，cdrom: 从光驱启动(CD-ROM)，network:网络启动(PXE)
+            bootNode.setProp('dev', 'hd')
+            osNode.addChild(bootNode)
             
             bootNode = libxml2.newNode('boot')
             # hd:从硬盘启动(Hard Disk)，fd: 从软盘启动(Floppy Disk)，cdrom: 从光驱启动(CD-ROM)，network:网络启动(PXE)
-            #bootNode.setProp('dev', 'hd')
             bootNode.setProp('dev', 'cdrom')
+            osNode.addChild(bootNode)
+            
+            bootNode = libxml2.newNode('boot')
+            # hd:从硬盘启动(Hard Disk)，fd: 从软盘启动(Floppy Disk)，cdrom: 从光驱启动(CD-ROM)，network:网络启动(PXE)
+            bootNode.setProp('dev', 'network')
             osNode.addChild(bootNode)
             
             
@@ -208,6 +216,8 @@ class createVMXML():
             self.__addGraphics2Device(devNode)
             
             self.__addMemballoon2Device(devNode)
+            
+            self.__addVideo2Device(devNode)
             
     def __addISODisk2Device(self, devNode):
         for e in self.isoInfo:
@@ -487,6 +497,23 @@ class createVMXML():
             subAddressNode.setProp('slot', '0')
             subAddressNode.setProp('function', '0')
             memballoonNode.addChild(subAddressNode)
+            
+    def __addVideo2Device(self, devNode, tag = '4K'):
+        if devNode:
+            videoNode = devNode.newChild(None, 'video', None)
+            modelNode = videoNode.newChild(None, 'model', None)
+            modelNode.setProp('type', 'qxl')
+            if tag == '4K':
+                modelNode.setProp('ram', '65536')
+                modelNode.setProp('vram', '9126')
+                modelNode.setProp('vgamem', '16384')
+                modelNode.setProp('heads', '1')
+            elif tag == '8K':
+                modelNode.setProp('ram', '262144')
+                modelNode.setProp('vram', '16384')
+                modelNode.setProp('vgamem', '131072')
+                modelNode.setProp('heads', '1')
+                
             
     
     def create(self):

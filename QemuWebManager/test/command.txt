@@ -22,3 +22,43 @@ sudo apt install spice-server spice-vdagent spice-client-gtk
 
 # Ubuntu/Debian
 sudo apt install spice-vdagent
+
+
+
+ /usr/libexec/qemu-kvm 
+ -name guest=Windows10-qxl,debug-threads=on 
+ -S -object {"qom-type":"secret","id":"masterKey0","format":"raw","file":"/var/lib/libvirt/qemu/domain-88-Windows10-qxl/master-key.aes"} 
+ -machine pc-i440fx-6.2,usb=off,dump-guest-core=off,memory-backend=pc.ram 
+ -accel kvm 
+ -cpu Cascadelake-Server,ss=on,vmx=on,pdcm=on,hypervisor=on,tsc-adjust=on,mpx=on,umip=on,pku=on,md-clear=on,stibp=on,arch-capabilities=on,xsaves=on,ibpb=on,ibrs=on,amd-stibp=on,amd-ssbd=on,rdctl-no=on,ibrs-all=on,skip-l1dfl-vmentry=on,mds-no=on,pschange-mc-no=on,tsx-ctrl=on,hle=off,rtm=off 
+ -m 4096 
+ -object {"qom-type":"memory-backend-ram","id":"pc.ram","size":4294967296} 
+ -overcommit mem-lock=off 
+ -smp 4,sockets=4,cores=1,threads=1 
+ -uuid c01117f5-1808-3510-0553-04992131f66a 
+ -no-user-config 
+ -nodefaults 
+ -chardev socket,id=charmonitor,fd=54,server=on,wait=off 
+ -mon chardev=charmonitor,id=monitor,mode=control 
+ -rtc base=utc,driftfix=slew 
+ -global kvm-pit.lost_tick_policy=delay 
+ -no-hpet -no-shutdown 
+ -global PIIX4_PM.disable_s3=1 
+ -global PIIX4_PM.disable_s4=1 
+ -boot strict=on 
+ -device ich9-usb-ehci1,id=usb,bus=pci.0,addr=0x4.0x7 
+ -device ahci,id=sata0,bus=pci.0,addr=0x6 
+ -device virtio-serial-pci,id=virtio-serial0,bus=pci.0,addr=0x5 
+ -blockdev {"driver":"file","filename":"/var/lib/libvirt/iso/cn_windows_10_business_editions_version_1903_x64_dvd_e001dd2c.iso","node-name":"libvirt-2-storage","auto-read-only":true,"discard":"unmap"} 
+ -blockdev {"node-name":"libvirt-2-format","read-only":true,"driver":"raw","file":"libvirt-2-storage"} 
+ -device ide-cd,bus=ide.0,unit=0,drive=libvirt-2-format,id=ide0-0-0,bootindex=2 
+ -blockdev {"driver":"file","filename":"/var/lib/libvirt/images/Windows10-qxl_137f0d21-1b66-4531-bf02-99ce8d49e8ba.qcow2","node-name":"libvirt-1-storage","auto-read-only":true,"discard":"unmap"} 
+ -blockdev {"node-name":"libvirt-1-format","read-only":false,"driver":"qcow2","file":"libvirt-1-storage","backing":null} 
+ -device ide-hd,bus=sata0.0,drive=libvirt-1-format,id=sata0-0-0,bootindex=1 -netdev tap,fd=55,id=hostnet0,vhost=on,vhostfd=57 
+ -device virtio-net-pci,netdev=hostnet0,id=net0,mac=60:1a:2b:90:79:9d,bootindex=3,bus=pci.0,addr=0x3 
+ -chardev pty,id=charserial0 -device isa-serial,chardev=charserial0,id=serial0 
+ -audiodev {"id":"audio1","driver":"none"} -spice port=5905,addr=0.0.0.0,disable-ticketing=on,seamless-migration=on 
+ -device qxl-vga,id=video0,ram_size=67108864,vram_size=16777216,vram64_size_mb=0,vgamem_mb=16,max_outputs=1,bus=pci.0,addr=0x2 
+ -device virtio-balloon-pci,id=balloon0,bus=pci.0,addr=0x7 
+ -sandbox on,obsolete=deny,elevateprivileges=deny,spawn=deny,resourcecontrol=deny 
+ -msg timestamp=o
