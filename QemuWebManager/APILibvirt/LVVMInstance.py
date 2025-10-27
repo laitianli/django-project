@@ -310,7 +310,7 @@ class CLVVMInstance(ConnectLibvirtd):
         if dom is None:
             self.connect_close()
             return False
-        ssList = dom.listAllSnapshots()
+        ssList = dom.listAllSnapshots(libvirt.VIR_DOMAIN_SNAPSHOT_LIST_TOPOLOGICAL)
         for ss in ssList:
             ssName = ss.getName()
             # print(f'ssName: {ssName}')
