@@ -498,8 +498,11 @@ function doCreateSnapshotBtn(e) {
         value: $('#snapshotName').val()
     }
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        querySnapshot(vmName);
         alert('创建快照成功!');
-
+        // document.getElementById('restore-snapshot-tab').click();
+        // $('#restore-snapshot-tab').click();
+        $('#restore-snapshot-tab').trigger('click');
     }, function () { alert('查询虚拟实例详细信息失败！'); });
 
 }

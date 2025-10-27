@@ -1383,20 +1383,37 @@
                                 <div class="tab-pane fade" id="snapshot" role="tabpanel" aria-labelledby="snapshot-tab">
                                     <ul class="nav nav-tabs" id="snapshotTabs" role="tablist">
                                         <li class="nav-item" role="presentation">
-                                            <button class="nav-link  text-primary active" id="create-snapshot-tab"
-                                                data-bs-toggle="tab" data-bs-target="#create-snapshot" type="button"
-                                                role="tab" aria-controls="create-snapshot"
-                                                aria-selected="true">创建快照</button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link  text-primary" id="restore-snapshot-tab"
+                                            <button class="nav-link  text-primary active" id="restore-snapshot-tab"
                                                 data-bs-toggle="tab" data-bs-target="#restore-snapshot" type="button"
                                                 role="tab" aria-controls="restore-snapshot"
                                                 aria-selected="false">从快照恢复</button>
                                         </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link  text-primary " id="create-snapshot-tab"
+                                                data-bs-toggle="tab" data-bs-target="#create-snapshot" type="button"
+                                                role="tab" aria-controls="create-snapshot"
+                                                aria-selected="true">创建快照</button>
+                                        </li>                                        
                                     </ul>
                                     <div class="tab-content sub-tab-content" id="snapshotTabContent">
-                                        <div class="tab-pane fade show active" id="create-snapshot" role="tabpanel"
+                                        <div class="tab-pane fade show active" id="restore-snapshot" role="tabpanel"
+                                            aria-labelledby="restore-snapshot-tab">
+                                            <!-- <h5>从快照恢复</h5> -->
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>名称</th>
+                                                        <th>创建时间</th>
+                                                        <th>状态</th>
+                                                        <th>描述</th>
+                                                        <th>操作</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody  id="vmSnapshotTableBody">
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="tab-pane fade" id="create-snapshot" role="tabpanel"
                                             aria-labelledby="create-snapshot-tab">
                                             <!-- <h5>创建快照</h5> -->
                                             <div class="mb-3">
@@ -1411,44 +1428,7 @@
                                             <button type="button" class="btn btn-primary">
                                                 <i class="fas fa-camera me-2"></i>创建快照
                                             </button>
-                                        </div>
-                                        <div class="tab-pane fade" id="restore-snapshot" role="tabpanel"
-                                            aria-labelledby="restore-snapshot-tab">
-                                            <!-- <h5>从快照恢复</h5> -->
-                                            <table class="table table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        <th>名称</th>
-                                                        <th>创建时间</th>
-                                                        <th>状态</th>
-                                                        <th>描述</th>
-                                                        <th>操作</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody  id="vmSnapshotTableBody">
-                                                    <tr>
-                                                        <td>snapshot-20231101</td>
-                                                        <td>2023-11-01 10:30:25</td>
-                                                        <td>shutoff</td>
-                                                        <td>系统初始安装完成</td>
-                                                        <td>
-                                                            <button class="btn btn-sm btn-primary">恢复</button>
-                                                            <button class="btn btn-sm btn-danger">删除</button>
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>snapshot-20231015</td>
-                                                        <td>2023-10-15 14:20:10</td>
-                                                        <td>running</td>
-                                                        <td>安装开发环境</td>
-                                                        <td>
-                                                            <button class="btn btn-sm btn-primary">恢复</button>
-                                                            <button class="btn btn-sm btn-danger">删除</button>
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                        </div>                                        
                                     </div>
                                 </div>
 
