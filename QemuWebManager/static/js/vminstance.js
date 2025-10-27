@@ -380,7 +380,23 @@ function doRestoreSnapshotBtn(e) {
 }
 
 function doDeleteSnapshotBtn(e) {
-    console.log('-------doDeleteSnapshotBtn---')
+    console.log('-----doDeleteSnapshotBtn---')
+    var row = $(this).closest('tr');
+    const vmName = $('#vm-detail-name').text();
+    const snapshotName = row.find('td:eq(0)').text();
+    var jsonData = {
+        action: 'setting',
+        vmname: vmName,
+        subpage: 'delete_snapshot',
+        value: snapshotName
+    }
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        alert('删除快照成功!');
+         row.fadeOut(300, function () {
+            row.remove();
+         });
+    }, function () { alert('查询虚拟实例详细信息失败！'); });
+
     
 }
 
@@ -488,7 +504,6 @@ function dovmInstanceActionPowerBtn(e) {
 }
 
 function doCreateSnapshotBtn(e) {
-
     e.preventDefault();
     const vmName = $('#vm-detail-name').text();
     var jsonData = {
@@ -498,13 +513,12 @@ function doCreateSnapshotBtn(e) {
         value: $('#snapshotName').val()
     }
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
-        querySnapshot(vmName);
+        initSnapshot(vmName);
         alert('创建快照成功!');
         // document.getElementById('restore-snapshot-tab').click();
         // $('#restore-snapshot-tab').click();
         $('#restore-snapshot-tab').trigger('click');
     }, function () { alert('查询虚拟实例详细信息失败！'); });
-
 }
 
 // 返回虚拟机列表

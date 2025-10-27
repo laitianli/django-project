@@ -5,6 +5,7 @@ import os
 from xml.etree import ElementTree
 import libvirt
 import time
+import libxml2
 try:
     from libvirt import libvirtError, VIR_DOMAIN_XML_SECURE, VIR_MIGRATE_LIVE, \
         VIR_MIGRATE_UNSAFE, VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA
@@ -131,16 +132,22 @@ class CLVVMInstance(ConnectLibvirtd):
         if (self.__get_status(dom) != 'shutoff'):
             dom.destroy()
         
-        def getDiskFileList(ctx):
-            res = []
-            for type in ctx.xpathEval("/domain/devices/disk[@device='disk']/source/@file"):
-                res.append(type.content)
-            return res
+        strXML = dom.XMLDesc(0)
+
+        doc = libxml2.parseDoc(strXML)
+        context = doc.xpathNewContext()
         
-        diskFileList = util.get_xml_path(dom.XMLDesc(0), None, getDiskFileList)
-            
-        ret = dom.undefine()
-        for file in diskFileList:
+        xpath_expr = "//domain//devices//disk[@device='disk']//source/@file"
+        result = context.xpathEval(xpath_expr)
+        # 提取属性值
+        disk_source_file = [attr.content for attr in result]
+        # print(f'disk_source_file: {disk_source_file}')
+        
+        context.xpathFreeContext()        
+        doc.freeDoc()
+        
+        ret = dom.undefineFlags(VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA)
+        for file in disk_source_file:
             print(f'[Note]begin rm file: {file}')
             try:
                 os.remove(file)
@@ -276,6 +283,25 @@ class CLVVMInstance(ConnectLibvirtd):
         dom.snapshotCreateXML(snapshot_xml, flags=flags)
         self.connect_close()
         return True
+    
+    def deleteVMSnapshot(self, vmName, snapshot_name):
+        conn = self.get_conn()
+        dom = conn.lookupByName(vmName)
+        if dom is None:
+            self.connect_close()
+            return False
+        
+        ssList = dom.listAllSnapshots()
+        for ss in ssList:
+            ssName = ss.getName()
+            if ssName == snapshot_name:
+                print(f'--snapshot delete: {snapshot_name}')
+                ss.delete(libvirt.VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN)
+                self.connect_close()
+                return True
+
+        self.connect_close()
+        return False
     
     def queryVMSnapshot(self, vmName):
         conn = self.get_conn()
