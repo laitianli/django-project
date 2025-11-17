@@ -67,6 +67,37 @@ def create_disk_image(type, file, size):
         print(f"执行过程中发生未知错误: {str(e)}")
         return False
 
+#qemu-img convert -O qcow2 /var/lib/libvirt/images/Centos84-qxl_d434da14-ed52-4691-8eb2-f470631b2d9c.qcow2 /var/lib/libvirt/images/aa.qcow2
+def clone_disk_image(type, src_file, dst_file):
+    try:
+        # 执行 qemu-img info 命令
+        result = subprocess.run(
+            ['qemu-img', 'convert', '-O', type, src_file, dst_file],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        
+        # 从命令输出中提取文件格式
+        output = result.stdout
+
+        if result.stdout is None and result.stderr is None:
+            return True
+        else:
+            print("无法从 qemu-img convert 输出中解析文件格式")
+            return False
+            
+    except subprocess.CalledProcessError as e:
+        print(f"qemu-img convert 命令执行失败，返回码: {e.returncode}")
+        print(f"错误输出: {e.stderr}")
+        return False
+    except FileNotFoundError:
+        print("未找到 qemu-img 命令，请确保 QEMU 已安装并在系统 PATH 中")
+        return False
+    except Exception as e:
+        print(f"执行过程中发生未知错误: {str(e)}")
+        return False
+
 def format_size(size_bytes):
     """
     将字节大小转换为易读的格式 (B, KB, MB, GB, TB)。

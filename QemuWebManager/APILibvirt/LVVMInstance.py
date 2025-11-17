@@ -6,6 +6,7 @@ from xml.etree import ElementTree
 import libvirt
 import time
 import libxml2
+from storagepool import toolset
 try:
     from libvirt import libvirtError, VIR_DOMAIN_XML_SECURE, VIR_MIGRATE_LIVE, \
         VIR_MIGRATE_UNSAFE, VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA
@@ -324,4 +325,47 @@ class CLVVMInstance(ConnectLibvirtd):
             snapshots.append({'name': ssName, 'createTime': format_time, 'state': state, 'description': desc})
         self.connect_close()
         return snapshots
+    
+    def cloneVM(self, vmName, cloneName, diskPath):
+        print(f'--vmName: {vmName}, cloneName: {cloneName}')
+        conn = self.get_conn()
+        dom = conn.lookupByName(vmName)
+        if dom is None:
+            self.connect_close()
+            return False
+    
+        strXML = dom.XMLDesc(VIR_DOMAIN_XML_SECURE)
+        root = ElementTree.fromstring(strXML)
+        name = root.find("name")
+        name.text = cloneName
+        
+        uuid = root.find("uuid")
+        uuid.text = util.randomUUID()
+        
+        for disk in root.findall("devices/disk[@device='disk']"):
+            elm = disk.find('driver')
+            type = elm.get('type')
+            source_elm = disk.find('source')
+            source_file = source_elm.get('file')
+            # print(f'--source_file: {source_file}')
+            if source_file:
+                newCloneDiskFile = cloneName + '_' + util.randomUUID() + '.' + type
+                # disk_path = os.path.dirname(source_file)
+                disk_path = diskPath
+                newCloneDiskFullPath=os.path.join(disk_path, newCloneDiskFile)
+                source_elm.set('file', newCloneDiskFullPath)
+                toolset.clone_disk_image(type, source_file, newCloneDiskFullPath)
+        
+        for interface in root.findall('devices/interface'):
+            elm = interface.find('mac')
+            elm.set('address', util.randomMAC())
+                
+        newxml = ElementTree.tostring(root).decode()
+        # print(newxml)
+        conn.defineXML(newxml)
+        vm = conn.lookupByName(cloneName)
+        if vm:
+            vm.create()
+        self.connect_close()
+        return True
         

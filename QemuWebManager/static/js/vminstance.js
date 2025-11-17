@@ -3,13 +3,19 @@ var orginConsoleType;
 
 function initVMInstance() {
     console.log('--initVMInstance---')
+    showVMInstance();
+
+    $(document).on('click', '#restoreSnapshotID', doRestoreSnapshotBtn);
+    $(document).on('click', '#deleteSnapshotID', doDeleteSnapshotBtn);
+    $(document).on('click', '#cloneVMBtn', doVMCloneBtn);
+    $(document).on('change', '#cloneToDiskPartStoragePool', doCloneToDiskPartStoragePoolChange);
+}
+
+function showVMInstance() {
     var jsonData = {
         action: 'query',
     }
     sendReqeust2vminstance(jsonData, doQueryVMInstanceSuccess, function () { alert('查询虚拟实例失败！'); });
-
-    $(document).on('click', '#restoreSnapshotID', doRestoreSnapshotBtn);
-    $(document).on('click', '#deleteSnapshotID', doDeleteSnapshotBtn);
 }
 
 function sendRequest(url, jsonData, successFunc, failFunc) {
@@ -385,9 +391,9 @@ function doDeleteSnapshotBtn(e) {
     const vmName = $('#vm-detail-name').text();
     const snapshotName = row.find('td:eq(0)').text();
     var jsonData = {
-        action: 'setting',
+        action: 'snapshot',
         vmname: vmName,
-        subpage: 'delete_snapshot',
+        subaction: 'delete_snapshot',
         value: snapshotName
     }
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
@@ -401,8 +407,34 @@ function doDeleteSnapshotBtn(e) {
 }
 
 function initSnapshot(vmName) {
-    $('#snapshotName').val('snapshot-' + vmName + '-' + getCurrentTime());
+    $('#snapshotName').val('snapshot-' + vmName);
     querySnapshot(vmName);
+}
+
+function initVMClone(vmName) {
+    $('#cloneName').val('clone-' + vmName);
+
+    let localstorage_json_data = JSON.parse(sessionStorage.getItem("localstoragepool_json"));
+    $.each(localstorage_json_data.default, function (key, value) {
+        // console.log('key:' + key + " value:" + value)
+        if (key === 'poolPath') {
+            $('#cloneToDiskPartStoragePool').empty().append($('<option>', {
+                value: value,
+                text: 'defalut'
+            }));
+        }
+    });
+    $.each(localstorage_json_data.custom, function (key, value) {
+        $('#cloneToDiskPartStoragePool').append($('<option>', {
+            value: value.poolPath,
+            text: key
+        }));
+    });
+}
+
+function doCloneToDiskPartStoragePoolChange(e) {
+    e.preventDefault();
+    $("#cloneToDiskPath").val($(this).val());
 }
 
 // 虚拟机名称点击事件 - 显示详情
@@ -433,6 +465,8 @@ function dovmDetailLink(e) {
     getVMXMLInfo(vmName);
 
     initSnapshot(vmName);
+
+    initVMClone(vmName);
 }
 
 function doConsoleTypeChange(e) {
@@ -451,7 +485,7 @@ function doSetConsoleTypeBtn(e) {
     var jsonData = {
         action: 'setting',
         vmname: vmName,
-        subpage: 'setting_console',
+        subaction: 'setting_console',
         value: $('#consoleType').val()
     }
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
@@ -507,10 +541,10 @@ function doCreateSnapshotBtn(e) {
     e.preventDefault();
     const vmName = $('#vm-detail-name').text();
     var jsonData = {
-        action: 'setting',
+        action: 'snapshot',
         vmname: vmName,
-        subpage: 'create_snapshot',
-        value: $('#snapshotName').val()
+        subaction: 'create_snapshot',
+        value: $('#snapshotName').val() + '-' + getCurrentTime()
     }
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
         initSnapshot(vmName);
@@ -519,6 +553,49 @@ function doCreateSnapshotBtn(e) {
         // $('#restore-snapshot-tab').click();
         $('#restore-snapshot-tab').trigger('click');
     }, function () { alert('查询虚拟实例详细信息失败！'); });
+}
+
+function doVMCloneBtn(e) {
+    e.preventDefault();
+    if ($('#vm-detail-status').text() != 'shutoff') {
+        alert($('#vm-detail-name').text() + "正在运行，不能克隆！");
+        return;
+    }
+     var cloningText = $('<span>', {
+            id: 'cloningStatusText',
+            class: 'me-2',
+            text: '正在克隆。。。',
+            css: {
+                color: '#6c757d',
+                fontStyle: 'italic',
+                fontSize: '0.9em'
+            }
+        });
+        
+        // 在按钮左侧插入提示文字
+        $(this).before(cloningText);
+
+    const vmName = $('#vm-detail-name').text();
+    const cloneVMName = $('#cloneName').val() + '-' + getCurrentTime();
+    var cloneBtn = $(this)
+    cloneBtn.prop('disabled', true);
+    var jsonData = {
+        action: 'clone',
+        vmname: vmName,
+        subaction: 'clone_vm',
+        value: cloneVMName,
+        diskPath: $('#cloneToDiskPath').val(),
+    }
+
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        $('#cloningStatusText').fadeOut(300, function() {
+                $(this).remove();
+        });
+        alert('克隆虚拟机成功!');
+        cloneBtn.prop('disabled', false);
+        showVMInstance(); //重新显示列表
+        doBackToVmList(); //返回详细列表
+    }, function () { alert('克隆虚拟机失败！'); });
 }
 
 // 返回虚拟机列表
@@ -546,7 +623,7 @@ function do_deleteButton() {
             vmname: vmName
         }
         sendReqeust2vminstance(jsonData, function (jsonData, response) {
-            initVMInstance(); //重新显示列表
+            showVMInstance(); //重新显示列表
             doBackToVmList(); //返回详细列表
         }, function () { alert(action + ' 虚拟实例失败！'); });
     }

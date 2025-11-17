@@ -62,3 +62,12 @@ sudo apt install spice-vdagent
  -device virtio-balloon-pci,id=balloon0,bus=pci.0,addr=0x7 
  -sandbox on,obsolete=deny,elevateprivileges=deny,spawn=deny,resourcecontrol=deny 
  -msg timestamp=o
+
+
+ virsh # snapshot-list CentOS84 
+ Name                               Creation Time               State
+-------------------------------------------------------------------------------
+ snapshot-CentOS84-20251027155346   2025-10-27 15:53:51 +0800   disk-snapshot
+ snapshot-CentOS84-20251027155352   2025-10-27 15:54:01 +0800   disk-snapshot
+ snapshot-CentOS84-20251027185229   2025-10-27 18:53:13 +0800   shutoff
+ snapshot-CentOS84-20251027185313   2025-10-27 18:53:20 +0800   shutoff

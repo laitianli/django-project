@@ -46,6 +46,10 @@ def queryVMSnapshot(vmName):
     vmInst = CLVVMInstance()
     return vmInst.queryVMSnapshot(vmName)
 
+def cloneVM(vmName, cloneName, diskPath):
+    vmInst = CLVVMInstance()
+    return vmInst.cloneVM(vmName, cloneName, diskPath)
+
 
 def doVMInstance(request):
     if request.method == "POST":
@@ -105,16 +109,37 @@ def doVMInstance(request):
             return JsonResponse(data)
         elif json_data['action'] == 'setting':
             vmName = json_data["vmname"]
-            subpage = json_data["subpage"]
-            if subpage == 'setting_console':
+            subaction = json_data["subaction"]
+            if subaction == 'setting_console':
                 newval = json_data['value']
                 changeVmConsoleType(vmName, newval)
-            elif subpage == 'create_snapshot':
+            data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"], 
+                    "response_json": 'tmp',
+                    }
+            return JsonResponse(data)
+        elif json_data['action'] == 'snapshot':
+            vmName = json_data["vmname"]
+            subaction = json_data["subaction"]
+            if subaction == 'create_snapshot':
                 snapshot_name = json_data['value']
                 createVMSnapshot(vmName, snapshot_name)
-            elif subpage == 'delete_snapshot':
+            elif subaction == 'delete_snapshot':
                 snapshot_name = json_data['value']
                 deleteVMSnapshot(vmName, snapshot_name)
+            data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"], 
+                    "response_json": 'tmp',
+                    }
+            return JsonResponse(data)
+        elif json_data['action'] == 'clone':
+            vmName = json_data["vmname"]
+            subaction = json_data["subaction"]
+            if subaction == 'clone_vm':
+                cloneName = json_data['value']
+                diskPath = json_data['diskPath']
+                cloneVM(vmName, cloneName, diskPath)
+
             data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"], 
                     "response_json": 'tmp',

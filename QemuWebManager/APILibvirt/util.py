@@ -11,7 +11,7 @@ import subprocess
 import re
 
 def randomMAC():
-    oui = [0x52, 0x54, 0x00]
+    oui = [0x60, 0x1A, 0x2B]
     mac = oui + [random.randint(0x00, 0xff),
                  random.randint(0x00, 0xff),
                  random.randint(0x00, 0xff)]

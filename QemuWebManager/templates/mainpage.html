@@ -1736,16 +1736,22 @@
                                     <div class="sub-tab-content">
                                         <!-- <h5>虚拟机克隆</h5> -->
                                         <div class="mb-3">
-                                            <label for="cloneName" class="form-label">新虚拟机名称</label>
+                                            <label for="cloneName" class="form-label">新虚拟机名称:</label>
                                             <input type="text" class="form-control" id="cloneName"
                                                 placeholder="请输入新虚拟机名称">
                                         </div>
                                         <div class="mb-3">
-                                            <label for="cloneDescription" class="form-label">描述</label>
-                                            <textarea class="form-control" id="cloneDescription" rows="3"></textarea>
+                                            <label for="cloneToDiskPartStoragePool" class="form-label">存储池:</label>
+                                            <select class="form-select" id="cloneToDiskPartStoragePool">
+                                                <option value="default">default</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="cloneToDiskPath" class="form-label">新虚拟机镜像存放路径:</label>
+                                            <input type="text" class="form-control" id="cloneToDiskPath" value="/var/lib/libvirt/images" disabled>
                                         </div>
                                         <div class="text-end">
-                                            <button type="button" class="btn btn-primary">
+                                            <button type="button" class="btn btn-primary" id="cloneVMBtn">
                                                 <i class="fas fa-clone me-2"></i>克隆
                                             </button>
                                         </div>
