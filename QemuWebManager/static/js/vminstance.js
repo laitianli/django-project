@@ -11,6 +11,10 @@ function initVMInstance() {
     $(document).on('change', '#cloneToDiskPartStoragePool', doCloneToDiskPartStoragePoolChange);
     $(document).on('click', '#editVCPUBtn', doEditVCPUBtn);
     $(document).on('click', '#editMemoryBtn', doEditMemory);
+
+    $(document).on('focus', '#vcpuCount, #memorySize, #currMemorySize', doEditFocus);
+    $(document).on('input', '#vcpuCount, #memorySize, #currMemorySize', doEditChange);
+    // 处理器数量变化时重新计算
 }
 
 function showVMInstance() {
@@ -658,6 +662,8 @@ function doEditVCPUBtn() {
     }
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
         $('#vm-detail-vcpus').text($('#vcpuCount').val());
+        $('#vcpuCount').data('originalValue', $('#vcpuCount').val());
+        $('#editVCPUBtn').prop('disabled', true);
         alert('修改vCPU数量成功！');
     }, function () { alert('修改vCPU数量失败！');; });
 }
@@ -674,6 +680,40 @@ function doEditMemory() {
     }
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
         $('#vm-detail-memory').text($('#currMemorySize').val() + 'MB');
+        $('#memorySize').data('originalValue', $('#memorySize').val());
+        $('#currMemorySize').data('originalValue', $('#currMemorySize').val());
+        $('#editMemoryBtn').prop('disabled', true);
         alert('修改内存成功！');
     }, function () { alert('修改内存失败！'); });
+}
+
+function doEditFocus(e) {
+    e.preventDefault()
+    // console.log('----doEditFocus-----:' + $(this).attr('id'))
+    $(this).data('originalValue', $(this).val());
+}
+
+function doEditChange(e) {
+    e.preventDefault()
+    // console.log('----doEditChange-----:' + $(this).attr('id'))
+    // $(this).data('originalValue', $(this).val());
+    var inputId = $(this).attr('id');
+    var currVal = $(this).val();
+    var originalValue = $(this).data('originalValue');
+    if (currVal != originalValue) {
+        if (inputId === "vcpuCount") {
+            $('#editVCPUBtn').prop('disabled', false);
+        }
+        else if (inputId === "memorySize" || inputId === "currMemorySize") {
+            $('#editMemoryBtn').prop('disabled', false);
+        }
+    }
+    else {
+        if (inputId === "vcpuCount") {
+            $('#editVCPUBtn').prop('disabled', true);
+        }
+        else if (inputId === "memorySize" || inputId === "currMemorySize") {
+            $('#editMemoryBtn').prop('disabled', true);
+        }
+    }
 }
