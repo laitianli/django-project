@@ -14,7 +14,8 @@ function initVMInstance() {
 
     $(document).on('focus', '#vcpuCount, #memorySize, #currMemorySize', doEditFocus);
     $(document).on('input', '#vcpuCount, #memorySize, #currMemorySize', doEditChange);
-    // 处理器数量变化时重新计算
+
+    addButtonEventForEditISODisk();
 }
 
 function showVMInstance() {
@@ -488,6 +489,7 @@ function dovmDetailLink(e) {
     initSnapshot(vmName);
 
     initVMClone(vmName);
+    initForEditISODisk();
 }
 
 function doConsoleTypeChange(e) {
@@ -668,7 +670,7 @@ function doEditVCPUBtn() {
     }, function () { alert('修改vCPU数量失败！');; });
 }
 
-// 编辑VCPU
+// 编辑memory
 function doEditMemory() {
     const vmName = $('#vm-detail-name').text();
     var jsonData = {
@@ -716,4 +718,415 @@ function doEditChange(e) {
             $('#editMemoryBtn').prop('disabled', true);
         }
     }
+}
+
+/* 编辑ISO和硬盘 */
+function initEditISODisk() {
+    let iosstorage_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
+    let localstorage_json_data = JSON.parse(sessionStorage.getItem("localstoragepool_json"));
+    $.each(localstorage_json_data.default, function (key, value) {
+        // console.log('key:' + key + " value:" + value)
+        if (key === 'poolPath') {
+            $('#editDiskPartStoragePoolSelect').empty().append($('<option>', {
+                value: value,
+                text: 'defalut'
+            }));
+        }
+    });
+    $.each(localstorage_json_data.custom, function (key, value) {
+        $('#editDiskPartStoragePoolSelect').append($('<option>', {
+            value: value.poolPath,
+            text: key
+        }));
+    });
+
+    var isodefalutPoolPath;
+    $.each(iosstorage_json_data.default, function (key, value) {
+        // console.log('key:' + key + " value:" + value)
+        if (key === 'poolPath') {
+            isodefalutPoolPath = value;
+            $('#editIsodiskPartStoragePoolSelect').empty().append($('<option>', {
+                value: value,
+                text: 'isodefalut'
+            }));
+        }
+    });
+    $.each(iosstorage_json_data.custom, function (key, value) {
+        $('#editIsodiskPartStoragePoolSelect').append($('<option>', {
+            value: value.poolPath,
+            text: key
+        }));
+    });
+
+    $.each(iosstorage_json_data.default, function (key, value) {
+        if (key === 'fileList') {
+            $('#editIsodiskPartStoragePoolFileSelect').empty();
+            $.each(value, function (index) {
+                // console.log('--poolPath:' + isodefalutPoolPath + ' ---fileName:' + value[index]["fileName"]);
+                $('#editIsodiskPartStoragePoolFileSelect').append($('<option>', {
+                    value: isodefalutPoolPath,
+                    text: value[index]["fileName"]
+                }));
+            });
+        }
+    });
+}
+
+function addButtonEventForEditISODisk() {
+    $(document).on('change', '#editDiskPartBusTypeSelect', doEditDiskPartBusTypeSelect);
+    $(document).on('click', '#editAddDiskBtn', doEditAddDiskBtn);
+    $(document).on('click', '#editDiskTab .btn-delete', doEditDiskTab);
+    $(document).on('change', '#editIsodiskPartStoragePoolSelect', doEditIsodiskPartStoragePoolSelect);
+    $(document).on('click', '#editAddISODiskBtn', doEditAddISODiskBtn);
+    $(document).on('click', '#editIsoDiskTab .btn-delete', doEditIsoDiskTab);
+}
+
+function initForEditISODisk() {
+    initEditISODisk();
+    //显示硬盘名称列表
+    editShowDiskNameList();
+
+    editShowISODiskNameList();
+}
+
+// 更新下拉选项函数：移除已添加的硬盘名称
+function editUpdateDiskOptions() {
+    // 获取所有已添加的硬盘名称
+    const addedDisks = [];
+    $('#editDiskTab tbody tr').each(function () {
+        addedDisks.push($(this).find('td:first').text());
+    });
+
+    // 遍历下拉选项，移除已添加的
+    $('#editDiskPartSelect option').each(function () {
+        if (addedDisks.includes($(this).val())) {
+            $(this).remove();
+        }
+    });
+}
+
+// 按字母顺序排序下拉选项
+function editSortSelectOptions(selector) {
+    const options = $(selector + ' option');
+    options.sort(function (a, b) {
+        return a.text.localeCompare(b.text);
+    });
+    $(selector).empty().append(options);
+}
+
+// 检查下拉框状态函数
+function editCheckSelectStatus() {
+    const select = $('#editDiskPartSelect');
+    const addButton = $('#editAddDiskBtn');
+
+    if (select.find('option').length === 0) {
+        // 下拉框为空，禁用按钮
+        addButton.prop('disabled', true);
+    } else {
+        // 下拉框不为空，启用按钮
+        addButton.prop('disabled', false);
+    }
+}
+function editAddDiskName(prefix) {
+    for (var i = 0; i < 8; i++) {
+        var num = 97 + i;
+        var char = String.fromCharCode(num); // 返回 'a'
+        var diskName = `${prefix}${char}`
+        // console.log(diskName)
+        $('#editDiskPartSelect').append($('<option>', {
+            value: diskName,
+            text: diskName
+        }));
+    }
+}
+function editShowDiskNameList() {
+    const diskBus = $('#editDiskPartBusTypeSelect').val();
+    // console.log(diskBus);
+    $('#editDiskPartSelect').empty();
+    if (diskBus === 'ide') {
+        editAddDiskName('hd');
+    }
+    else if (diskBus == 'virtio') {
+        editAddDiskName('vd');
+    }
+    else {
+        editAddDiskName('sd');
+    }
+
+}
+
+function doEditDiskPartBusTypeSelect() {
+    editShowDiskNameList();
+}
+
+function editGenerateUUID() {
+    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    );
+}
+// 磁盘添加按钮事件
+function doEditAddDiskBtn() {
+    const diskPartionName = $('#editDiskPartSelect').val();
+    const diskPartType = $('#editDiskPartTypeSelect').val();
+    const diskSize = $('#editDiskPartSize').val();
+    const diskBus = $('#editDiskPartBusTypeSelect').val();
+    const diskLocalStoragePoolPath = $('#editDiskPartStoragePoolSelect').val();
+    const diskLocalStoragePool = $('#editDiskPartStoragePoolSelect').find('option:selected').text();
+    const diskBoot = $('#editCheckVMSystemBootPart').prop('checked') == true ? "Yes" : "No";
+    $('#editCheckVMSystemBootPart').prop('checked', false);
+    if (diskBoot === "Yes") {
+        $('#editVMSystemBootPart').addClass('d-none');
+        $('#editIsoVMSystemBootPart').addClass('d-none');
+        $('#editVMSystemBootTypeConfig').addClass('d-none');
+    }
+    if (!diskPartionName) {
+        $('#editAddDiskBtn').addClass('disabled');
+        return;
+    }
+    var vmName = $('#vm-detail-name').val().trim();
+    if (vmName === '') {
+        vmName = 'vm';
+    }
+    //diskLocalStoragePoolPath + '/' + 
+    const diskName = vmName + '_' + editGenerateUUID() + '.' + diskPartType;
+
+    const newRow = `
+                <tr>
+                    <td>${diskPartionName}</td>                    
+                    <td>${diskSize}G</td>
+                    <td>${diskBus}</td>
+                    <td>${diskLocalStoragePool}</td>
+                    <td class="id-diskboot">${diskBoot}</td>
+                    <td data-value=${diskLocalStoragePoolPath}>${diskName}</td>
+                    <td>
+                         <button class="btn btn-sm btn-danger btn-delete">删除</button>
+                    </td>
+                </tr>
+            `;
+    $('#editDiskTab tbody').append(newRow);
+    editUpdateDiskOptions();
+    editCheckSelectStatus();
+}
+
+function editGetDiskTabData() {
+    const tableData = [];
+
+    $('#editDiskTab tbody tr').each(function () {
+        const row = $(this);
+        const rowData = {
+            // 获取单元格文本内容
+            partitionName: row.find('td').eq(0).text().trim(),
+            size: parseInt(row.find('td').eq(1).text().trim()),
+            bus: row.find('td').eq(2).text().trim(),
+            storagePool: row.find('td').eq(3).text().trim(),
+            boot: row.find('td.id-diskboot').text().trim(), // 通过class选择器
+            diskName: row.find('td').eq(5).text().trim(),
+            // 获取data-value属性值
+            storagePoolPath: row.find('td').eq(5).data('value')
+        };
+        tableData.push(rowData);
+    });
+
+    return tableData;
+}
+
+// 使用事件委托处理删除按钮点击
+function doEditDiskTab() {
+    const diskName = $(this).closest('tr').find('td:first').text();
+    $(this).closest('tr').fadeOut(300, function () {
+        const diskboot = $(this).find('.id-diskboot').text();
+        if (diskboot === "Yes") {
+            $('#editVMSystemBootPart').removeClass('d-none');
+            $('#editVMSystemBootTypeConfig').removeClass('d-none');
+        }
+        $(this).remove();
+
+        // 将删除的选项添加回下拉菜单
+        $('#editDiskPartSelect').append($('<option>', {
+            value: diskName,
+            text: diskName
+        }));
+
+        // 按字母顺序重新排序选项
+        editSortSelectOptions('#editDiskPartSelect');
+        editCheckSelectStatus();
+    });
+}
+
+// 【新CD/DVD(SATA)】
+
+function editAddISODiskName(prefix) {
+    for (var i = 0; i < 8; i++) {
+        var num = 97 + i;
+        var char = String.fromCharCode(num); // 返回 'a'
+        var diskName = `${prefix}${char}`
+        $('#editIsodiskPartSelect').append($('<option>', {
+            value: diskName,
+            text: diskName
+        }));
+    }
+}
+function editShowISODiskNameList() {
+    // console.log(diskBus);
+    $('#editIsodiskPartSelect').empty();
+    editAddISODiskName('hd');
+}
+
+function doEditIsodiskPartStoragePoolSelect() {
+    var text = $(this).find('option:selected').text();
+    var val = $(this).val();
+    $('#editIsodiskPartStoragePoolFileSelect').empty();
+    let iosstorage_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
+    var poolPath;
+    if (text === "isodefalut") {
+        $.each(iosstorage_json_data.default, function (key, value) {
+            console.log('key:' + key + " value:" + value);
+            if (key === 'poolPath') {
+                poolPath = value;
+            }
+        });
+
+        $.each(iosstorage_json_data.default, function (key, value) {
+            if (key === 'fileList') {
+                $.each(value, function (index) {
+                    $('#editIsodiskPartStoragePoolFileSelect').append($('<option>', {
+                        value: poolPath,
+                        text: value[index]["fileName"]
+                    }));
+                });
+            }
+        });
+    }
+    else {
+        $.each(iosstorage_json_data.custom, function (key, value) {
+            $.each(iosstorage_json_data.custom[key], function (subkey, subvalue) {
+                if (subkey === 'poolPath') {
+                    poolPath = subvalue;
+                }
+
+            });
+
+            $.each(iosstorage_json_data.custom[key], function (subkey, subvalue) {
+                if (subkey === 'fileList') {
+                    $.each(subvalue, function (index) {
+                        $('#editIsodiskPartStoragePoolFileSelect').append($('<option>', {
+                            value: poolPath,
+                            text: subvalue[index]["fileName"]
+                        }));
+                    });
+                }
+            });
+
+        });
+    }
+}
+
+// 检查下拉框状态函数
+function editCheckISOSelectStatus() {
+    const select = $('#editIsodiskPartSelect');
+    const addButton = $('#editAddISODiskBtn');
+
+    if (select.find('option').length === 0) {
+        // 下拉框为空，禁用按钮
+        addButton.prop('disabled', true);
+        // statusIndicator.html('<span class="status-indicator status-inactive"></span><span>下拉列表已无可用选项</span>');
+    } else {
+        // 下拉框不为空，启用按钮
+        addButton.prop('disabled', false);
+        // statusIndicator.html('<span class="status-indicator status-active"></span><span>下拉列表有可用选项</span>');
+    }
+}
+
+// 更新下拉选项函数：移除已添加的硬盘名称
+function editUpdateISODiskOptions() {
+    // 获取所有已添加的硬盘名称
+    const addedDisks = [];
+    $('#editIsoDiskTab tbody tr').each(function () {
+        addedDisks.push($(this).find('td:first').text());
+    });
+
+    // 遍历下拉选项，移除已添加的
+    $('#editIsodiskPartSelect option').each(function () {
+        if (addedDisks.includes($(this).val())) {
+            $(this).remove();
+        }
+    });
+}
+
+// ISO添加按钮事件
+function doEditAddISODiskBtn() {
+    const diskPartionName = $('#editIsodiskPartSelect').val();
+    const diskLocalStoragePoolPath = $('#editIsodiskPartStoragePoolSelect').val();
+    const diskLocalStoragePool = $('#editIsodiskPartStoragePoolSelect').find('option:selected').text();
+    const isoFile = $('#editIsodiskPartStoragePoolFileSelect').find('option:selected').text();
+    const diskBoot = $('#editIsocheckVMSystemBootPart').prop('checked') == true ? "Yes" : "No";
+    $('#editIsocheckVMSystemBootPart').prop('checked', false);
+    if (diskBoot === "Yes") {
+        $('#editVMSystemBootPart').addClass('d-none');
+        $('#editIsoVMSystemBootPart').addClass('d-none');
+        $('#editVMSystemBootTypeConfig').addClass('d-none');
+    }
+    if (!diskPartionName) {
+        $('#editAddDiskBtn').addClass('disabled');
+        return;
+    }
+    console.log('diskLocalStoragePoolPath:' + diskLocalStoragePoolPath + " diskLocalStoragePool:" + diskLocalStoragePool)
+    const newRow = `
+                <tr>
+                    <td>${diskPartionName}</td>
+                    <td data-value=${diskLocalStoragePoolPath}>${diskLocalStoragePool}</td>
+                    <td class="id-diskboot">${diskBoot}</td>
+                    <td>${isoFile}</td>
+                    <td>
+                         <button class="btn btn-sm btn-danger btn-delete">删除</button>
+                    </td>
+                </tr>
+            `;
+    $('#editIsoDiskTab tbody').append(newRow);
+    editUpdateISODiskOptions();
+    editCheckISOSelectStatus();
+}
+
+function editGetISODiskTabData() {
+    const tableData = [];
+
+    $('#editIsoDiskTab tbody tr').each(function () {
+        const row = $(this);
+        const rowData = {
+            // 获取单元格文本内容
+            partitionName: row.find('td:eq(0)').text().trim(),
+            bus: 'ide',
+            storagePool: row.find('td').eq(1).text().trim(),
+            storagePoolPath: row.find('td').eq(1).data('value'),
+            isoFile: row.find('td').eq(3).text().trim(),
+            boot: row.find('td.id-diskboot').text().trim(), // 通过class选择器                
+        };
+        tableData.push(rowData);
+    });
+
+    return tableData;
+}
+
+// 使用事件委托处理删除按钮点击
+function doEditIsoDiskTab() {
+    const diskName = $(this).closest('tr').find('td:first').text();
+    $(this).closest('tr').fadeOut(300, function () {
+        const diskboot = $(this).find('.id-diskboot').text();
+        if (diskboot === "Yes") {
+            $('#editVMSystemBootPart').removeClass('d-none');
+            $('#editIsoVMSystemBootPart').removeClass('d-none');
+            $('#editVMSystemBootTypeConfig').removeClass('d-none');
+        }
+        $(this).remove();
+
+        // 将删除的选项添加回下拉菜单
+        $('#editIsodiskPartSelect').append($('<option>', {
+            value: diskName,
+            text: diskName
+        }));
+
+        // 按字母顺序重新排序选项
+        editSortSelectOptions('#editIsodiskPartSelect');
+        editCheckISOSelectStatus();
+    });
 }

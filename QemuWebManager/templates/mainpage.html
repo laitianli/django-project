@@ -1546,16 +1546,17 @@
                                                     class="col-md-2 text-end form-lable col-form-label">VCPU数量:</label>
                                                 <div class="col-md-4">
                                                     <input type="number" class="form-control" id="vcpuCount" value="4"
-                                                        min="2" max="32", step="2">
+                                                        min="2" max="32" , step="2">
                                                 </div>
                                             </div>
                                             <div class="mb-3 row">
                                                 <div class="col-md-2 text-end form-lable col-form-label">
-                                                    <button type="button" class="btn btn-primary" id="editVCPUBtn" disabled>
+                                                    <button type="button" class="btn btn-primary" id="editVCPUBtn"
+                                                        disabled>
                                                         <i class="fas fa-save me-2"></i>保存设置
                                                     </button>
                                                 </div>
-                                            </div>                                            
+                                            </div>
                                         </div>
                                         <div class="tab-pane fade" id="memory-settings" role="tabpanel"
                                             aria-labelledby="memory-settings-tab">
@@ -1578,7 +1579,8 @@
                                             </div>
                                             <div class="mb-3 row">
                                                 <div class="col-md-2 text-end form-lable col-form-label">
-                                                    <button type="button" class="btn btn-primary" id="editMemoryBtn" disabled>
+                                                    <button type="button" class="btn btn-primary" id="editMemoryBtn"
+                                                        disabled>
                                                         <i class="fas fa-save me-2"></i>保存设置
                                                     </button>
                                                 </div>
@@ -1586,28 +1588,87 @@
                                         </div>
                                         <div class="tab-pane fade" id="iso-settings" role="tabpanel"
                                             aria-labelledby="iso-settings-tab">
-                                            <p class="text-warning">---是否从iso启动？--</p>
                                             <!-- <h5>ISO设置</h5> -->
-                                            <div class="mb-3 row">
-                                                <label for="isoFile"
-                                                    class="col-md-2 text-end form-lable col-form-label">选择ISO文件:</label>
-                                                <div class="col-md-4">
-
-                                                    <select class="form-select" id="isoFile">
-                                                        <option value="">无</option>
-                                                        <option value="centos.iso">CentOS-7-x86_64-DVD-2009.iso</option>
-                                                        <option value="ubuntu.iso">ubuntu-22.04-live-server-amd64.iso
-                                                        </option>
-                                                    </select>
+                                            <div class="section-box">
+                                                <div class="section-title">添加ISO镜像</div>
+                                                <div class="tab-pane" id="editAddISODisk" role="tabpanel">
+                                                    <div class="row mt-3">
+                                                        <div class="col-md-12">
+                                                            <div class="mb-3 row">
+                                                                <label for="editIsodiskPart"
+                                                                    class="col-md-3 text-end form-lable col-form-label">盘符:</label>
+                                                                <div class="col-md-6">
+                                                                    <select class="form-select"
+                                                                        id="editIsodiskPartSelect">
+                                                                        <!-- <option value="vda">vda</option> -->
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <div class="mb-3 row">
+                                                                <label for="editIsodiskPartStoragePool"
+                                                                    class="col-md-3 text-end form-lable col-form-label">存储池:</label>
+                                                                <div class="col-md-6">
+                                                                    <select class="form-select"
+                                                                        id="editIsodiskPartStoragePoolSelect">
+                                                                        <option value="default">isodefault</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mb-3 row">
+                                                                <label for="editIsoStoragePoolFile"
+                                                                    class="col-md-3 text-end form-lable col-form-label">ISO文件:</label>
+                                                                <div class="col-md-9">
+                                                                    <select class="form-select"
+                                                                        id="editIsodiskPartStoragePoolFileSelect">
+                                                                        <option
+                                                                            value="CentOS-7-x86_64-Everything-1708.iso">
+                                                                            CentOS-7-x86_64-Everything-1708.iso</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6" id="editIsoVMSystemBootPart">
+                                                            <div class="ms-5 checkbox-group">
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input" type="checkbox"
+                                                                        id="editIsocheckVMSystemBootPart">
+                                                                    <label class="form-check-label"
+                                                                        for="editIsocheckVMSystemBootPart">
+                                                                        是否为启动盘
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-end form-lable col-form-label">
+                                                        <button class="btn btn-primary"
+                                                            id="editAddISODiskBtn">添加</button>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="mb-3 row">
-                                                <div class="col-md-2 text-end form-lable col-form-label">
-                                                    <button type="button" class="btn btn-primary" disabled>
+                                            <div class="section-box">
+                                                <div class="section-title">ISO镜像列表</div>
+                                                <div class="tab-pane" id="edit-iso-disk-list" role="tabpanel">
+                                                    <table class="table table-hover" id="editIsoDiskTab">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>盘符</th>
+                                                                <th>存储池</th>
+                                                                <th>启动盘</th>
+                                                                <th>文件</th>
+                                                                <th>操作</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <button type="button" class="btn btn-primary" disabled>
                                                         <i class="fas fa-save me-2"></i>保存设置
-                                                    </button>
-                                                </div>
-                                            </div>
+                                            </button>
                                         </div>
                                         <div class="tab-pane fade" id="network-settings" role="tabpanel"
                                             aria-labelledby="network-settings-tab">
@@ -1634,21 +1695,108 @@
                                         <div class="tab-pane fade" id="disk-settings" role="tabpanel"
                                             aria-labelledby="disk-settings-tab">
                                             <!-- <h5>硬盘设置</h5> -->
-                                            <div class="row mb-3">
-                                                <label for="diskSize"
-                                                    class="col-md-2 text-end form-lable col-form-label">硬盘大小(GB)</label>
-                                                <div class="col-md-4">
-                                                    <input type="number" class="form-control" id="diskSize" value="100"
-                                                        min="10" max="2000" step="5">
+                                            <div class="section-box">
+                                                <div class="section-title">添加硬盘</div>
+                                                <div class="tab-pane" id="editAddDisk" role="tabpanel">
+                                                    <div class="row mt-3">
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3 row">
+                                                                <label for="editDiskPartBusType"
+                                                                    class="col-md-4 text-end form-lable col-form-label">总线:</label>
+                                                                <div class="col-md-6">
+                                                                    <select class="form-select"
+                                                                        id="editDiskPartBusTypeSelect">
+                                                                        <option value="virtio">virtio</option>
+                                                                        <!-- <option value="ide">ide</option> -->
+                                                                        <option value="sata">sata</option>
+                                                                        <option value="scsi">scsi</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mb-3 row">
+                                                                <label for="editDiskPart"
+                                                                    class="col-md-4 text-end form-lable col-form-label">盘符:</label>
+                                                                <div class="col-md-6">
+                                                                    <select class="form-select" id="editDiskPartSelect">
+                                                                        <!-- <option value="vda">vda</option> -->
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3 row">
+                                                                <label for="editDiskPartSize"
+                                                                    class="col-md-4 text-end form-lable col-form-label">大小(G):</label>
+                                                                <div class="col-md-6">
+                                                                    <input type="number" class="form-control"
+                                                                        id="diskPartSize" value="20" min="15" max="800"
+                                                                        step="5">
+                                                                </div>
+                                                            </div>
+                                                            <div class="mb-3 row">
+                                                                <label for="editDiskPartType"
+                                                                    class="col-md-4 text-end form-lable col-form-label">格式:</label>
+                                                                <div class="col-md-6">
+                                                                    <select class="form-select" id="editDiskPartTypeSelect">
+                                                                        <option value="qcow2">qcow2</option>
+                                                                        <option value="row">row</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3 row">
+                                                                <label for="editDiskPartStoragePool"
+                                                                    class="col-md-4 text-end form-lable col-form-label">存储池:</label>
+                                                                <div class="col-md-6">
+                                                                    <select class="form-select"
+                                                                        id="editDiskPartStoragePoolSelect">
+                                                                        <option value="default">default</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6" id="editVMSystemBootPart">
+                                                            <div class="checkbox-group">
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input" type="checkbox"
+                                                                        id="editCheckVMSystemBootPart">
+                                                                    <label class="form-check-label"
+                                                                        for="editCheckVMSystemBootPart">
+                                                                        是否为启动盘
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-end form-lable col-form-label">
+                                                        <button class="btn btn-primary" id="editAddDiskBtn">添加</button>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="mb-3 row">
-                                                <div class="col-md-2 text-end form-lable col-form-label">
-                                                    <button type="button" class="btn btn-primary" disabled>
+                                            <div class="section-box">
+                                                <div class="section-title">硬盘列表</div>
+                                                <div class="tab-pane" id="edit-disk-list" role="tabpanel">
+                                                    <table class="table table-hover" id="editDiskTab">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>盘符</th>
+                                                                <th>大小</th>
+                                                                <th>总线</th>
+                                                                <th>存储池</th>
+                                                                <th>启动盘</th>
+                                                                <th>文件名</th>
+                                                                <th>操作</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <button type="button" class="btn btn-primary" disabled>
                                                         <i class="fas fa-save me-2"></i>保存设置
                                                     </button>
-                                                </div>
-                                            </div>
                                         </div>
                                         <div class="tab-pane fade" id="xml-settings" role="tabpanel"
                                             aria-labelledby="xml-settings-tab">

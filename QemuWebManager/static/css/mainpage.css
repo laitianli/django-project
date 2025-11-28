@@ -128,3 +128,24 @@
         line-height: 25px;
         font-weight: bold;
     }
+    
+    /* 编辑ISO */
+    .section-box {
+        border: 1px solid #d4d4d4;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        position: relative;
+        padding: 15px;
+        padding-top: 25px;
+    }
+
+    .section-title {
+        position: absolute;
+        top: -10px;
+        left: 15px;
+        background-color: white;
+        padding: 0 10px;
+        font-weight: bold;
+        color: #444;
+        font-size: 1rem;
+    }
