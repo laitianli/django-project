@@ -25,9 +25,17 @@ def get_disk_image_format(image_path):
             return None
             
     except subprocess.CalledProcessError as e:
-        print(f"qemu-img info 命令执行失败，返回码: {e.returncode}")
-        print(f"错误输出: {e.stderr}")
-        return None
+        if e.returncode == 1:
+            file_ext = os.path.splitext(image_path)[1][1:]
+            isSnapshot = file_ext.find('snapshot')
+            if isSnapshot != -1:
+                return 'snapshot'
+            else:
+                return file_ext
+        else:
+            print(f"qemu-img info 命令执行失败，返回码: {e.returncode}")
+            print(f"错误输出: {e.stderr}")
+            return None
     except FileNotFoundError:
         print("未找到 qemu-img 命令，请确保 QEMU 已安装并在系统 PATH 中")
         return None

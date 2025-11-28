@@ -304,6 +304,25 @@ class CLVVMInstance(ConnectLibvirtd):
         self.connect_close()
         return False
     
+    def restoreVMSnapshot(self, vmName, snapshot_name):
+        conn = self.get_conn()
+        dom = conn.lookupByName(vmName)
+        if dom is None:
+            self.connect_close()
+            return False
+        
+        ssList = dom.listAllSnapshots()
+        for ss in ssList:
+            ssName = ss.getName()
+            if ssName == snapshot_name:
+                print(f'--snapshot restore: {snapshot_name}')
+                # ss.delete(libvirt.VIR_DOMAIN_SNAPSHOT_DELETE_CHILDREN)
+                self.connect_close()
+                return True
+
+        self.connect_close()
+        return False
+    
     def queryVMSnapshot(self, vmName):
         conn = self.get_conn()
         snapshots = []

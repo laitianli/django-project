@@ -382,7 +382,21 @@ function querySnapshot(vmName) {
 
 function doRestoreSnapshotBtn(e) {
     console.log('-------doRestoreSnapshotBtn---')
-
+    var row = $(this).closest('tr');
+    const vmName = $('#vm-detail-name').text();
+    const snapshotName = row.find('td:eq(0)').text();
+    var jsonData = {
+        action: 'snapshot',
+        vmname: vmName,
+        subaction: 'restore_snapshot',
+        value: snapshotName
+    }
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        alert('恢复快照成功!');
+        //  row.fadeOut(300, function () {
+        //     row.remove();
+        //  });
+    }, function () { alert('查询虚拟实例详细信息失败！'); });
 }
 
 function doDeleteSnapshotBtn(e) {
@@ -401,9 +415,7 @@ function doDeleteSnapshotBtn(e) {
          row.fadeOut(300, function () {
             row.remove();
          });
-    }, function () { alert('查询虚拟实例详细信息失败！'); });
-
-    
+    }, function () { alert('查询虚拟实例详细信息失败！'); });    
 }
 
 function initSnapshot(vmName) {

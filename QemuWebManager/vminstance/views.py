@@ -42,6 +42,11 @@ def deleteVMSnapshot(vmName, snapshot_name):
     vmInst = CLVVMInstance()
     return vmInst.deleteVMSnapshot(vmName, snapshot_name)
 
+def restoreVMSnapshot(vmName, snapshot_name):
+    vmInst = CLVVMInstance()
+    return vmInst.restoreVMSnapshot(vmName, snapshot_name)
+
+
 def queryVMSnapshot(vmName):
     vmInst = CLVVMInstance()
     return vmInst.queryVMSnapshot(vmName)
@@ -127,6 +132,9 @@ def doVMInstance(request):
             elif subaction == 'delete_snapshot':
                 snapshot_name = json_data['value']
                 deleteVMSnapshot(vmName, snapshot_name)
+            elif subaction == 'restore_snapshot':
+                snapshot_name = json_data['value']
+                restoreVMSnapshot(vmName, snapshot_name)
             data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"], 
                     "response_json": 'tmp',
