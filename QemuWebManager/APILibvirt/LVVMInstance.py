@@ -387,4 +387,42 @@ class CLVVMInstance(ConnectLibvirtd):
             vm.create()
         self.connect_close()
         return True
-        
+    
+    def editVMVCPU(self, vmName, vcpus):
+        conn = self.get_conn()
+        dom = conn.lookupByName(vmName)
+        if dom is None:
+            self.connect_close()
+            return False
+    
+        xml = dom.XMLDesc(VIR_DOMAIN_XML_SECURE)
+        root = ElementTree.fromstring(xml)
+        vcpu = root.find("vcpu")
+        if vcpu is not None:
+            vcpu.text = vcpus
+        newxml = ElementTree.tostring(root).decode()
+        # print(f'newxml:{newxml}')
+        conn.defineXML(newxml)
+        self.connect_close()
+        return True
+    
+    def editVMMemory(self, vmName, mem, currMem):
+        conn = self.get_conn()
+        dom = conn.lookupByName(vmName)
+        if dom is None:
+            self.connect_close()
+            return False
+    
+        xml = dom.XMLDesc(VIR_DOMAIN_XML_SECURE)
+        root = ElementTree.fromstring(xml)
+        memory = root.find("memory")
+        if memory is not None:
+            memory.text = "%d" % mem
+        currentMemory = root.find("currentMemory")
+        if currentMemory is not None:
+            currentMemory.text = "%d" % currMem 
+        newxml = ElementTree.tostring(root).decode()
+        # print(f'newxml:{newxml}')
+        conn.defineXML(newxml)
+        self.connect_close()
+        return True

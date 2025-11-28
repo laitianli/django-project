@@ -958,9 +958,10 @@
                                                         </div>
                                                         <div class="col-md-3">
                                                             <div class="mb-3">
-                                                                <label for="bridgeIfaceName" class="form-label">网桥名</label>
-                                                                <input type="text" class="form-control" id="bridgeIfaceName"
-                                                                    placeholder="br0" required>
+                                                                <label for="bridgeIfaceName"
+                                                                    class="form-label">网桥名</label>
+                                                                <input type="text" class="form-control"
+                                                                    id="bridgeIfaceName" placeholder="br0" required>
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
@@ -1347,16 +1348,16 @@
                                         <!-- <h5>电源管理</h5> -->
                                         <p>您可以在此控制虚拟机的电源状态。当前状态：<span class="badge bg-success">运行中</span></p>
                                         <div class="btn-group" role="group">
-                                            <button type="button" class="btn btn-outline-primary action-power-btn" operation="start"><i
-                                                    class="fas fa-play me-2"></i>开机</button>
-                                            <button type="button" class="btn btn-outline-warning  action-power-btn" operation="suspend"><i
-                                                    class="fas fa-save me-2"></i>挂起</button>
-                                            <button type="button" class="btn btn-outline-info  action-power-btn" operation="resume"><i
-                                                    class="fas fa-pause me-2"></i>唤醒</button>
-                                            <button type="button" class="btn btn-outline-secondary  action-power-btn" operation="stop"><i
-                                                    class="fas fa-stop me-2"></i>关机</button>
-                                            <button type="button" class="btn btn-outline-danger  action-power-btn" operation="destroy"><i
-                                                    class="fas fa-plug me-2"></i>强制关机</button>
+                                            <button type="button" class="btn btn-outline-primary action-power-btn"
+                                                operation="start"><i class="fas fa-play me-2"></i>开机</button>
+                                            <button type="button" class="btn btn-outline-warning  action-power-btn"
+                                                operation="suspend"><i class="fas fa-save me-2"></i>挂起</button>
+                                            <button type="button" class="btn btn-outline-info  action-power-btn"
+                                                operation="resume"><i class="fas fa-pause me-2"></i>唤醒</button>
+                                            <button type="button" class="btn btn-outline-secondary  action-power-btn"
+                                                operation="stop"><i class="fas fa-stop me-2"></i>关机</button>
+                                            <button type="button" class="btn btn-outline-danger  action-power-btn"
+                                                operation="destroy"><i class="fas fa-plug me-2"></i>强制关机</button>
                                         </div>
                                     </div>
                                 </div>
@@ -1393,7 +1394,7 @@
                                                 data-bs-toggle="tab" data-bs-target="#create-snapshot" type="button"
                                                 role="tab" aria-controls="create-snapshot"
                                                 aria-selected="true">创建快照</button>
-                                        </li>                                        
+                                        </li>
                                     </ul>
                                     <div class="tab-content sub-tab-content" id="snapshotTabContent">
                                         <div class="tab-pane fade show active" id="restore-snapshot" role="tabpanel"
@@ -1409,7 +1410,7 @@
                                                         <th>操作</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody  id="vmSnapshotTableBody">
+                                                <tbody id="vmSnapshotTableBody">
                                                 </tbody>
                                             </table>
                                         </div>
@@ -1428,7 +1429,7 @@
                                             <button type="button" class="btn btn-primary">
                                                 <i class="fas fa-camera me-2"></i>创建快照
                                             </button>
-                                        </div>                                        
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1550,11 +1551,11 @@
                                             </div>
                                             <div class="mb-3 row">
                                                 <div class="col-md-2 text-end form-lable col-form-label">
-                                                    <button type="button" class="btn btn-primary" disabled>
+                                                    <button type="button" class="btn btn-primary" id="editVCPUBtn">
                                                         <i class="fas fa-save me-2"></i>保存设置
                                                     </button>
                                                 </div>
-                                            </div>
+                                            </div>                                            
                                         </div>
                                         <div class="tab-pane fade" id="memory-settings" role="tabpanel"
                                             aria-labelledby="memory-settings-tab">
@@ -1577,7 +1578,7 @@
                                             </div>
                                             <div class="mb-3 row">
                                                 <div class="col-md-2 text-end form-lable col-form-label">
-                                                    <button type="button" class="btn btn-primary" disabled>
+                                                    <button type="button" class="btn btn-primary" id="editMemoryBtn">
                                                         <i class="fas fa-save me-2"></i>保存设置
                                                     </button>
                                                 </div>
@@ -1748,7 +1749,8 @@
                                         </div>
                                         <div class="mb-3">
                                             <label for="cloneToDiskPath" class="form-label">新虚拟机镜像存放路径:</label>
-                                            <input type="text" class="form-control" id="cloneToDiskPath" value="/var/lib/libvirt/images" disabled>
+                                            <input type="text" class="form-control" id="cloneToDiskPath"
+                                                value="/var/lib/libvirt/images" disabled>
                                         </div>
                                         <div class="text-end">
                                             <button type="button" class="btn btn-primary" id="cloneVMBtn">

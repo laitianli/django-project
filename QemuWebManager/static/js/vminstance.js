@@ -9,6 +9,8 @@ function initVMInstance() {
     $(document).on('click', '#deleteSnapshotID', doDeleteSnapshotBtn);
     $(document).on('click', '#cloneVMBtn', doVMCloneBtn);
     $(document).on('change', '#cloneToDiskPartStoragePool', doCloneToDiskPartStoragePoolChange);
+    $(document).on('click', '#editVCPUBtn', doEditVCPUBtn);
+    $(document).on('click', '#editMemoryBtn', doEditMemory);
 }
 
 function showVMInstance() {
@@ -256,6 +258,9 @@ function initPowersubpage(vmStatus) {
     span.removeClass('bg-secondary');
     const statusClass = vmStatus === 'running' ? 'bg-success' : 'bg-secondary';
     span.addClass(statusClass);
+
+    $('#vm-detail-status').text(vmStatus);
+
     switch (vmStatus) {
         case 'running':
             changePowersubpageBtnByAction('start');
@@ -412,10 +417,10 @@ function doDeleteSnapshotBtn(e) {
     }
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
         alert('删除快照成功!');
-         row.fadeOut(300, function () {
+        row.fadeOut(300, function () {
             row.remove();
-         });
-    }, function () { alert('查询虚拟实例详细信息失败！'); });    
+        });
+    }, function () { alert('查询虚拟实例详细信息失败！'); });
 }
 
 function initSnapshot(vmName) {
@@ -573,19 +578,19 @@ function doVMCloneBtn(e) {
         alert($('#vm-detail-name').text() + "正在运行，不能克隆！");
         return;
     }
-     var cloningText = $('<span>', {
-            id: 'cloningStatusText',
-            class: 'me-2',
-            text: '正在克隆。。。',
-            css: {
-                color: '#6c757d',
-                fontStyle: 'italic',
-                fontSize: '0.9em'
-            }
-        });
-        
-        // 在按钮左侧插入提示文字
-        $(this).before(cloningText);
+    var cloningText = $('<span>', {
+        id: 'cloningStatusText',
+        class: 'me-2',
+        text: '正在克隆。。。',
+        css: {
+            color: '#6c757d',
+            fontStyle: 'italic',
+            fontSize: '0.9em'
+        }
+    });
+
+    // 在按钮左侧插入提示文字
+    $(this).before(cloningText);
 
     const vmName = $('#vm-detail-name').text();
     const cloneVMName = $('#cloneName').val() + '-' + getCurrentTime();
@@ -600,8 +605,8 @@ function doVMCloneBtn(e) {
     }
 
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
-        $('#cloningStatusText').fadeOut(300, function() {
-                $(this).remove();
+        $('#cloningStatusText').fadeOut(300, function () {
+            $(this).remove();
         });
         alert('克隆虚拟机成功!');
         cloneBtn.prop('disabled', false);
@@ -639,4 +644,36 @@ function do_deleteButton() {
             doBackToVmList(); //返回详细列表
         }, function () { alert(action + ' 虚拟实例失败！'); });
     }
+}
+
+
+// 编辑VCPU
+function doEditVCPUBtn() {
+    const vmName = $('#vm-detail-name').text();
+    var jsonData = {
+        action: 'edit',
+        subaction: 'editVCPU',
+        vmname: vmName,
+        value: $('#vcpuCount').val()
+    }
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        $('#vm-detail-vcpus').text($('#vcpuCount').val());
+        alert('修改vCPU数量成功！');
+    }, function () { alert('修改vCPU数量失败！');; });
+}
+
+// 编辑VCPU
+function doEditMemory() {
+    const vmName = $('#vm-detail-name').text();
+    var jsonData = {
+        action: 'edit',
+        subaction: 'editMem',
+        vmname: vmName,
+        mem: parseInt($('#memorySize').val()) * 1024,
+        currMem: parseInt($('#currMemorySize').val()) * 1024,
+    }
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        $('#vm-detail-memory').text($('#currMemorySize').val() + 'MB');
+        alert('修改内存成功！');
+    }, function () { alert('修改内存失败！'); });
 }

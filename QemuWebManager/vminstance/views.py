@@ -55,6 +55,14 @@ def cloneVM(vmName, cloneName, diskPath):
     vmInst = CLVVMInstance()
     return vmInst.cloneVM(vmName, cloneName, diskPath)
 
+def editVMVCPU(vmName, vcpus):
+    vmInst = CLVVMInstance()
+    return vmInst.editVMVCPU(vmName, vcpus)
+
+def editVMMemory(vmName,  mem, currMem):
+    vmInst = CLVVMInstance()
+    return vmInst.editVMMemory(vmName,  mem, currMem)
+
 
 def doVMInstance(request):
     if request.method == "POST":
@@ -153,6 +161,30 @@ def doVMInstance(request):
                     "response_json": 'tmp',
                     }
             return JsonResponse(data)
+        elif json_data['action'] == 'edit':
+            vmName = json_data["vmname"]
+            subaction = json_data["subaction"]
+            if subaction == 'editVCPU':
+                vcpus = json_data['value']
+                ret = editVMVCPU(vmName, vcpus)
+            elif subaction == 'editMem':
+                mem = json_data['mem']
+                currMem = json_data['currMem']
+                ret = editVMMemory(vmName, mem, currMem)
+                
+            if ret == True:
+                data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"], 
+                    "response_json": 'tmp',
+                    }
+            else:
+                data = {"result": "failed", 
+                    "message": "%s action failed!" % json_data["action"], 
+                    "response_json": 'tmp',
+                    }
+            return JsonResponse(data)
+            
+            
         
 def doVMConsole(request):
     if request.method == "GET":
