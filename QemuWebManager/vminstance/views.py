@@ -63,6 +63,13 @@ def editVMMemory(vmName,  mem, currMem):
     vmInst = CLVVMInstance()
     return vmInst.editVMMemory(vmName,  mem, currMem)
 
+def queryVMISO(vmName):
+    vmInst = CLVVMInstance()
+    return vmInst.queryVMISO(vmName)
+
+def queryVMDisk(vmName):
+    vmInst = CLVVMInstance()
+    return vmInst.queryVMDisk(vmName)
 
 def doVMInstance(request):
     if request.method == "POST":
@@ -176,6 +183,34 @@ def doVMInstance(request):
                 data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"], 
                     "response_json": 'tmp',
+                    }
+            else:
+                data = {"result": "failed", 
+                    "message": "%s action failed!" % json_data["action"], 
+                    "response_json": 'tmp',
+                    }
+            return JsonResponse(data)
+        elif json_data['action'] == 'queryISO':
+            vmName = json_data["vmname"]
+            ret, dataISO = queryVMISO(vmName)
+            if ret == True:
+                data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"], 
+                    "response_json": dataISO,
+                    }
+            else:
+                data = {"result": "failed", 
+                    "message": "%s action failed!" % json_data["action"], 
+                    "response_json": 'tmp',
+                    }
+            return JsonResponse(data)
+        elif json_data['action'] == 'queryDisk':
+            vmName = json_data["vmname"]
+            ret, dataDisk = queryVMISO(vmName)
+            if ret == True:
+                data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"], 
+                    "response_json": dataDisk,
                     }
             else:
                 data = {"result": "failed", 

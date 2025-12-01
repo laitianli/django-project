@@ -342,7 +342,6 @@ function getVMXMLInfo(vmName) {
     }, function () { alert('查询虚拟实例详细信息失败！'); });
 }
 
-
 function getCurrentTime() {
     const now = new Date();
 
@@ -721,6 +720,44 @@ function doEditChange(e) {
 }
 
 /* 编辑ISO和硬盘 */
+function getVMISOInfo(vmName) {
+    var jsonData = {
+        action: 'queryISO',
+        vmname: vmName
+    }
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        // vminstance = response.response_json;
+        // if (vminstance.length === 0) {
+        //     console.log('vminstance is null');
+        //     return;
+        // }
+        // vminstance.forEach(vm => {
+        //     // console.log(vm);
+        //     $('#xmlContent').text(vm['xml']);
+        // });
+
+    }, function () { alert('查询虚拟实例ISO详细信息失败！'); });
+}
+
+function getVMDiskInfo(vmName) {
+    var jsonData = {
+        action: 'queryDisk',
+        vmname: vmName
+    }
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        // vminstance = response.response_json;
+        // if (vminstance.length === 0) {
+        //     console.log('vminstance is null');
+        //     return;
+        // }
+        // vminstance.forEach(vm => {
+        //     // console.log(vm);
+        //     $('#xmlContent').text(vm['xml']);
+        // });
+
+    }, function () { alert('查询虚拟实例硬盘详细信息失败！'); });
+}
+
 function initEditISODisk() {
     let iosstorage_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
     let localstorage_json_data = JSON.parse(sessionStorage.getItem("localstoragepool_json"));
