@@ -1,5 +1,15 @@
 
 var orginConsoleType;
+var storagePoolOptions = [
+    { value: 'pool1', text: '默认存储池' },
+    { value: 'pool2', text: '备份存储池' },
+    { value: 'isodefalut', text: 'ISO默认池' }
+];
+var isoFileOptions = [
+    { value: 'file1', text: 'cn_windows_10_business_editions_version_1903_x64_dvd_e001dd2c.iso' },
+    { value: 'file2', text: 'ubuntu-20.04.iso' },
+    { value: 'file3', text: 'centos-8.iso' }
+];
 
 function initVMInstance() {
     console.log('--initVMInstance---')
@@ -759,6 +769,7 @@ function getVMDiskInfo(vmName) {
 }
 
 function initEditISODisk() {
+    storagePoolOptions.clean();
     let iosstorage_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
     let localstorage_json_data = JSON.parse(sessionStorage.getItem("localstoragepool_json"));
     $.each(localstorage_json_data.default, function (key, value) {
@@ -786,6 +797,7 @@ function initEditISODisk() {
                 value: value,
                 text: 'isodefalut'
             }));
+            storagePoolOptions.append({value: value, text: 'isodefalut'})
         }
     });
     $.each(iosstorage_json_data.custom, function (key, value) {
@@ -816,6 +828,8 @@ function addButtonEventForEditISODisk() {
     $(document).on('change', '#editIsodiskPartStoragePoolSelect', doEditIsodiskPartStoragePoolSelect);
     $(document).on('click', '#editAddISODiskBtn', doEditAddISODiskBtn);
     $(document).on('click', '#editIsoDiskTab .btn-delete', doEditIsoDiskTab);
+    $(document).on('click', '#editIsoDiskTab td.editable', doSingleClickToEditIsoTab);
+
 }
 
 function initForEditISODisk() {
@@ -1111,9 +1125,9 @@ function doEditAddISODiskBtn() {
     const newRow = `
                 <tr>
                     <td>${diskPartionName}</td>
-                    <td data-value=${diskLocalStoragePoolPath}>${diskLocalStoragePool}</td>
-                    <td class="id-diskboot">${diskBoot}</td>
-                    <td>${isoFile}</td>
+                    <td class="editable" data-field="storagePool" data-value=${diskLocalStoragePoolPath}>${diskLocalStoragePool}</td>
+                    <td class="editable  id-diskboot" data-field="bootDisk" data-value="${diskBoot}">${diskBoot}</td>
+                    <td class="editable" data-field="isoFile" data-value="${$('#diskPartStoragePoolFileSelect').val()}">${isoFile}</td>
                     <td>
                          <button class="btn btn-sm btn-danger btn-delete">删除</button>
                     </td>
@@ -1122,6 +1136,46 @@ function doEditAddISODiskBtn() {
     $('#editIsoDiskTab tbody').append(newRow);
     editUpdateISODiskOptions();
     editCheckISOSelectStatus();
+}
+
+// 编辑功能 - 点击单元格显示下拉框
+function doSingleClickToEditIsoTab() {
+    if ($(this).find('select').length > 0) return;
+
+    const field = $(this).data('field');
+    const currentValue = $(this).data('value');
+    let options = [];
+    const bootDiskOptions = [
+        { value: 'Yes', text: 'Yes' },
+        { value: 'No', text: 'No' }
+    ];
+
+    switch (field) {
+        case 'storagePool':
+            options = storagePoolOptions;
+            isoFileOptions.empty();
+            break;
+        case 'bootDisk':
+            options = bootDiskOptions;
+            break;
+        case 'isoFile':
+            options = isoFileOptions;
+            break;
+    }
+
+    let selectHtml = `<select class="form-select form-select-sm edit-dropdown">`;
+    options.forEach(option => {
+        const selected = option.value === currentValue ? 'selected' : '';
+        selectHtml += `<option value="${option.value}" ${selected}>${option.text}</option>`;
+        if (option.value === currentValue) {
+
+
+        }
+    });
+    selectHtml += `</select>`;
+
+    $(this).html(selectHtml);
+    $(this).find('select').focus();
 }
 
 function editGetISODiskTabData() {
