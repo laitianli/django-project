@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISO镜像管理</title>
+    <link href="../../static/bootstrap-5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="../../static/js/jquery-3.6.0.min.js"></script>
+    <style>
+        .table-editable td.editable {
+            cursor: pointer;
+            position: relative;
+        }
+        .table-editable td.editable:hover {
+            background-color: #f8f9fa;
+        }
+        .edit-dropdown {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+        .id-diskboot {
+            min-width: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h3>ISO镜像列表</h3>
+        <table id="isoDiskTab" class="table table-bordered table-hover table-editable">
+            <thead class="table-light">
+                <tr>
+                    <th>盘符</th>
+                    <th>存储池</th>
+                    <th>启动盘</th>
+                    <th>文件</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>hda</td>
+                    <td class="editable" data-field="storagePool" data-value="isodefalut">isodefalut</td>
+                    <td class="editable id-diskboot" data-field="bootDisk" data-value="No">No</td>
+                    <td class="editable" data-field="isoFile" data-value="cn_windows_10_business_editions_version_1903_x64_dvd_e001dd2c.iso">cn_windows_10_business_editions_version_1903_x64_dvd_e001dd2c.iso</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger btn-delete">删除</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>hdb</td>
+                    <td class="editable" data-field="storagePool" data-value="isodefalut">isodefalut</td>
+                    <td class="editable id-diskboot" data-field="bootDisk" data-value="No">No</td>
+                    <td class="editable" data-field="isoFile" data-value="cn_windows_10_business_editions_version_1903_x64_dvd_e001dd2c.iso">cn_windows_10_business_editions_version_1903_x64_dvd_e001dd2c.iso</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger btn-delete">删除</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- 添加新行的表单 -->
+        <div class="card mt-4">
+            <div class="card-header">添加ISO镜像</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="diskPartSelect" class="form-label">盘符</label>
+                        <select id="diskPartSelect" class="form-select">
+                            <option value="">请选择盘符</option>
+                            <option value="hda">hda</option>
+                            <option value="hdb">hdb</option>
+                            <option value="hdc">hdc</option>
+                            <option value="hdd">hdd</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="diskPartStoragePoolSelect" class="form-label">存储池</label>
+                        <select id="diskPartStoragePoolSelect" class="form-select">
+                            <option value="pool1">默认存储池</option>
+                            <option value="pool2">备份存储池</option>
+                            <option value="isodefalut">ISO默认池</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="diskPartStoragePoolFileSelect" class="form-label">ISO文件</label>
+                        <select id="diskPartStoragePoolFileSelect" class="form-select">
+                            <option value="file1">cn_windows_10_business_editions_version_1903_x64_dvd_e001dd2c.iso</option>
+                            <option value="file2">ubuntu-20.04.iso</option>
+                            <option value="file3">centos-8.iso</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check mt-4 pt-2">
+                            <input type="checkbox" class="form-check-input" id="checkVMSystemBootPart">
+                            <label class="form-check-label" for="checkVMSystemBootPart">设为启动盘</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <button id="addDiskBtn" class="btn btn-primary">添加</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // 初始化下拉框数据
+            const storagePoolOptions = [
+                { value: 'pool1', text: '默认存储池' },
+                { value: 'pool2', text: '备份存储池' },
+                { value: 'isodefalut', text: 'ISO默认池' }
+            ];
+
+            const bootDiskOptions = [
+                { value: 'Yes', text: 'Yes' },
+                { value: 'No', text: 'No' }
+            ];
+
+            const isoFileOptions = [
+                { value: 'file1', text: 'cn_windows_10_business_editions_version_1903_x64_dvd_e001dd2c.iso' },
+                { value: 'file2', text: 'ubuntu-20.04.iso' },
+                { value: 'file3', text: 'centos-8.iso' }
+            ];
+
+            // 删除行功能
+            $('#isoDiskTab').on('click', '.btn-delete', function() {
+                $(this).closest('tr').remove();
+                updateBootDiskStatus();
+            });
+
+            // 添加新行功能
+            $('#addDiskBtn').click(function() {
+                const diskPartionName = $('#diskPartSelect').val();
+                const diskLocalStoragePoolPath = $('#diskPartStoragePoolSelect').val();
+                const diskLocalStoragePool = $('#diskPartStoragePoolSelect').find('option:selected').text();
+                const isoFile = $('#diskPartStoragePoolFileSelect').find('option:selected').text();
+                const diskBoot = $('#checkVMSystemBootPart').prop('checked') ? "Yes" : "No";
+                
+                if (!diskPartionName) {
+                    alert('请选择盘符');
+                    return;
+                }
+
+                // 检查盘符是否已存在
+                const existingDisks = $('#isoDiskTab tbody tr td:first-child').map(function() {
+                    return $(this).text();
+                }).get();
+                
+                if (existingDisks.includes(diskPartionName)) {
+                    alert('该盘符已存在，请选择其他盘符');
+                    return;
+                }
+
+                const newRow = `
+                    <tr>
+                        <td>${diskPartionName}</td>
+                        <td class="editable" data-field="storagePool" data-value="${diskLocalStoragePoolPath}">${diskLocalStoragePool}</td>
+                        <td class="editable id-diskboot" data-field="bootDisk" data-value="${diskBoot}">${diskBoot}</td>
+                        <td class="editable" data-field="isoFile" data-value="${$('#diskPartStoragePoolFileSelect').val()}">${isoFile}</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger btn-delete">删除</button>
+                        </td>
+                    </tr>
+                `;
+                
+                $('#isoDiskTab tbody').append(newRow);
+                $('#checkVMSystemBootPart').prop('checked', false);
+                $('#diskPartSelect').val('');
+                updateBootDiskStatus();
+            });
+
+            // 编辑功能 - 点击单元格显示下拉框
+            $('#isoDiskTab').on('click', 'td.editable', function() {
+                if ($(this).find('select').length > 0) return;
+                
+                const field = $(this).data('field');
+                const currentValue = $(this).data('value');
+                let options = [];
+                
+                switch(field) {
+                    case 'storagePool':
+                        options = storagePoolOptions;
+                        break;
+                    case 'bootDisk':
+                        options = bootDiskOptions;
+                        break;
+                    case 'isoFile':
+                        options = isoFileOptions;
+                        break;
+                }
+                
+                let selectHtml = `<select class="form-select form-select-sm edit-dropdown">`;
+                options.forEach(option => {
+                    const selected = option.value === currentValue ? 'selected' : '';
+                    selectHtml += `<option value="${option.value}" ${selected}>${option.text}</option>`;
+                });
+                selectHtml += `</select>`;
+                
+                $(this).html(selectHtml);
+                $(this).find('select').focus();
+            });
+
+            // 下拉框改变事件
+            $('#isoDiskTab').on('change', 'td.editable select', function() {
+                const newValue = $(this).val();
+                const newText = $(this).find('option:selected').text();
+                const field = $(this).parent().data('field');
+                
+                $(this).parent()
+                    .data('value', newValue)
+                    .text(newText);
+                
+                if (field === 'bootDisk') {
+                    updateBootDiskStatus();
+                }
+            });
+
+            // 点击其他地方关闭下拉框
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('td.editable').length) {
+                    $('td.editable').each(function() {
+                        const select = $(this).find('select');
+                        if (select.length > 0) {
+                            const newValue = select.val();
+                            const newText = select.find('option:selected').text();
+                            $(this).data('value', newValue).text(newText);
+                        }
+                    });
+                }
+            });
+
+            // 更新启动盘状态（确保只有一个启动盘为Yes）
+            function updateBootDiskStatus() {
+                const bootDisks = $('.id-diskboot');
+                let hasBootDisk = false;
+                
+                bootDisks.each(function() {
+                    if ($(this).data('value') === 'Yes') {
+                        if (hasBootDisk) {
+                            $(this).data('value', 'No').text('No');
+                        } else {
+                            hasBootDisk = true;
+                        }
+                    }
+                });
+            }
+
+            // 初始化
+            updateBootDiskStatus();
+        });
+    </script>
+</body>
+</html>
