@@ -1311,7 +1311,6 @@ function doISOStoragePoolDblClickChange() {
 $(document).on('click', function (e) {
     if (!$(e.target).closest('td.editable').length) {
         $('td.editable').each(function () {
-            console.log('---------------click--------')
             const select = $(this).find('select');
             if (select.length > 0) {
                 const newValue = select.val();
