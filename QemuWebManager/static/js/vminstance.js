@@ -1317,6 +1317,14 @@ $(document).on('click', function (e) {
                 const newText = select.find('option:selected').text();
                 $(this).data('value', newValue).text(newText);
             }
+            else {
+                const edit = $(this).find('.edit-tableitem');
+                if (edit.length > 0) {
+                    const newValue = edit.val();
+                    const newText = edit.val();
+                    $(this).data('value', newValue).text(newText+'G');
+                }
+            }
         });
     }
 });
@@ -1444,7 +1452,18 @@ function doDiskStoragePoolDblClick(e) {
         { value: 'No', text: 'No' }
     ];
 
+    const diskPartBusOptions = [
+        { value: 'virtio', text: 'virtio' },
+        { value: 'sata', text: 'sata' },
+        { value: 'scsi', text: 'scsi' }
+    ];
+
     switch (field) {
+        case 'diskPartSize':
+            break;
+        case 'diskPartBus':
+            options = diskPartBusOptions;
+            break;
         case 'diskPartPool':
             options = diskPoolOptions;
             break;
@@ -1459,13 +1478,18 @@ function doDiskStoragePoolDblClick(e) {
             break;
     }
     $(this).html('');
-    let selectHtml = `<select class="form-select form-select-sm edit-dropdown">`;
-    options.forEach(option => {
-        const selected = option.text === currentText ? 'selected' : '';
-        selectHtml += `<option value="${option.value}" ${selected}>${option.text}</option>`;
-    });
-    selectHtml += `</select>`;
-
+    let selectHtml = '';
+    if (field === 'diskPartSize') {
+        selectHtml = `<input type="number" class="form-control form-control-sm edit-input edit-tableitem" min="15" max="800" step="5" value="${parseInt(currentValue)}">`;
+    }
+    else { 
+        selectHtml = `<select class="form-select form-select-sm edit-dropdown">`;
+        options.forEach(option => {
+            const selected = option.text === currentText ? 'selected' : '';
+            selectHtml += `<option value="${option.value}" ${selected}>${option.text}</option>`;
+        });
+        selectHtml += `</select>`;
+    }
     $(this).html(selectHtml);
     $(this).find('select').focus();
 }
