@@ -1729,7 +1729,7 @@
                                                                     class="col-md-4 text-end form-lable col-form-label">大小(G):</label>
                                                                 <div class="col-md-6">
                                                                     <input type="number" class="form-control"
-                                                                        id="diskPartSize" value="20" min="15" max="800"
+                                                                        id="editDiskPartSize" value="20" min="15" max="800"
                                                                         step="5">
                                                                 </div>
                                                             </div>
@@ -1756,15 +1756,49 @@
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-6" id="editVMSystemBootPart">
-                                                            <div class="checkbox-group">
-                                                                <div class="form-check">
-                                                                    <input class="form-check-input" type="checkbox"
-                                                                        id="editCheckVMSystemBootPart">
-                                                                    <label class="form-check-label"
-                                                                        for="editCheckVMSystemBootPart">
-                                                                        是否为启动盘
-                                                                    </label>
+                                                        <div class="col-md-12">
+                                                            <div class="mb-3 row">
+                                                                <div class="col-md-6" id="editVMSystemBootPart">
+                                                                    <div class="checkbox-group">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input"
+                                                                                type="checkbox"
+                                                                                id="editCheckVMSystemBootPart">
+                                                                            <label class="form-check-label"
+                                                                                for="editCheckVMSystemBootPart">
+                                                                                是否为启动盘
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+
+                                                                </div>
+                                                                <div class="col-md-6" id="editVMUseExistingImage">
+                                                                    <div class="checkbox-group mb-3">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input"
+                                                                                type="checkbox"
+                                                                                id="editCheckVMUseExistingImage">
+                                                                            <label class="form-check-label"
+                                                                                for="editCheckVMUseExistingImage">
+                                                                                使用已有镜像文件
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-12 d-none" id="editDiskPartStoragePoolFileList">
+                                                            <div class="row">
+                                                                <label for="editDiskPartStoragePoolFile"
+                                                                    class="col-md-2 text-end form-lable col-form-label">镜像文件:</label>
+                                                                <div class="col-md-9">
+                                                                    <select class="form-select"
+                                                                        id="editDiskPartStoragePoolFileSelect">
+                                                                        <option
+                                                                            value="CentOS-7-x86_64-Everything-1708.qcow2">
+                                                                            CentOS-7-x86_64-Everything-1708.qcow2
+                                                                        </option>
+                                                                    </select>
                                                                 </div>
                                                             </div>
                                                         </div>

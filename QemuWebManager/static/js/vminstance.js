@@ -1,15 +1,9 @@
 
 var orginConsoleType;
-var storagePoolOptions = [
-    { value: 'pool1', text: '默认存储池' },
-    { value: 'pool2', text: '备份存储池' },
-    { value: 'isodefalut', text: 'ISO默认池' }
-];
-var isoFileOptions = [
-    { value: 'file1', text: 'cn_windows_10_business_editions_version_1903_x64_dvd_e001dd2c.iso' },
-    { value: 'file2', text: 'ubuntu-20.04.iso' },
-    { value: 'file3', text: 'centos-8.iso' }
-];
+var isoPoolOptions = [];
+var isoFileOptions = [];
+var diskPoolOptions = [];
+var diskFileOptions = [];
 
 function initVMInstance() {
     console.log('--initVMInstance---')
@@ -451,7 +445,7 @@ function initVMClone(vmName) {
         if (key === 'poolPath') {
             $('#cloneToDiskPartStoragePool').empty().append($('<option>', {
                 value: value,
-                text: 'defalut'
+                text: 'default'
             }));
         }
     });
@@ -647,7 +641,7 @@ function do_deleteButton() {
     if (confirm('确定要永久删除此虚拟机及其所有硬盘镜像吗？此操作不可撤销！')) {
         // alert('虚拟机删除请求已发送（模拟）');
 
-        const vmName = $('#vm-detail-name').text();
+        const vmName = $('#vm-detail-name').text().trim();
 
         var jsonData = {
             action: 'control',
@@ -664,7 +658,7 @@ function do_deleteButton() {
 
 // 编辑VCPU
 function doEditVCPUBtn() {
-    const vmName = $('#vm-detail-name').text();
+    const vmName = $('#vm-detail-name').text().trim();
     var jsonData = {
         action: 'edit',
         subaction: 'editVCPU',
@@ -681,7 +675,7 @@ function doEditVCPUBtn() {
 
 // 编辑memory
 function doEditMemory() {
-    const vmName = $('#vm-detail-name').text();
+    const vmName = $('#vm-detail-name').text().trim();
     var jsonData = {
         action: 'edit',
         subaction: 'editMem',
@@ -769,16 +763,20 @@ function getVMDiskInfo(vmName) {
 }
 
 function initEditISODisk() {
-    storagePoolOptions.clean();
+    isoPoolOptions = [];
+    diskPoolOptions = [];
     let iosstorage_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
     let localstorage_json_data = JSON.parse(sessionStorage.getItem("localstoragepool_json"));
+    var diskdefaultPoolPath;
     $.each(localstorage_json_data.default, function (key, value) {
         // console.log('key:' + key + " value:" + value)
         if (key === 'poolPath') {
+            diskdefaultPoolPath = value;
             $('#editDiskPartStoragePoolSelect').empty().append($('<option>', {
                 value: value,
-                text: 'defalut'
+                text: 'default'
             }));
+            diskPoolOptions.push({ value: value, text: 'default' });
         }
     });
     $.each(localstorage_json_data.custom, function (key, value) {
@@ -786,18 +784,34 @@ function initEditISODisk() {
             value: value.poolPath,
             text: key
         }));
+        diskPoolOptions.push({ value: value.poolPath, text: key });
     });
 
-    var isodefalutPoolPath;
+    diskFileOptions = [];
+    $.each(localstorage_json_data.default, function (key, value) {
+        if (key === 'fileList') {
+            $('#editDiskPartStoragePoolFileSelect').empty();
+            $.each(value, function (index) {
+                // console.log('--poolPath:' + diskdefaultPoolPath + ' ---fileName:' + value[index]["fileName"]);
+                $('#editDiskPartStoragePoolFileSelect').append($('<option>', {
+                    value: diskdefaultPoolPath,
+                    text: value[index]["fileName"]
+                }));
+                diskFileOptions.push({ value: diskdefaultPoolPath, text: value[index]["fileName"] })
+            });
+        }
+    });
+
+    var isodefaultPoolPath;
     $.each(iosstorage_json_data.default, function (key, value) {
         // console.log('key:' + key + " value:" + value)
         if (key === 'poolPath') {
-            isodefalutPoolPath = value;
+            isodefaultPoolPath = value;
             $('#editIsodiskPartStoragePoolSelect').empty().append($('<option>', {
                 value: value,
-                text: 'isodefalut'
+                text: 'isodefault'
             }));
-            storagePoolOptions.append({value: value, text: 'isodefalut'})
+            isoPoolOptions.push({ value: value, text: 'isodefault' })
         }
     });
     $.each(iosstorage_json_data.custom, function (key, value) {
@@ -805,17 +819,20 @@ function initEditISODisk() {
             value: value.poolPath,
             text: key
         }));
+        isoPoolOptions.push({ value: value.poolPath, text: key })
     });
 
+    isoFileOptions = [];
     $.each(iosstorage_json_data.default, function (key, value) {
         if (key === 'fileList') {
             $('#editIsodiskPartStoragePoolFileSelect').empty();
             $.each(value, function (index) {
-                // console.log('--poolPath:' + isodefalutPoolPath + ' ---fileName:' + value[index]["fileName"]);
+                // console.log('--poolPath:' + isodefaultPoolPath + ' ---fileName:' + value[index]["fileName"]);
                 $('#editIsodiskPartStoragePoolFileSelect').append($('<option>', {
-                    value: isodefalutPoolPath,
+                    value: isodefaultPoolPath,
                     text: value[index]["fileName"]
                 }));
+                isoFileOptions.push({ value: isodefaultPoolPath, text: value[index]["fileName"] })
             });
         }
     });
@@ -828,8 +845,14 @@ function addButtonEventForEditISODisk() {
     $(document).on('change', '#editIsodiskPartStoragePoolSelect', doEditIsodiskPartStoragePoolSelect);
     $(document).on('click', '#editAddISODiskBtn', doEditAddISODiskBtn);
     $(document).on('click', '#editIsoDiskTab .btn-delete', doEditIsoDiskTab);
-    $(document).on('click', '#editIsoDiskTab td.editable', doSingleClickToEditIsoTab);
 
+    $(document).on('dblclick', '#editIsoDiskTab td.editable', doISOStoragePoolDblClick);
+    $(document).on('change', '#editIsoDiskTab td.editable select', doISOStoragePoolDblClickChange);
+
+    $(document).on('dblclick', '#editDiskTab td.editable', doDiskStoragePoolDblClick);
+    $(document).on('change', '#editDiskTab td.editable select', doDiskStoragePoolDblClickChange);
+    $(document).on('change', '#editCheckVMUseExistingImage', doEditCheckVMUseExistingImage);
+    $(document).on('change', '#editDiskPartStoragePoolSelect', doEditDiskPartStoragePoolSelect);
 }
 
 function initForEditISODisk() {
@@ -921,39 +944,59 @@ function doEditAddDiskBtn() {
     const diskPartType = $('#editDiskPartTypeSelect').val();
     const diskSize = $('#editDiskPartSize').val();
     const diskBus = $('#editDiskPartBusTypeSelect').val();
-    const diskLocalStoragePoolPath = $('#editDiskPartStoragePoolSelect').val();
-    const diskLocalStoragePool = $('#editDiskPartStoragePoolSelect').find('option:selected').text();
-    const diskBoot = $('#editCheckVMSystemBootPart').prop('checked') == true ? "Yes" : "No";
+    const diskStoragePoolPath = $('#editDiskPartStoragePoolSelect').val();
+    const diskStoragePool = $('#editDiskPartStoragePoolSelect').find('option:selected').text();
+    const diskBoot = (($('#editCheckVMSystemBootPart').prop('checked') == true) &&
+        !$('#editCheckVMSystemBootPart').hasClass('d-none')) ? "Yes" : "No";
     $('#editCheckVMSystemBootPart').prop('checked', false);
     if (diskBoot === "Yes") {
         $('#editVMSystemBootPart').addClass('d-none');
         $('#editIsoVMSystemBootPart').addClass('d-none');
-        $('#editVMSystemBootTypeConfig').addClass('d-none');
     }
     if (!diskPartionName) {
         $('#editAddDiskBtn').addClass('disabled');
         return;
     }
-    var vmName = $('#vm-detail-name').val().trim();
+    var vmName = $('#vm-detail-name').text().trim();
     if (vmName === '') {
         vmName = 'vm';
     }
-    //diskLocalStoragePoolPath + '/' + 
-    const diskName = vmName + '_' + editGenerateUUID() + '.' + diskPartType;
-
-    const newRow = `
+    const userExistingImage = $('#editCheckVMUseExistingImage').prop('checked') == true ? true : false;
+    var newRow;
+    var diskName;
+    if (userExistingImage) {
+        diskName = $('#editDiskPartStoragePoolFileSelect').find('option:selected').text();
+        newRow = `
                 <tr>
                     <td>${diskPartionName}</td>                    
-                    <td>${diskSize}G</td>
-                    <td>${diskBus}</td>
-                    <td>${diskLocalStoragePool}</td>
-                    <td class="id-diskboot">${diskBoot}</td>
-                    <td data-value=${diskLocalStoragePoolPath}>${diskName}</td>
+                    <td class="editable" data-field="diskPartSize" data-value=${diskSize}>${diskSize}G</td>
+                    <td class="editable" data-field="diskPartBus" data-value=${diskBus}>${diskBus}</td>
+                    <td class="editable" data-field="diskPartPool" data-value=${diskStoragePoolPath}>${diskStoragePool}</td>
+                    <td class="editable id-diskboot" data-field="bootDisk" data-value="${diskBoot}">${diskBoot}</td>
+                    <td class="editable" data-field="diskFile" data-value=${diskStoragePoolPath}>${diskName}</td>
                     <td>
                          <button class="btn btn-sm btn-danger btn-delete">删除</button>
                     </td>
                 </tr>
             `;
+
+    }
+    else {
+        diskName = vmName + '_' + editGenerateUUID() + '.' + diskPartType;
+        newRow = `
+                <tr>
+                    <td>${diskPartionName}</td>                    
+                    <td class="editable" data-field="diskPartSize" data-value=${diskSize}>${diskSize}G</td>
+                    <td class="editable" data-field="diskPartBus" data-value=${diskBus}>${diskBus}</td>
+                    <td class="editable" data-field="diskPartPool" data-value=${diskStoragePoolPath}>${diskStoragePool}</td>
+                    <td class="editable id-diskboot" data-field="bootDisk" data-value="${diskBoot}">${diskBoot}</td>
+                    <td class="" data-field="NoChange-diskFile" data-value=${diskStoragePoolPath}>${diskName}</td>
+                    <td>
+                         <button class="btn btn-sm btn-danger btn-delete">删除</button>
+                    </td>
+                </tr>
+            `;
+    }
     $('#editDiskTab tbody').append(newRow);
     editUpdateDiskOptions();
     editCheckSelectStatus();
@@ -988,7 +1031,7 @@ function doEditDiskTab() {
         const diskboot = $(this).find('.id-diskboot').text();
         if (diskboot === "Yes") {
             $('#editVMSystemBootPart').removeClass('d-none');
-            $('#editVMSystemBootTypeConfig').removeClass('d-none');
+            $('#editIsoVMSystemBootPart').removeClass('d-none');
         }
         $(this).remove();
 
@@ -1018,18 +1061,17 @@ function editAddISODiskName(prefix) {
     }
 }
 function editShowISODiskNameList() {
-    // console.log(diskBus);
     $('#editIsodiskPartSelect').empty();
     editAddISODiskName('hd');
 }
 
 function doEditIsodiskPartStoragePoolSelect() {
-    var text = $(this).find('option:selected').text();
+    var text = $(this).find('option:selected').text().trim();
     var val = $(this).val();
     $('#editIsodiskPartStoragePoolFileSelect').empty();
     let iosstorage_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
     var poolPath;
-    if (text === "isodefalut") {
+    if (text === "isodefault") {
         $.each(iosstorage_json_data.default, function (key, value) {
             console.log('key:' + key + " value:" + value);
             if (key === 'poolPath') {
@@ -1049,25 +1091,21 @@ function doEditIsodiskPartStoragePoolSelect() {
         });
     }
     else {
-        $.each(iosstorage_json_data.custom, function (key, value) {
-            $.each(iosstorage_json_data.custom[key], function (subkey, subvalue) {
-                if (subkey === 'poolPath') {
-                    poolPath = subvalue;
-                }
+        $.each(iosstorage_json_data.custom[text], function (subkey, subvalue) {
+            if (subkey === 'poolPath') {
+                poolPath = subvalue;
+            }
+        });
 
-            });
-
-            $.each(iosstorage_json_data.custom[key], function (subkey, subvalue) {
-                if (subkey === 'fileList') {
-                    $.each(subvalue, function (index) {
-                        $('#editIsodiskPartStoragePoolFileSelect').append($('<option>', {
-                            value: poolPath,
-                            text: subvalue[index]["fileName"]
-                        }));
-                    });
-                }
-            });
-
+        $.each(iosstorage_json_data.custom[text], function (subkey, subvalue) {
+            if (subkey === 'fileList') {
+                $.each(subvalue, function (index) {
+                    $('#editIsodiskPartStoragePoolFileSelect').append($('<option>', {
+                        value: poolPath,
+                        text: subvalue[index]["fileName"]
+                    }));
+                });
+            }
         });
     }
 }
@@ -1107,27 +1145,27 @@ function editUpdateISODiskOptions() {
 // ISO添加按钮事件
 function doEditAddISODiskBtn() {
     const diskPartionName = $('#editIsodiskPartSelect').val();
-    const diskLocalStoragePoolPath = $('#editIsodiskPartStoragePoolSelect').val();
-    const diskLocalStoragePool = $('#editIsodiskPartStoragePoolSelect').find('option:selected').text();
-    const isoFile = $('#editIsodiskPartStoragePoolFileSelect').find('option:selected').text();
-    const diskBoot = $('#editIsocheckVMSystemBootPart').prop('checked') == true ? "Yes" : "No";
+    const isoStoragePoolPath = $('#editIsodiskPartStoragePoolSelect').val();
+    const isoStoragePool = $('#editIsodiskPartStoragePoolSelect').find('option:selected').text().trim();
+    const isoFile = $('#editIsodiskPartStoragePoolFileSelect').find('option:selected').text().trim();
+    const isoFileVal = $('#editIsodiskPartStoragePoolFileSelect').find('option:selected').val();
+    const diskBoot = (($('#editIsocheckVMSystemBootPart').prop('checked') == true) &&
+        (!$('#editIsocheckVMSystemBootPart').hasClass('d-none'))) ? "Yes" : "No";
     $('#editIsocheckVMSystemBootPart').prop('checked', false);
     if (diskBoot === "Yes") {
         $('#editVMSystemBootPart').addClass('d-none');
         $('#editIsoVMSystemBootPart').addClass('d-none');
-        $('#editVMSystemBootTypeConfig').addClass('d-none');
     }
     if (!diskPartionName) {
         $('#editAddDiskBtn').addClass('disabled');
         return;
     }
-    console.log('diskLocalStoragePoolPath:' + diskLocalStoragePoolPath + " diskLocalStoragePool:" + diskLocalStoragePool)
     const newRow = `
                 <tr>
                     <td>${diskPartionName}</td>
-                    <td class="editable" data-field="storagePool" data-value=${diskLocalStoragePoolPath}>${diskLocalStoragePool}</td>
+                    <td class="editable" data-field="storagePool" data-value=${isoStoragePoolPath}>${isoStoragePool}</td>
                     <td class="editable  id-diskboot" data-field="bootDisk" data-value="${diskBoot}">${diskBoot}</td>
-                    <td class="editable" data-field="isoFile" data-value="${$('#diskPartStoragePoolFileSelect').val()}">${isoFile}</td>
+                    <td class="editable" data-field="isoFile" data-value="${isoFileVal}">${isoFile}</td>
                     <td>
                          <button class="btn btn-sm btn-danger btn-delete">删除</button>
                     </td>
@@ -1138,12 +1176,88 @@ function doEditAddISODiskBtn() {
     editCheckISOSelectStatus();
 }
 
-// 编辑功能 - 点击单元格显示下拉框
-function doSingleClickToEditIsoTab() {
+
+function addISOFileToTableItem(text) {
+    let iosstorage_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
+    var poolPath;
+    if (text === "isodefault") {
+        $.each(iosstorage_json_data.default, function (key, value) {
+            console.log('key:' + key + " value:" + value);
+            if (key === 'poolPath') {
+                poolPath = value;
+            }
+        });
+
+        $.each(iosstorage_json_data.default, function (key, value) {
+            if (key === 'fileList') {
+                $.each(value, function (index) {
+                    isoFileOptions.push({ value: poolPath, text: value[index]["fileName"] });
+                });
+            }
+        });
+    }
+    else {
+        $.each(iosstorage_json_data.custom[text], function (subkey, subvalue) {
+            if (subkey === 'poolPath') {
+                poolPath = subvalue;
+            }
+        });
+
+        $.each(iosstorage_json_data.custom[text], function (subkey, subvalue) {
+            if (subkey === 'fileList') {
+                $.each(subvalue, function (index) {
+                    isoFileOptions.push({ value: poolPath, text: subvalue[index]["fileName"] });
+                });
+            }
+        });
+    }
+}
+
+function addDiskFileToTableItem(text) {
+    let diskStorage_json_data = JSON.parse(sessionStorage.getItem("localstoragepool_json"));
+    var poolPath = '';
+    if (text === "default") {
+        $.each(diskStorage_json_data.default, function (key, value) {
+            console.log('key:' + key + " value:" + value);
+            if (key === 'poolPath') {
+                poolPath = value;
+            }
+        });
+
+        $.each(diskStorage_json_data.default, function (key, value) {
+            if (key === 'fileList') {
+                $.each(value, function (index) {
+                    diskFileOptions.push({ value: poolPath, text: value[index]["fileName"] });
+                });
+            }
+        });
+    }
+    else {
+        $.each(diskStorage_json_data.custom[text], function (subkey, subvalue) {
+            if (subkey === 'poolPath') {
+                poolPath = subvalue;
+            }
+        });
+
+        $.each(diskStorage_json_data.custom[text], function (subkey, subvalue) {
+            if (subkey === 'fileList') {
+                $.each(subvalue, function (index) {
+                    diskFileOptions.push({ value: poolPath, text: subvalue[index]["fileName"] });
+                });
+            }
+        });
+    }
+    return poolPath;
+}
+
+// iso编辑功能 - 点击单元格显示下拉框
+function doISOStoragePoolDblClick(e) {
+    e.preventDefault();
     if ($(this).find('select').length > 0) return;
 
     const field = $(this).data('field');
     const currentValue = $(this).data('value');
+    const currentText = $(this).text().trim();
     let options = [];
     const bootDiskOptions = [
         { value: 'Yes', text: 'Yes' },
@@ -1152,30 +1266,125 @@ function doSingleClickToEditIsoTab() {
 
     switch (field) {
         case 'storagePool':
-            options = storagePoolOptions;
-            isoFileOptions.empty();
+            options = isoPoolOptions;
             break;
         case 'bootDisk':
             options = bootDiskOptions;
             break;
         case 'isoFile':
+            const pool = $(this).siblings('td[data-field="storagePool"]').text().trim();
+            const row = $(this).closest('tr');
+            isoStoragePoolDblClickToChange(row, pool);
             options = isoFileOptions;
             break;
     }
-
+    $(this).html('');
     let selectHtml = `<select class="form-select form-select-sm edit-dropdown">`;
     options.forEach(option => {
-        const selected = option.value === currentValue ? 'selected' : '';
+        const selected = option.text === currentText ? 'selected' : '';
         selectHtml += `<option value="${option.value}" ${selected}>${option.text}</option>`;
-        if (option.value === currentValue) {
-
-
-        }
     });
     selectHtml += `</select>`;
 
     $(this).html(selectHtml);
     $(this).find('select').focus();
+}
+
+// 下拉框改变事件
+function doISOStoragePoolDblClickChange() {
+    const newValue = $(this).val();
+    const newText = $(this).find('option:selected').text().trim();
+    const field = $(this).parent().data('field');
+
+    if (field === 'storagePool') {
+        var row = $(this).parent().closest('tr');
+        isoStoragePoolDblClickToChange(row, newText);
+    }
+    //这句要在isoStoragePoolDblClickToChange后面执行
+    $(this).parent().data('value', newValue).text(newText);
+    if (field === 'bootDisk') {
+        updateBootDiskStatus();
+    }
+}
+
+// 点击其他地方关闭下拉框
+$(document).on('click', function (e) {
+    if (!$(e.target).closest('td.editable').length) {
+        $('td.editable').each(function () {
+            console.log('---------------click--------')
+            const select = $(this).find('select');
+            if (select.length > 0) {
+                const newValue = select.val();
+                const newText = select.find('option:selected').text();
+                $(this).data('value', newValue).text(newText);
+            }
+        });
+    }
+});
+
+// 新增函数：双击 storagePool 单元格时在 isoFile 单元格显示对应文件列表
+function isoStoragePoolDblClickToChange(row, poolPath) {
+    // 清空并填充 isoFileOptions
+    isoFileOptions = [];
+    addISOFileToTableItem(poolPath);
+    var isoCell = row.find('td[data-field="isoFile"]');
+    if (!isoCell.length) return;
+
+    if (!isoFileOptions || isoFileOptions.length === 0) {
+        isoCell.text('无可用ISO');
+        isoCell.removeAttr('data-value');
+        return;
+    }
+
+    let selectHtml = `<select class="form-select form-select-sm edit-dropdown">`;
+    isoFileOptions.forEach(option => {
+        selectHtml += `<option value="${option.value}">${option.text}</option>`;
+    });
+    selectHtml += `</select>`;
+
+    isoCell.html(selectHtml);
+    const select = isoCell.find('select').focus();
+
+    // 选择后更新单元格的 text 与 data-value；失焦也更新并收回（将展示为普通文本）
+    const applySelection = function () {
+        const val = select.val();
+        const txt = select.find('option:selected').text();
+        isoCell.data('value', val);
+        isoCell.text(txt);
+    };
+
+    select.on('change', function () {
+        applySelection();
+    });
+
+    select.on('blur', function () {
+        applySelection();
+    });
+}
+
+function updateBootDiskStatus() {
+    const bootDisks = $('.id-diskboot');
+    let hasBootDisk = false;
+
+    bootDisks.each(function () {
+        // console.log('---updateBootDiskStatus boot disk value:' + $(this).data('value'));
+        if ($(this).data('value') === 'Yes') {
+            if (hasBootDisk) {
+                $(this).data('value', 'No').text('No');
+            } else {
+                hasBootDisk = true;
+            }
+        }
+    });
+
+    if (hasBootDisk) {
+        $('#editVMSystemBootPart').addClass('d-none');
+        $('#editIsoVMSystemBootPart').addClass('d-none');
+    }
+    else {
+        $('#editVMSystemBootPart').removeClass('d-none');
+        $('#editIsoVMSystemBootPart').removeClass('d-none');
+    }
 }
 
 function editGetISODiskTabData() {
@@ -1206,7 +1415,6 @@ function doEditIsoDiskTab() {
         if (diskboot === "Yes") {
             $('#editVMSystemBootPart').removeClass('d-none');
             $('#editIsoVMSystemBootPart').removeClass('d-none');
-            $('#editVMSystemBootTypeConfig').removeClass('d-none');
         }
         $(this).remove();
 
@@ -1220,4 +1428,166 @@ function doEditIsoDiskTab() {
         editSortSelectOptions('#editIsodiskPartSelect');
         editCheckISOSelectStatus();
     });
+}
+
+
+// disk编辑功能 - 点击单元格显示下拉框
+function doDiskStoragePoolDblClick(e) {
+    e.preventDefault();
+    if ($(this).find('select').length > 0) return;
+
+    const field = $(this).data('field');
+    const currentValue = $(this).data('value');
+    const currentText = $(this).text().trim();
+    let options = [];
+    const bootDiskOptions = [
+        { value: 'Yes', text: 'Yes' },
+        { value: 'No', text: 'No' }
+    ];
+
+    switch (field) {
+        case 'diskPartPool':
+            options = diskPoolOptions;
+            break;
+        case 'bootDisk':
+            options = bootDiskOptions;
+            break;
+        case 'diskFile':
+            const pool = $(this).siblings('td[data-field="diskPartPool"]').text().trim();
+            const row = $(this).closest('tr');
+            diskStoragePoolDblClickToChange(row, pool);
+            options = diskFileOptions;
+            break;
+    }
+    $(this).html('');
+    let selectHtml = `<select class="form-select form-select-sm edit-dropdown">`;
+    options.forEach(option => {
+        const selected = option.text === currentText ? 'selected' : '';
+        selectHtml += `<option value="${option.value}" ${selected}>${option.text}</option>`;
+    });
+    selectHtml += `</select>`;
+
+    $(this).html(selectHtml);
+    $(this).find('select').focus();
+}
+
+// 下拉框改变事件
+function doDiskStoragePoolDblClickChange() {
+    const newValue = $(this).val();
+    const newText = $(this).find('option:selected').text().trim();
+    const field = $(this).parent().data('field');
+
+    if (field === 'diskPartPool') {
+        var row = $(this).parent().closest('tr');
+        diskStoragePoolDblClickToChange(row, newText);
+    }
+    //这句要在isoStoragePoolDblClickToChange后面执行
+    $(this).parent().data('value', newValue).text(newText);
+    if (field === 'bootDisk') {
+        updateBootDiskStatus();
+    }
+}
+
+
+// 新增函数：双击 diskPool 单元格时在 diskFile 单元格显示对应文件列表
+function diskStoragePoolDblClickToChange(row, poolPath) {
+    // 清空并填充 diskFileOptions
+    diskFileOptions = [];
+    poolPath = addDiskFileToTableItem(poolPath);
+    var diskFileCell = row.find('td[data-field="diskFile"]');
+    if (!diskFileCell.length) {
+        /**
+         * 处理 NoChange-diskFile 情况:修改存量硬盘的存储池路径，但不允许更改镜像文件名
+         */
+        var diskFileCellNoChange = row.find('td[data-field="NoChange-diskFile"]');
+        if (!diskFileCellNoChange.length) return;
+        // console.log('----diskStoragePoolDblClickToChange diskFileCellNoChange poolPath:' + poolPath);
+        diskFileCellNoChange.val(poolPath);
+        return;
+    }
+
+    if (!diskFileOptions || diskFileOptions.length === 0) {
+        diskFileCell.text('无镜像可用');
+        diskFileCell.removeAttr('data-value');
+        return;
+    }
+
+    let selectHtml = `<select class="form-select form-select-sm edit-dropdown">`;
+    diskFileOptions.forEach(option => {
+        selectHtml += `<option value="${option.value}">${option.text}</option>`;
+    });
+    selectHtml += `</select>`;
+
+    diskFileCell.html(selectHtml);
+    const select = diskFileCell.find('select').focus();
+
+    // 选择后更新单元格的 text 与 data-value；失焦也更新并收回（将展示为普通文本）
+    const applySelection = function () {
+        const val = select.val();
+        const txt = select.find('option:selected').text();
+        diskFileCell.data('value', val);
+        diskFileCell.text(txt);
+    };
+
+    select.on('change', function () {
+        applySelection();
+    });
+
+    select.on('blur', function () {
+        applySelection();
+    });
+}
+
+function doEditCheckVMUseExistingImage() {
+    if (this.checked) {
+        $('#editDiskPartStoragePoolFileList').removeClass('d-none');
+    }
+    else {
+        $('#editDiskPartStoragePoolFileList').addClass('d-none');
+    }
+}
+
+function doEditDiskPartStoragePoolSelect() {
+    var text = $(this).find('option:selected').text().trim();
+    var val = $(this).val();
+    $('#editDiskPartStoragePoolFileSelect').empty();
+    let localstorage_json_data = JSON.parse(sessionStorage.getItem("localstoragepool_json"));
+    var poolPath;
+    if (text === "default") {
+        $.each(localstorage_json_data.default, function (key, value) {
+            console.log('key:' + key + " value:" + value);
+            if (key === 'poolPath') {
+                poolPath = value;
+            }
+        });
+
+        $.each(localstorage_json_data.default, function (key, value) {
+            if (key === 'fileList') {
+                $.each(value, function (index) {
+                    $('#editDiskPartStoragePoolFileSelect').append($('<option>', {
+                        value: poolPath,
+                        text: value[index]["fileName"]
+                    }));
+                });
+            }
+        });
+    }
+    else {
+        $.each(localstorage_json_data.custom[text], function (subkey, subvalue) {
+            if (subkey === 'poolPath') {
+                poolPath = subvalue;
+            }
+        });
+
+        $.each(localstorage_json_data.custom[text], function (subkey, subvalue) {
+            if (subkey === 'fileList') {
+                $.each(subvalue, function (index) {
+                    $('#editDiskPartStoragePoolFileSelect').append($('<option>', {
+                        value: poolPath,
+                        text: subvalue[index]["fileName"]
+                    }));
+                });
+            }
+        });
+    }
 }

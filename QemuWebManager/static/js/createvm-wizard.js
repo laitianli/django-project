@@ -6,7 +6,7 @@ function initCreateVMWizard() {
         if (key === 'poolPath') {
             $('#diskPartStoragePoolSelect').empty().append($('<option>', {
                 value: value,
-                text: 'defalut'
+                text: 'default'
             }));
         }
     });
@@ -17,14 +17,14 @@ function initCreateVMWizard() {
         }));
     });
 
-    var isodefalutPoolPath;
+    var isodefaultPoolPath;
     $.each(iosstorage_json_data.default, function (key, value) {
         // console.log('key:' + key + " value:" + value)
         if (key === 'poolPath') {
-            isodefalutPoolPath = value;
+            isodefaultPoolPath = value;
             $('#isodiskPartStoragePoolSelect').empty().append($('<option>', {
                 value: value,
-                text: 'isodefalut'
+                text: 'isodefault'
             }));
         }
     });
@@ -39,9 +39,9 @@ function initCreateVMWizard() {
         if (key === 'fileList') {
             $('#isodiskPartStoragePoolFileSelect').empty();
             $.each(value, function (index) {
-                // console.log('--poolPath:' + isodefalutPoolPath + ' ---fileName:' + value[index]["fileName"]);
+                // console.log('--poolPath:' + isodefaultPoolPath + ' ---fileName:' + value[index]["fileName"]);
                 $('#isodiskPartStoragePoolFileSelect').append($('<option>', {
-                    value: isodefalutPoolPath,
+                    value: isodefaultPoolPath,
                     text: value[index]["fileName"]
                 }));
             });
@@ -360,12 +360,12 @@ $(document).ready(function () {
     }
 
     $('#isodiskPartStoragePoolSelect').on('change', function () {
-        var text = $(this).find('option:selected').text();
+        var text = $(this).find('option:selected').text().trim();
         var val = $(this).val();
         $('#isodiskPartStoragePoolFileSelect').empty();
         let iosstorage_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
         var poolPath;
-        if (text === "isodefalut") {
+        if (text === "isodefault") {
             $.each(iosstorage_json_data.default, function (key, value) {
                 console.log('key:' + key + " value:" + value);
                 if (key === 'poolPath') {
@@ -385,25 +385,22 @@ $(document).ready(function () {
             });
         }
         else {
-            $.each(iosstorage_json_data.custom, function (key, value) {
-                $.each(iosstorage_json_data.custom[key], function (subkey, subvalue) {
-                    if (subkey === 'poolPath') {
-                        poolPath = subvalue;
-                    }
+            $.each(iosstorage_json_data.custom[text], function (subkey, subvalue) {
+                if (subkey === 'poolPath') {
+                    poolPath = subvalue;
+                }
 
-                });
+            });
 
-                $.each(iosstorage_json_data.custom[key], function (subkey, subvalue) {
-                    if (subkey === 'fileList') {
-                        $.each(subvalue, function (index) {
-                            $('#isodiskPartStoragePoolFileSelect').append($('<option>', {
-                                value: poolPath,
-                                text: subvalue[index]["fileName"]
-                            }));
-                        });
-                    }
-                });
-
+            $.each(iosstorage_json_data.custom[text], function (subkey, subvalue) {
+                if (subkey === 'fileList') {
+                    $.each(subvalue, function (index) {
+                        $('#isodiskPartStoragePoolFileSelect').append($('<option>', {
+                            value: poolPath,
+                            text: subvalue[index]["fileName"]
+                        }));
+                    });
+                }
             });
         }
     });
@@ -501,7 +498,7 @@ $(document).ready(function () {
             const diskboot = $(this).find('.id-diskboot').text();
             if (diskboot === "Yes") {
                 $('#VMSystemBootPart').removeClass('d-none');
-                $('#isoVMSystemBootPart').removeClass('d-none');                
+                $('#isoVMSystemBootPart').removeClass('d-none');
                 $('#VMSystemBootTypeConfig').removeClass('d-none');
             }
             $(this).remove();
@@ -757,7 +754,7 @@ $(document).ready(function () {
             // 这里可以执行空表格时的操作，例如显示提示信息
             activeSubSetting('disk');
             return false;
-        } 
+        }
 
         // 3.判断ISO列表是否空
         if ($('#isoDiskTab tbody').children('tr').length === 0) {
