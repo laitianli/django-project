@@ -426,3 +426,35 @@ class CLVVMInstance(ConnectLibvirtd):
         conn.defineXML(newxml)
         self.connect_close()
         return True
+    
+    def queryVMISO(self, vmName):
+        conn = self.get_conn()
+        isoList = []
+        dom = conn.lookupByName(vmName)
+        if dom is None:
+            self.connect_close()
+            return False,isoList
+        xml = dom.XMLDesc(0)
+        root = ElementTree.fromstring(xml)
+        for cdrom in root.findall("devices/disk[@device='cdrom']"):
+            source_elm = cdrom.find('source')
+            source_file = source_elm.get('file')
+            target_elm = cdrom.find('target')
+            target_dev = target_elm.get('dev')
+            target_bus = target_elm.get('bus')
+            if source_file:
+                isoList.append({'file': source_file, 'dev': target_dev, 'bus': target_bus})
+        self.connect_close()
+        print(f'isoList: {isoList}')
+        return True, isoList
+    
+    def queryVMDisk(self, vmName):
+        conn = self.get_conn()
+        diskList = []
+        dom = conn.lookupByName(vmName)
+        if dom is None:
+            self.connect_close()
+            return False
+        
+        self.connect_close()
+        return diskList

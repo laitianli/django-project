@@ -492,7 +492,7 @@ function dovmDetailLink(e) {
     initSnapshot(vmName);
 
     initVMClone(vmName);
-    initForEditISODisk();
+    initForEditISODisk(vmName);
 }
 
 function doConsoleTypeChange(e) {
@@ -723,6 +723,23 @@ function doEditChange(e) {
     }
 }
 
+function addISODiskTabRow(diskPartionName, isoStoragePoolPath, isoStoragePool, diskBoot, isoFile) {
+    const newRow = `
+                <tr>
+                    <td>${diskPartionName}</td>
+                    <td class="editable" data-field="storagePool" data-value=${isoStoragePoolPath}>${isoStoragePool}</td>
+                    <td class="editable  id-diskboot" data-field="bootDisk" data-value="${diskBoot}">${diskBoot}</td>
+                    <td class="editable" data-field="isoFile" data-value="${isoStoragePoolPath}">${isoFile}</td>
+                    <td>
+                         <button class="btn btn-sm btn-danger btn-delete">删除</button>
+                    </td>
+                </tr>
+            `;
+    $('#editIsoDiskTab tbody').append(newRow);
+    editUpdateISODiskOptions();
+    editCheckISOSelectStatus();
+}
+
 /* 编辑ISO和硬盘 */
 function getVMISOInfo(vmName) {
     var jsonData = {
@@ -730,16 +747,45 @@ function getVMISOInfo(vmName) {
         vmname: vmName
     }
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
-        // vminstance = response.response_json;
-        // if (vminstance.length === 0) {
-        //     console.log('vminstance is null');
-        //     return;
-        // }
-        // vminstance.forEach(vm => {
-        //     // console.log(vm);
-        //     $('#xmlContent').text(vm['xml']);
-        // });
+        isoList = response.response_json;
+        // console.log('---getVMISOInfo---isoList: ' + JSON.stringify(isoList));
+        if (isoList.length === 0) {
+            console.log('isoList is null');
+            return;
+        }
+        $('#editIsoDiskTab tbody').empty();
+        let iosstorage_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
+        isoList.forEach(iso => {
+            console.log('iso[file]: ' + iso['file']);
+            console.log('iso[dev]: ' + iso['dev']);
+            console.log('iso[bus]: ' + iso['bus']);
+            const fullPath = iso['file'];
+            var lastSlashIndex = fullPath.lastIndexOf('/');
+            var directoryName = fullPath.substring(0, lastSlashIndex); // 获取目录部分
+            var fileName = fullPath.substring(lastSlashIndex + 1); // 获取文件名部分
+            var diskPartionName = iso['dev'];
+            var isoStoragePoolPath = directoryName;
+            var isoStoragePool = 'unknown';
+            var isodefaultPoolPath;
+            $.each(iosstorage_json_data.default, function (key, value) {
+                // console.log('key:' + key + " value:" + value)
+                if (key === 'poolPath') {
+                    isodefaultPoolPath = value;
+                    if (directoryName === value) {
+                        isoStoragePool = 'isodefault';
+                    }
+                }
+            });
+            $.each(iosstorage_json_data.custom, function (key, value) {
+                if (directoryName === value.poolPath) {
+                    isoStoragePool = key;
+                }
+            });
 
+            var isoFile = fileName;
+            var diskBoot = 'No';
+            addISODiskTabRow(diskPartionName, isoStoragePoolPath, isoStoragePool, diskBoot, isoFile);
+        });
     }, function () { alert('查询虚拟实例ISO详细信息失败！'); });
 }
 
@@ -855,8 +901,9 @@ function addButtonEventForEditISODisk() {
     $(document).on('change', '#editDiskPartStoragePoolSelect', doEditDiskPartStoragePoolSelect);
 }
 
-function initForEditISODisk() {
+function initForEditISODisk(vmName) {
     initEditISODisk();
+    getVMISOInfo(vmName);
     //显示硬盘名称列表
     editShowDiskNameList();
 
@@ -1160,20 +1207,7 @@ function doEditAddISODiskBtn() {
         $('#editAddDiskBtn').addClass('disabled');
         return;
     }
-    const newRow = `
-                <tr>
-                    <td>${diskPartionName}</td>
-                    <td class="editable" data-field="storagePool" data-value=${isoStoragePoolPath}>${isoStoragePool}</td>
-                    <td class="editable  id-diskboot" data-field="bootDisk" data-value="${diskBoot}">${diskBoot}</td>
-                    <td class="editable" data-field="isoFile" data-value="${isoFileVal}">${isoFile}</td>
-                    <td>
-                         <button class="btn btn-sm btn-danger btn-delete">删除</button>
-                    </td>
-                </tr>
-            `;
-    $('#editIsoDiskTab tbody').append(newRow);
-    editUpdateISODiskOptions();
-    editCheckISOSelectStatus();
+    addISODiskTabRow(diskPartionName, isoStoragePoolPath, isoStoragePool, diskBoot, isoFile);
 }
 
 
@@ -1322,7 +1356,7 @@ $(document).on('click', function (e) {
                 if (edit.length > 0) {
                     const newValue = edit.val();
                     const newText = edit.val();
-                    $(this).data('value', newValue).text(newText+'G');
+                    $(this).data('value', newValue).text(newText + 'G');
                 }
             }
         });
@@ -1482,7 +1516,7 @@ function doDiskStoragePoolDblClick(e) {
     if (field === 'diskPartSize') {
         selectHtml = `<input type="number" class="form-control form-control-sm edit-input edit-tableitem" min="15" max="800" step="5" value="${parseInt(currentValue)}">`;
     }
-    else { 
+    else {
         selectHtml = `<select class="form-select form-select-sm edit-dropdown">`;
         options.forEach(option => {
             const selected = option.text === currentText ? 'selected' : '';
