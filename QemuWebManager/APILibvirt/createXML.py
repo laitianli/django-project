@@ -245,14 +245,6 @@ class createVMXML():
             diskNode.addChild(subTargetNode)
             
             diskNode.newChild(None, 'readonly', None)
-            
-            subAddressNode = libxml2.newNode('address')
-            subAddressNode.setProp('type', 'drive')
-            subAddressNode.setProp('controller', '0')
-            subAddressNode.setProp('bus', '0')
-            subAddressNode.setProp('target', '0')
-            subAddressNode.setProp('unit', '0')
-            diskNode.addChild(subAddressNode)
     
     def __addDisk2Device(self, devNode):
         for e in self.diskInfo:
@@ -278,14 +270,7 @@ class createVMXML():
             subTargetNode.setProp('dev', dev) # 3
             subTargetNode.setProp('bus', bus) # 4
             diskNode.addChild(subTargetNode)
-            if (bus == 'virtio'):
-                subAddressNode = libxml2.newNode('address')
-                subAddressNode.setProp('type', 'pci')
-                subAddressNode.setProp('domain', '0x0000')
-                subAddressNode.setProp('bus', '0')
-                subAddressNode.setProp('slot', '0')
-                subAddressNode.setProp('function', '0')
-                diskNode.addChild(subAddressNode)
+
     def __addNIC2Device(self, devNode):
         for e in self.nicInfo:
             self.__addOneNIC2Device(devNode, e['type'], e['mac'], e['network'])
@@ -307,16 +292,7 @@ class createVMXML():
             modelNode = libxml2.newNode('model')
             modelNode.setProp('type', 'virtio')
             intfNode.addChild(modelNode)
-            
-            subAddressNode = libxml2.newNode('address')
-            subAddressNode.setProp('type', 'pci')
-            subAddressNode.setProp('domain', '0x0000')
-            subAddressNode.setProp('bus', '0')
-            subAddressNode.setProp('slot', '0')
-            subAddressNode.setProp('function', '0')
-            intfNode.addChild(subAddressNode)
-            
-    
+
     def __addEHCI2Device(self, devNode):
         if devNode is not None:
             ctrNode = libxml2.newNode('controller')
@@ -324,15 +300,6 @@ class createVMXML():
             ctrNode.setProp('index', '0')
             ctrNode.setProp('model', 'ich9-ehci1')
             devNode.addChild(ctrNode)
-            
-            subAddressNode = libxml2.newNode('address')
-            subAddressNode.setProp('type', 'pci')
-            subAddressNode.setProp('domain', '0x0000')
-            subAddressNode.setProp('bus', '0')
-            subAddressNode.setProp('slot', '0')
-            subAddressNode.setProp('function', '0')
-            ctrNode.addChild(subAddressNode)
-               
 
     def __addUHCI2Device(self, devNode, portID):
         if devNode is not None:
@@ -344,13 +311,6 @@ class createVMXML():
             
             masterNode = ctrNode.newChild(None, 'master', None)
             masterNode.setProp('startport', '%s' % portID) 
-            subAddressNode = libxml2.newNode('address')
-            subAddressNode.setProp('type', 'pci')
-            subAddressNode.setProp('domain', '0x0000')
-            subAddressNode.setProp('bus', '0')
-            subAddressNode.setProp('slot', '0')
-            subAddressNode.setProp('function', '0')
-            ctrNode.addChild(subAddressNode)
             
     def __addIDEController2Device(self, devNode):
         if devNode is not None:
@@ -358,14 +318,6 @@ class createVMXML():
             ctrNode.setProp('type', 'ide')
             ctrNode.setProp('index', '0')
             devNode.addChild(ctrNode)
-            
-            subAddressNode = libxml2.newNode('address')
-            subAddressNode.setProp('type', 'pci')
-            subAddressNode.setProp('domain', '0x0000')
-            subAddressNode.setProp('bus', '0')
-            subAddressNode.setProp('slot', '0')
-            subAddressNode.setProp('function', '0')
-            ctrNode.addChild(subAddressNode)
              
     def __addVirtioSerialController2Device(self, devNode):
         if devNode is not None:
@@ -373,14 +325,6 @@ class createVMXML():
             ctrNode.setProp('type', 'virtio-serial')
             ctrNode.setProp('index', '0')
             devNode.addChild(ctrNode)
-            
-            subAddressNode = libxml2.newNode('address')
-            subAddressNode.setProp('type', 'pci')
-            subAddressNode.setProp('domain', '0x0000')
-            subAddressNode.setProp('bus', '0')
-            subAddressNode.setProp('slot', '0')
-            subAddressNode.setProp('function', '0')
-            ctrNode.addChild(subAddressNode)
             
     def __addPCIRootController2Device(self, devNode):
         if devNode is not None:
@@ -407,14 +351,6 @@ class createVMXML():
             
             modelNode = ifNode.newChild(None, 'model', None)
             modelNode.setProp('type', 'e1000')
-            
-            subAddressNode = libxml2.newNode('address')
-            subAddressNode.setProp('type', 'pci')
-            subAddressNode.setProp('domain', '0x0000')
-            subAddressNode.setProp('bus', '0')
-            subAddressNode.setProp('slot', '0')
-            subAddressNode.setProp('function', '0')
-            ifNode.addChild(subAddressNode)
             
     def __addSerial2Device(self, devNode):
         if devNode:
@@ -489,14 +425,6 @@ class createVMXML():
         if devNode:
             memballoonNode = devNode.newChild(None, 'memballoon', None)
             memballoonNode.setProp('model', 'virtio')
-            
-            subAddressNode = libxml2.newNode('address')
-            subAddressNode.setProp('type', 'pci')
-            subAddressNode.setProp('domain', '0x0000')
-            subAddressNode.setProp('bus', '0')
-            subAddressNode.setProp('slot', '0')
-            subAddressNode.setProp('function', '0')
-            memballoonNode.addChild(subAddressNode)
             
     def __addVideo2Device(self, devNode, tag = '4K'):
         if devNode:
