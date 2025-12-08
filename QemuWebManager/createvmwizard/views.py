@@ -7,6 +7,8 @@ from pathlib import Path
 from APILibvirt.createXML import createVMXML
 from APILibvirt.LVVMInstance import CLVCreate
 from storagepool import toolset
+import createvmwizard.db_utils as db_utils
+import re
 
 # {'immediatelyRun': False, 
 # 'vm': {'name': 'Centos', 'type': 'Linux', 'isBootType': False, 'booType': 'cdrom'}, 
@@ -73,13 +75,46 @@ def doCreateVMXML(data):
     # print('-' * 80)
     # print(xmlobj.getStrXML())
     # print('-' * 80)
-    return True, vm_name, xmlobj.getStrXML()
+    return True, vm_name, xmlobj.getStrXML(), iso, disk, net
 
 def doCreateVM(data):
-    ret, vmName, strXML = doCreateVMXML(data)
+    ret, vmName, strXML, iso, disk, net = doCreateVMXML(data)
     if ret == True:
         createobj = CLVCreate()
-        createobj.createVM(vmName, strXML)
+        isSucc = createobj.createVM(vmName, strXML)
+        if isSucc == True:
+            vm_name=re.sub(r'[^a-zA-Z0-9_]', '_', vmName)
+            model, isomodel, diskmodel = db_utils.create_vm_table(vm_name)
+            for e in iso:
+                isomodel.objects.create(
+                    storage_pool_path = os.path.dirname(e['file']),
+                    iso_file = os.path.basename(e['file']),
+                    partition_name = e['dev'],
+                    bus = e['bus'],
+                )
+            for e in disk:
+                diskmodel.objects.create(
+                    disk_file = e['file'],
+                    disk_size = e['size'],
+                    dev = e['dev'],
+                    bus = e['bus'],
+                    type = e['type'],
+                )
+            
+            iso_table_name = f"vm_{vm_name}_iso"
+            disk_table_name = f"vm_{vm_name}_disk"
+            model.objects.create(
+                vm_name=vm_name,
+                cpu_count=data['vmcpu']['totalCores'],
+                memory_mb=data['vmmemory']['memTotal'],
+                iso_table=iso_table_name,
+                disk_table=disk_table_name,
+            )
+            ret = True
+        else:
+            ret = False
+    else:
+        ret = False
     return ret
 
 # Create your views here.

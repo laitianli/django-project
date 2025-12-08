@@ -42,6 +42,38 @@ def get_disk_image_format(image_path):
     except Exception as e:
         print(f"执行过程中发生未知错误: {str(e)}")
         return None
+
+
+def get_disk_image_size(image_path):
+    try:
+        # 执行 qemu-img info 命令
+        result = subprocess.run(
+            ['qemu-img', 'info', image_path],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        
+        # 从命令输出中提取文件格式
+        output = result.stdout
+        # 使用正则表达式匹配 "virtual size: " 后面的内容
+        match = re.search(r'virtual size:\s*(\S+)', output)
+        if match:
+            return match.group(1)
+        else:
+            print("无法从 qemu-img info 输出中解析文件格式")
+            return None
+            
+    except subprocess.CalledProcessError as e:
+        print(f"qemu-img info 命令执行失败，返回码: {e.returncode}")
+        print(f"错误输出: {e.stderr}")
+        return None
+    except FileNotFoundError:
+        print("未找到 qemu-img 命令，请确保 QEMU 已安装并在系统 PATH 中")
+        return None
+    except Exception as e:
+        print(f"执行过程中发生未知错误: {str(e)}")
+        return None
     
 # qemu-img create -f qcow2 /var/lib/libvirt/images/test.img 4G
 def create_disk_image(type, file, size):

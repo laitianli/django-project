@@ -756,9 +756,9 @@ function getVMISOInfo(vmName) {
         $('#editIsoDiskTab tbody').empty();
         let iosstorage_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
         isoList.forEach(iso => {
-            console.log('iso[file]: ' + iso['file']);
-            console.log('iso[dev]: ' + iso['dev']);
-            console.log('iso[bus]: ' + iso['bus']);
+            // console.log('iso[file]: ' + iso['file']);
+            // console.log('iso[dev]: ' + iso['dev']);
+            // console.log('iso[bus]: ' + iso['bus']);
             const fullPath = iso['file'];
             var lastSlashIndex = fullPath.lastIndexOf('/');
             var directoryName = fullPath.substring(0, lastSlashIndex); // 获取目录部分
@@ -789,21 +789,74 @@ function getVMISOInfo(vmName) {
     }, function () { alert('查询虚拟实例ISO详细信息失败！'); });
 }
 
+function addDiskTabRow(diskPartionName, diskSize, diskBus, diskStoragePoolPath, diskStoragePool, diskBoot, diskName) {
+    var newRow;
+    newRow = `
+            <tr>
+                <td>${diskPartionName}</td>                    
+                <td class="editable" data-field="diskPartSize" data-value=${diskSize}>${diskSize}G</td>
+                <td class="editable" data-field="diskPartBus" data-value=${diskBus}>${diskBus}</td>
+                <td class="" data-field="diskPartPool" data-value=${diskStoragePoolPath}>${diskStoragePool}</td>
+                <td class="editable id-diskboot" data-field="bootDisk" data-value="${diskBoot}">${diskBoot}</td>
+                <td class="" data-field="diskFile" data-value=${diskStoragePoolPath}>${diskName}</td>
+                <td>
+                    <button class="btn btn-sm btn-danger btn-delete" disabled>删除</button>
+                </td>
+            </tr>
+            `;
+    $('#editDiskTab tbody').append(newRow);
+
+    editUpdateDiskOptions();
+    editCheckSelectStatus();
+}
+
 function getVMDiskInfo(vmName) {
     var jsonData = {
         action: 'queryDisk',
         vmname: vmName
     }
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
-        // vminstance = response.response_json;
-        // if (vminstance.length === 0) {
-        //     console.log('vminstance is null');
-        //     return;
-        // }
-        // vminstance.forEach(vm => {
-        //     // console.log(vm);
-        //     $('#xmlContent').text(vm['xml']);
-        // });
+        diskList = response.response_json;
+        if (diskList.length === 0) {
+            console.log('diskList is null');
+            return;
+        }
+        $('#editDiskTab tbody').empty();
+        let localstorage_json_data = JSON.parse(sessionStorage.getItem("localstoragepool_json"));
+        diskList.forEach(disk => {
+            // console.log('disk[file]: ' + disk['file']);
+            // console.log('disk[dev]: ' + disk['dev']);
+            // console.log('disk[bus]: ' + disk['bus']);
+            const fullPath = disk['file'];
+            var lastSlashIndex = fullPath.lastIndexOf('/');
+            var directoryName = fullPath.substring(0, lastSlashIndex); // 获取目录部分
+            var fileName = fullPath.substring(lastSlashIndex + 1); // 获取文件名部分
+            var diskPartionName = disk['dev'];
+            var diskSize = disk['size'];
+            var diskBus = disk['bus'];
+            var diskStoragePoolPath = directoryName;
+            var diskStoragePool = 'unknown';
+            var diskBoot = 'No';
+            var defaultPoolPath;
+            $.each(localstorage_json_data.default, function (key, value) {
+                // console.log('key:' + key + " value:" + value)
+                if (key === 'poolPath') {
+                    defaultPoolPath = value;
+                    if (directoryName === value) {
+                        diskStoragePool = 'default';
+                    }
+                }
+            });
+            $.each(localstorage_json_data.custom, function (key, value) {
+                if (directoryName === value.poolPath) {
+                    diskStoragePool = key;
+                }
+            });
+
+            var diskName = fileName;
+
+            addDiskTabRow(diskPartionName, diskSize, diskBus, diskStoragePoolPath, diskStoragePool, diskBoot, diskName);
+        });
 
     }, function () { alert('查询虚拟实例硬盘详细信息失败！'); });
 }
@@ -899,6 +952,9 @@ function addButtonEventForEditISODisk() {
     $(document).on('change', '#editDiskTab td.editable select', doDiskStoragePoolDblClickChange);
     $(document).on('change', '#editCheckVMUseExistingImage', doEditCheckVMUseExistingImage);
     $(document).on('change', '#editDiskPartStoragePoolSelect', doEditDiskPartStoragePoolSelect);
+
+    $(document).on('click', '#editISOBtn', doEditISO);
+    $(document).on('click', '#editDiskBtn', doEditDisk);
 }
 
 function initForEditISODisk(vmName) {
@@ -906,6 +962,8 @@ function initForEditISODisk(vmName) {
     getVMISOInfo(vmName);
     //显示硬盘名称列表
     editShowDiskNameList();
+
+    getVMDiskInfo(vmName);
 
     editShowISODiskNameList();
 }
@@ -1045,8 +1103,10 @@ function doEditAddDiskBtn() {
             `;
     }
     $('#editDiskTab tbody').append(newRow);
+
     editUpdateDiskOptions();
     editCheckSelectStatus();
+    $('#editDiskBtn').prop('disabled', false);
 }
 
 function editGetDiskTabData() {
@@ -1173,6 +1233,21 @@ function editCheckISOSelectStatus() {
     }
 }
 
+function editCheckDiskSelectStatus() {
+    const select = $('#editDiskPartSelect');
+    const addButton = $('#editAddDiskBtn');
+
+    if (select.find('option').length === 0) {
+        // 下拉框为空，禁用按钮
+        addButton.prop('disabled', true);
+        // statusIndicator.html('<span class="status-indicator status-inactive"></span><span>下拉列表已无可用选项</span>');
+    } else {
+        // 下拉框不为空，启用按钮
+        addButton.prop('disabled', false);
+        // statusIndicator.html('<span class="status-indicator status-active"></span><span>下拉列表有可用选项</span>');
+    }
+}
+
 // 更新下拉选项函数：移除已添加的硬盘名称
 function editUpdateISODiskOptions() {
     // 获取所有已添加的硬盘名称
@@ -1208,6 +1283,8 @@ function doEditAddISODiskBtn() {
         return;
     }
     addISODiskTabRow(diskPartionName, isoStoragePoolPath, isoStoragePool, diskBoot, isoFile);
+
+    $('#editISOBtn').prop('disabled', false);
 }
 
 
@@ -1468,6 +1545,7 @@ function doEditIsoDiskTab() {
         // 按字母顺序重新排序选项
         editSortSelectOptions('#editIsodiskPartSelect');
         editCheckISOSelectStatus();
+        $('#editISOBtn').prop('disabled', false);
     });
 }
 
@@ -1647,4 +1725,56 @@ function doEditDiskPartStoragePoolSelect() {
             }
         });
     }
+}
+
+function getISOTabData() {
+    const tableData = [];
+
+    $('#editIsoDiskTab tbody tr').each(function () {
+        const row = $(this);
+        const rowData = {
+            // 获取单元格文本内容
+            partitionName: row.find('td:eq(0)').text().trim(),
+            bus: 'ide',
+            storagePool: row.find('td').eq(1).text().trim(),
+            storagePoolPath: row.find('td').eq(1).data('value'),
+            isoFile: row.find('td').eq(3).text().trim(),
+            boot: row.find('td.id-diskboot').text().trim(), // 通过class选择器                
+        };
+        tableData.push(rowData);
+    });
+
+    return tableData;
+}
+
+// 编辑ISO
+function doEditISO() {
+    const vmName = $('#vm-detail-name').text().trim();
+    var jsonData = {
+        action: 'edit',
+        subaction: 'editISO',
+        vmname: vmName,
+        isoList: getISOTabData()
+    }
+    var editISOBtn = $(this)
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        editISOBtn.prop('disabled', true);
+        alert('修改内存成功！');
+    }, function () { alert('修改内存失败！'); });
+}
+
+// 编辑ISO
+function doEditDisk() {
+    const vmName = $('#vm-detail-name').text().trim();
+    var jsonData = {
+        action: 'edit',
+        subaction: 'editDisk',
+        vmname: vmName,
+        diskList: editGetDiskTabData()
+    }
+    var editDiskBtn = $(this)
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        editDiskBtn.prop('disabled', true);
+        alert('修改内存成功！');
+    }, function () { alert('修改内存失败！'); });
 }

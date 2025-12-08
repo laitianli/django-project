@@ -7,6 +7,7 @@ import libvirt
 import time
 import libxml2
 from storagepool import toolset
+from createvmwizard import db_utils
 try:
     from libvirt import libvirtError, VIR_DOMAIN_XML_SECURE, VIR_MIGRATE_LIVE, \
         VIR_MIGRATE_UNSAFE, VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA
@@ -25,6 +26,7 @@ class CLVCreate(ConnectLibvirtd):
             vm.create()
             
         self.connect_close()
+        return True
         
 class CLVVMInstance(ConnectLibvirtd):
     def __get_status(self, dom):
@@ -197,6 +199,13 @@ class CLVVMInstance(ConnectLibvirtd):
             return False
         
         ret = self.__operationOneVM(dom, op)
+        print(f'--operationVM {op} ret: {ret}')
+        if ret == 0 and op == 'deletevm':
+            # 删除对应的数据库表
+            try:
+                db_utils.drop_vm_table(vmName)
+            except Exception as e:
+                print(f'[Error] drop vm table failed: {e}')            
         
         self.connect_close()
         # print(f'operationVM {op} ret: {ret}')
@@ -427,6 +436,104 @@ class CLVVMInstance(ConnectLibvirtd):
         self.connect_close()
         return True
     
+    def editVMISO(self, vmName, isoList):
+        conn = self.get_conn()
+        dom = conn.lookupByName(vmName)
+        if dom is None:
+            self.connect_close()
+            return False
+        # 使用 libxml2: 先删除所有 cdrom disk 节点，再根据 isoList 重建
+        strXML = dom.XMLDesc(VIR_DOMAIN_XML_SECURE)
+        doc = libxml2.parseDoc(strXML)
+        context = doc.xpathNewContext()
+
+        # 获取或创建 /domain/devices
+        devices_nodes = context.xpathEval('/domain/devices')
+        if devices_nodes and len(devices_nodes) > 0:
+            devices = devices_nodes[0]
+        else:
+            root = doc.getRootElement()
+            devices = libxml2.newNode('devices')
+            root.addChild(devices)
+
+        # 删除所有已有的 cdrom disk 节点        
+        cdrom_nodes = devices.xpathEval("disk[@device='cdrom']")
+        for node in cdrom_nodes:
+            try:
+                node.unlinkNode()
+                try:
+                    node.freeNode()
+                except Exception:
+                    print("Exception in freeNode!")
+            except Exception:
+                print("Exception in unlinkNode!")
+
+        # 根据 isoList还有新，则重新添加 cdrom 节点
+        for iso in isoList:
+            if iso is None:
+                continue
+            if isinstance(iso, dict):
+                file_path = iso.get('storagePoolPath')
+                file_name = iso.get('isoFile')
+                dev = iso.get('partitionName')
+                bus = iso.get('bus')
+            else:
+                file_path = iso
+                dev = None
+                bus = None
+
+            # disk 节点
+            diskNode = libxml2.newNode('disk')
+            diskNode.setProp('type', 'file')
+            diskNode.setProp('device', 'cdrom')
+            devices.addChild(diskNode)
+
+            # driver
+            drvNode = libxml2.newNode('driver')
+            drvNode.setProp('name', 'qemu')
+            drvNode.setProp('type', 'raw')
+            diskNode.addChild(drvNode)
+
+            # source
+            srcNode = libxml2.newNode('source')
+            if file_path and file_name:
+                srcNode.setProp('file', '%s/%s' % (file_path, file_name))
+            diskNode.addChild(srcNode)
+
+            # target
+            if dev or bus:
+                tgtNode = libxml2.newNode('target')
+                if dev:
+                    tgtNode.setProp('dev', '%s' % dev)
+                if bus:
+                    tgtNode.setProp('bus', '%s' % bus)
+                diskNode.addChild(tgtNode)
+
+            # readonly
+            diskNode.newChild(None, 'readonly', None)
+
+        # 序列化并应用新的域 XML
+        try:
+            newxml_bytes = doc.serialize(encoding='UTF-8', format=1)
+            if isinstance(newxml_bytes, bytes):
+                newxml = newxml_bytes.decode('utf-8')
+            else:
+                newxml = str(newxml_bytes)
+            #print(f'newxml:{newxml}')
+            conn.defineXML(newxml)
+        finally:
+            # 释放资源
+            try:
+                context.xpathFreeContext()
+            except Exception:
+                print("Exception in xpathFreeContext!")
+            try:
+                doc.freeDoc()
+            except Exception:
+                print("Exception in freeDoc!")
+        self.connect_close()
+        return True
+    
     def queryVMISO(self, vmName):
         conn = self.get_conn()
         isoList = []
@@ -445,7 +552,7 @@ class CLVVMInstance(ConnectLibvirtd):
             if source_file:
                 isoList.append({'file': source_file, 'dev': target_dev, 'bus': target_bus})
         self.connect_close()
-        print(f'isoList: {isoList}')
+        # print(f'isoList: {isoList}')
         return True, isoList
     
     def queryVMDisk(self, vmName):
@@ -454,7 +561,163 @@ class CLVVMInstance(ConnectLibvirtd):
         dom = conn.lookupByName(vmName)
         if dom is None:
             self.connect_close()
-            return False
+            return False, diskList
         
+        xml = dom.XMLDesc(0)
+        root = ElementTree.fromstring(xml)
+        for disk in root.findall("devices/disk[@device='disk']"):
+            type = disk.find('driver').get('type')
+            source_elm = disk.find('source')
+            path_file = source_elm.get('file')
+            target_elm = disk.find('target')
+            target_dev = target_elm.get('dev')
+            target_bus = target_elm.get('bus')
+            if path_file:
+                image_size = toolset.get_disk_image_size(path_file)
+                boot_elm = disk.find('boot')
+                if boot_elm is not None:
+                    boot = boot_elm.get('order')
+                else:
+                    boot = 'No'
+                    
+            diskList.append({'type': type, 'file': path_file, 'dev': target_dev, 'bus': target_bus, 'size': image_size, 'boot': boot})
         self.connect_close()
-        return diskList
+        # print(diskList)
+        return True,diskList
+    
+    def editVMDisk(self, vmName, diskList):
+        conn = self.get_conn()
+        dom = conn.lookupByName(vmName)
+        if dom is None:
+            self.connect_close()
+            return False
+        # 使用 libxml2: 先删除所有 disk 节点，再根据 diskList 重建
+
+        strXML = dom.XMLDesc(VIR_DOMAIN_XML_SECURE)
+        doc = libxml2.parseDoc(strXML)
+        context = doc.xpathNewContext()
+
+        # 获取或创建 /domain/devices
+        devices_nodes = context.xpathEval('/domain/devices')
+        if devices_nodes and len(devices_nodes) > 0:
+            devices = devices_nodes[0]
+        else:
+            root = doc.getRootElement()
+            devices = libxml2.newNode('devices')
+            root.addChild(devices)
+
+        # 删除所有已有的 disk 节点
+        disk_nodes = devices.xpathEval("disk[@device='disk']")
+        for node in disk_nodes:
+            try:
+                # 获取 target 节点（通常只有一个）
+                tgt_nodes = node.xpathEval('target')
+                tgt_dev = None
+                if tgt_nodes and len(tgt_nodes) > 0:
+                    tgt = tgt_nodes[0]
+                    # 通过 prop 读取 dev 属性
+                    try:
+                        tgt_dev = tgt.prop('dev')
+                    except Exception:
+                        tgt_dev = None
+
+                # 获取 source 节点
+                src_nodes = node.xpathEval('source')
+                src = src_nodes[0] if (src_nodes and len(src_nodes) > 0) else None
+
+                # 对每个 disk 比较 partitionName
+                for disk in diskList:
+                    if not isinstance(disk, dict):
+                        continue
+                    partition = disk.get('partitionName')
+                    if partition is None:
+                        continue
+                    if tgt_dev == partition:
+                        # 更新 bus
+                        bus_val = disk.get('bus')
+                        if tgt_nodes and len(tgt_nodes) > 0:
+                            try:
+                                tgt.setProp('bus', '%s' % bus_val if bus_val is not None else '')
+                            except Exception:
+                                pass
+                        # 更新 source file
+                        storage_path = disk.get('storagePoolPath')
+                        disk_file = disk.get('diskFile')
+                        if storage_path and disk_file:
+                            file_val = '%s/%s' % (storage_path, disk_file)
+                            if src is not None:
+                                try:
+                                    src.setProp('file', '%s' % file_val)
+                                except Exception:
+                                    pass
+                            else:
+                                # 如果没有 source 节点，则添加
+                                new_src = libxml2.newNode('source')
+                                new_src.setProp('file', '%s' % file_val)
+                                node.addChild(new_src)
+                        # 仅对第一个匹配项处理
+                        diskList.remove(disk)
+                        print(diskList)
+                        break
+            except Exception:
+                # 忽略单节点错误，继续处理其他节点
+                continue
+
+        # 根据 diskList还有新，则重新添加 disk 节点
+        for disk in diskList:
+            if disk is None:
+                continue
+            if isinstance(disk, dict):
+                file_path = disk.get('storagePoolPath')
+                file_name = disk.get('diskFile')
+                dev = disk.get('partitionName')
+                bus = disk.get('bus')
+                type = disk.get('type')
+            else:
+                file_path = disk
+                dev = None
+                bus = None
+                type = 'qcow2'
+
+            # disk 节点
+            diskNode = libxml2.newNode('disk')
+            diskNode.setProp('type', 'file')
+            diskNode.setProp('device', 'disk')
+            devices.addChild(diskNode)
+            
+            subDrvNode = libxml2.newNode('driver')
+            subDrvNode.setProp('name', 'qemu')
+            subDrvNode.setProp('type', type) # 1
+            diskNode.addChild(subDrvNode)
+            
+            subSrcFileNode = libxml2.newNode('source')
+            subSrcFileNode.setProp('file', '%s/%s' % (file_path, file_name)) # 2
+            diskNode.addChild(subSrcFileNode)
+            
+            subTargetNode = libxml2.newNode('target')
+            subTargetNode.setProp('dev', dev) # 3
+            subTargetNode.setProp('bus', bus) # 4
+            diskNode.addChild(subTargetNode)
+
+        # 序列化并应用新的域 XML
+        try:
+            newxml_bytes = doc.serialize(encoding='UTF-8', format=1)
+            if isinstance(newxml_bytes, bytes):
+                newxml = newxml_bytes.decode('utf-8')
+            else:
+                newxml = str(newxml_bytes)
+            #print(f'newxml:{newxml}')
+            conn.defineXML(newxml)
+        finally:
+            # 释放资源
+            try:
+                context.xpathFreeContext()
+            except Exception:
+                print("Exception in xpathFreeContext!")
+            try:
+                doc.freeDoc()
+            except Exception:
+                print("Exception in freeDoc!")
+        self.connect_close()
+        return True
+    

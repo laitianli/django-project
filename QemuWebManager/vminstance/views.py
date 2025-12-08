@@ -63,6 +63,14 @@ def editVMMemory(vmName,  mem, currMem):
     vmInst = CLVVMInstance()
     return vmInst.editVMMemory(vmName,  mem, currMem)
 
+def editVMISO(vmName, isoList):
+    vmInst = CLVVMInstance()
+    return vmInst.editVMISO(vmName, isoList)
+
+def editVMDisk(vmName, diskList):
+    vmInst = CLVVMInstance()
+    return vmInst.editVMDisk(vmName, diskList)
+    
 def queryVMISO(vmName):
     vmInst = CLVVMInstance()
     return vmInst.queryVMISO(vmName)
@@ -178,7 +186,14 @@ def doVMInstance(request):
                 mem = json_data['mem']
                 currMem = json_data['currMem']
                 ret = editVMMemory(vmName, mem, currMem)
-                
+            elif subaction == 'editISO':
+                isoList = json_data['isoList']
+                print(isoList)
+                ret = editVMISO(vmName, isoList)
+            elif subaction == 'editDisk':
+                diskList = json_data['diskList']
+                print(diskList)
+                ret = editVMDisk(vmName, diskList)   
             if ret == True:
                 data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"], 
@@ -206,7 +221,7 @@ def doVMInstance(request):
             return JsonResponse(data)
         elif json_data['action'] == 'queryDisk':
             vmName = json_data["vmname"]
-            ret, dataDisk = queryVMISO(vmName)
+            ret, dataDisk = queryVMDisk(vmName)
             if ret == True:
                 data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"], 
