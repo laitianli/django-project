@@ -807,7 +807,7 @@ function addDiskTabRow(diskPartionName, diskSize, diskBus, diskStoragePoolPath, 
             `;
     }
     else {
-         newRow = `
+        newRow = `
             <tr>
                 <td>${diskPartionName}</td>                    
                 <td class="editable" data-field="diskPartSize" data-value=${diskSize}>${diskSize}G</td>
@@ -822,7 +822,7 @@ function addDiskTabRow(diskPartionName, diskSize, diskBus, diskStoragePoolPath, 
             `;
     }
 
-   
+
     $('#editDiskTab tbody').append(newRow);
 
     editUpdateDiskOptions();
@@ -878,6 +878,8 @@ function getVMDiskInfo(vmName) {
             addDiskTabRow(diskPartionName, diskSize, diskBus, diskStoragePoolPath, diskStoragePool, diskBoot, diskName, createflag);
         });
 
+        initEditISODisk();
+
     }, function () { alert('查询虚拟实例硬盘详细信息失败！'); });
 }
 
@@ -907,16 +909,27 @@ function initEditISODisk() {
     });
 
     diskFileOptions = [];
+    var tableData = editGetDiskTabData();
     $.each(localstorage_json_data.default, function (key, value) {
         if (key === 'fileList') {
             $('#editDiskPartStoragePoolFileSelect').empty();
             $.each(value, function (index) {
-                // console.log('--poolPath:' + diskdefaultPoolPath + ' ---fileName:' + value[index]["fileName"]);
-                $('#editDiskPartStoragePoolFileSelect').append($('<option>', {
-                    value: diskdefaultPoolPath,
-                    text: value[index]["fileName"]
-                }));
-                diskFileOptions.push({ value: diskdefaultPoolPath, text: value[index]["fileName"] })
+                var tableItemExists = false;
+                tableData.forEach(function (item) {
+                    // console.log('diskdefaultPoolPath:' + diskdefaultPoolPath + ' item.storagePoolPath:' + item.storagePoolPath + ' item.diskName:' + item.diskName + ' value[index]["fileName"]:' + value[index]["fileName"]);
+                    if (diskdefaultPoolPath === item.storagePoolPath && item.diskName === value[index]["fileName"]) {
+                        // 如果文件名已经存在于表格数据中，则跳过添加该选项
+                        tableItemExists = true;
+                        return;
+                    }
+                });
+                if (!tableItemExists) {
+                    $('#editDiskPartStoragePoolFileSelect').append($('<option>', {
+                        value: diskdefaultPoolPath,
+                        text: value[index]["fileName"]
+                    }));
+                    diskFileOptions.push({ value: diskdefaultPoolPath, text: value[index]["fileName"] })
+                }
             });
         }
     });
@@ -978,8 +991,9 @@ function addButtonEventForEditISODisk() {
 }
 
 function initForEditISODisk(vmName) {
-    initEditISODisk();
     getVMISOInfo(vmName);
+    // initEditISODisk();
+
     //显示硬盘名称列表
     editShowDiskNameList();
 
@@ -1090,6 +1104,9 @@ function doEditAddDiskBtn() {
     var newRow;
     var diskName;
     if (userExistingImage) {
+        $('#editCheckVMUseExistingImage').prop('checked', false);
+        $('#editCheckVMUseExistingImage').trigger('change'); // 触发change事件以更新UI
+
         diskName = $('#editDiskPartStoragePoolFileSelect').find('option:selected').text();
         newRow = `
                 <tr>
@@ -1104,6 +1121,11 @@ function doEditAddDiskBtn() {
                     </td>
                 </tr>
             `;
+        $('#editDiskPartStoragePoolFileSelect option').each(function () {
+            if ($(this).text() == diskName) {
+                $(this).remove();
+            }
+        });
     }
     else {
         diskName = vmName + '_' + editGenerateUUID() + '.' + diskPartType;
@@ -1200,7 +1222,7 @@ function doEditIsodiskPartStoragePoolSelect() {
     var poolPath;
     if (text === "isodefault") {
         $.each(iosstorage_json_data.default, function (key, value) {
-            console.log('key:' + key + " value:" + value);
+            // console.log('key:' + key + " value:" + value);
             if (key === 'poolPath') {
                 poolPath = value;
             }
@@ -1313,7 +1335,7 @@ function addISOFileToTableItem(text) {
     var poolPath;
     if (text === "isodefault") {
         $.each(iosstorage_json_data.default, function (key, value) {
-            console.log('key:' + key + " value:" + value);
+            // console.log('key:' + key + " value:" + value);
             if (key === 'poolPath') {
                 poolPath = value;
             }
@@ -1344,12 +1366,13 @@ function addISOFileToTableItem(text) {
     }
 }
 
-function addDiskFileToTableItem(text) {
+function addDiskFileToTableItem(text, currentText) {
     let diskStorage_json_data = JSON.parse(sessionStorage.getItem("localstoragepool_json"));
     var poolPath = '';
+    var tableData = editGetDiskTabData();
     if (text === "default") {
         $.each(diskStorage_json_data.default, function (key, value) {
-            console.log('key:' + key + " value:" + value);
+            // console.log('key:' + key + " value:" + value);
             if (key === 'poolPath') {
                 poolPath = value;
             }
@@ -1358,7 +1381,19 @@ function addDiskFileToTableItem(text) {
         $.each(diskStorage_json_data.default, function (key, value) {
             if (key === 'fileList') {
                 $.each(value, function (index) {
-                    diskFileOptions.push({ value: poolPath, text: value[index]["fileName"] });
+                    var tableItemExists = false;
+                    tableData.forEach(function (item) {
+                        if (poolPath === item.storagePoolPath && item.diskName === value[index]["fileName"]) {
+                            // 如果文件名已经存在于表格数据中，则跳过添加该选项
+                            tableItemExists = true;
+                            return;
+                        }
+                    });
+
+                    if (!tableItemExists) {
+                        // 保留当前选择的文件
+                        diskFileOptions.push({ value: poolPath, text: value[index]["fileName"] });
+                    }
                 });
             }
         });
@@ -1373,10 +1408,34 @@ function addDiskFileToTableItem(text) {
         $.each(diskStorage_json_data.custom[text], function (subkey, subvalue) {
             if (subkey === 'fileList') {
                 $.each(subvalue, function (index) {
-                    diskFileOptions.push({ value: poolPath, text: subvalue[index]["fileName"] });
+                    var tableItemExists = false;
+                    tableData.forEach(function (item) {
+                        if (poolPath === item.storagePoolPath && item.diskName === subvalue[index]["fileName"]) {
+                            // 如果文件名已经存在于表格数据中，则跳过添加该选项
+                            tableItemExists = true;
+                            return;
+                        }
+                    });
+                    if (!tableItemExists) {
+                        // 保留当前选择的文件
+                        diskFileOptions.push({ value: poolPath, text: subvalue[index]["fileName"] });
+                    }
                 });
             }
         });
+    }
+    if (currentText != '') {
+        var found = false;
+        diskFileOptions.forEach(function (option) {
+            if (option.text === currentText && option.value === poolPath) {
+                found = true;
+                return ;
+            }
+        });
+        if (!found) {
+            // 保留当前选择的文件
+            diskFileOptions.push({ value: poolPath, text: currentText});
+        }
     }
     return poolPath;
 }
@@ -1605,7 +1664,8 @@ function doDiskStoragePoolDblClick(e) {
         case 'diskFile':
             const pool = $(this).siblings('td[data-field="diskPartPool"]').text().trim();
             const row = $(this).closest('tr');
-            diskStoragePoolDblClickToChange(row, pool);
+            console.log('---doDiskStoragePoolDblClick currentText:' + currentText + ' pool:' + pool);
+            diskStoragePoolDblClickToChange(row, pool, currentText);
             options = diskFileOptions;
             break;
     }
@@ -1630,11 +1690,12 @@ function doDiskStoragePoolDblClick(e) {
 function doDiskStoragePoolDblClickChange() {
     const newValue = $(this).val();
     const newText = $(this).find('option:selected').text().trim();
+    
     const field = $(this).parent().data('field');
 
     if (field === 'diskPartPool') {
         var row = $(this).parent().closest('tr');
-        diskStoragePoolDblClickToChange(row, newText);
+        diskStoragePoolDblClickToChange(row, newText, '');
     }
     //这句要在isoStoragePoolDblClickToChange后面执行
     $(this).parent().data('value', newValue).text(newText);
@@ -1645,10 +1706,10 @@ function doDiskStoragePoolDblClickChange() {
 
 
 // 新增函数：双击 diskPool 单元格时在 diskFile 单元格显示对应文件列表
-function diskStoragePoolDblClickToChange(row, poolPath) {
+function diskStoragePoolDblClickToChange(row, poolPath, currentText) {
     // 清空并填充 diskFileOptions
     diskFileOptions = [];
-    poolPath = addDiskFileToTableItem(poolPath);
+    poolPath = addDiskFileToTableItem(poolPath, currentText);
     var diskFileCell = row.find('td[data-field="diskFile"]');
     if (!diskFileCell.length) {
         /**
@@ -1656,7 +1717,6 @@ function diskStoragePoolDblClickToChange(row, poolPath) {
          */
         var diskFileCellNoChange = row.find('td[data-field="NoChange-diskFile"]');
         if (!diskFileCellNoChange.length) return;
-        // console.log('----diskStoragePoolDblClickToChange diskFileCellNoChange poolPath:' + poolPath);
         diskFileCellNoChange.val(poolPath);
         return;
     }
@@ -1705,6 +1765,7 @@ function doEditCheckVMUseExistingImage() {
 function doEditDiskPartStoragePoolSelect() {
     var text = $(this).find('option:selected').text().trim();
     var val = $(this).val();
+    var tableData = editGetDiskTabData();
     $('#editDiskPartStoragePoolFileSelect').empty();
     let localstorage_json_data = JSON.parse(sessionStorage.getItem("localstoragepool_json"));
     var poolPath;
@@ -1719,10 +1780,20 @@ function doEditDiskPartStoragePoolSelect() {
         $.each(localstorage_json_data.default, function (key, value) {
             if (key === 'fileList') {
                 $.each(value, function (index) {
-                    $('#editDiskPartStoragePoolFileSelect').append($('<option>', {
-                        value: poolPath,
-                        text: value[index]["fileName"]
-                    }));
+                    var tableItemExists = false;
+                    tableData.forEach(function (item) {
+                        if (poolPath === item.storagePoolPath && item.diskName === value[index]["fileName"]) {
+                            // 如果文件名已经存在于表格数据中，则跳过添加该选项
+                            tableItemExists = true;
+                            return;
+                        }
+                    });
+                    if (!tableItemExists) {
+                        $('#editDiskPartStoragePoolFileSelect').append($('<option>', {
+                            value: poolPath,
+                            text: value[index]["fileName"]
+                        }));
+                    }
                 });
             }
         });
@@ -1737,10 +1808,20 @@ function doEditDiskPartStoragePoolSelect() {
         $.each(localstorage_json_data.custom[text], function (subkey, subvalue) {
             if (subkey === 'fileList') {
                 $.each(subvalue, function (index) {
-                    $('#editDiskPartStoragePoolFileSelect').append($('<option>', {
-                        value: poolPath,
-                        text: subvalue[index]["fileName"]
-                    }));
+                    var tableItemExists = false;
+                    tableData.forEach(function (item) {
+                        if (poolPath === item.storagePoolPath && item.diskName === subvalue[index]["fileName"]) {
+                            // 如果文件名已经存在于表格数据中，则跳过添加该选项
+                            tableItemExists = true;
+                            return;
+                        }
+                    });
+                    if (!tableItemExists) {
+                        $('#editDiskPartStoragePoolFileSelect').append($('<option>', {
+                            value: poolPath,
+                            text: subvalue[index]["fileName"]
+                        }));
+                    }
                 });
             }
         });
