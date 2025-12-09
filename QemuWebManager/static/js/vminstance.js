@@ -1443,6 +1443,8 @@ function addDiskFileToTableItem(text, currentText) {
 // iso编辑功能 - 点击单元格显示下拉框
 function doISOStoragePoolDblClick(e) {
     e.preventDefault();
+    // 在创建新的编辑器前，先提交并关闭其它可编辑单元格的编辑器
+    closeAllEditableEditors();
     if ($(this).find('select').length > 0) return;
 
     const field = $(this).data('field');
@@ -1477,7 +1479,7 @@ function doISOStoragePoolDblClick(e) {
     selectHtml += `</select>`;
 
     $(this).html(selectHtml);
-    $(this).find('select').focus();
+    $(this).find('select, input').focus();
 }
 
 // 下拉框改变事件
@@ -1500,24 +1502,28 @@ function doISOStoragePoolDblClickChange() {
 // 点击其他地方关闭下拉框
 $(document).on('click', function (e) {
     if (!$(e.target).closest('td.editable').length) {
-        $('td.editable').each(function () {
-            const select = $(this).find('select');
-            if (select.length > 0) {
-                const newValue = select.val();
-                const newText = select.find('option:selected').text();
-                $(this).data('value', newValue).text(newText);
-            }
-            else {
-                const edit = $(this).find('.edit-tableitem');
-                if (edit.length > 0) {
-                    const newValue = edit.val();
-                    const newText = edit.val();
-                    $(this).data('value', newValue).text(newText + 'G');
-                }
-            }
-        });
+        closeAllEditableEditors();
     }
 });
+
+// Commit and close any open editable editors (selects or inputs) in editable TDs
+function closeAllEditableEditors() {
+    $('td.editable').each(function () {
+        const select = $(this).find('select');
+        if (select.length > 0) {
+            const newValue = select.val();
+            const newText = select.find('option:selected').text();
+            $(this).data('value', newValue).text(newText);
+            return;
+        }
+        const edit = $(this).find('.edit-tableitem');
+        if (edit.length > 0) {
+            const newValue = edit.val();
+            const newText = edit.val();
+            $(this).data('value', newValue).text(newText + 'G');
+        }
+    });
+}
 
 // 新增函数：双击 storagePool 单元格时在 isoFile 单元格显示对应文件列表
 function isoStoragePoolDblClickToChange(row, poolPath) {
@@ -1632,6 +1638,8 @@ function doEditIsoDiskTab() {
 // disk编辑功能 - 点击单元格显示下拉框
 function doDiskStoragePoolDblClick(e) {
     e.preventDefault();
+    // 在创建新的编辑器前，先提交并关闭其它可编辑单元格的编辑器
+    closeAllEditableEditors();
     if ($(this).find('select').length > 0) return;
 
     const field = $(this).data('field');
@@ -1683,7 +1691,7 @@ function doDiskStoragePoolDblClick(e) {
         selectHtml += `</select>`;
     }
     $(this).html(selectHtml);
-    $(this).find('select').focus();
+    $(this).find('select, input').focus();
 }
 
 // 下拉框改变事件
