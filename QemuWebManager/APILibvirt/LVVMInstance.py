@@ -7,7 +7,9 @@ import libvirt
 import time
 import libxml2
 from storagepool import toolset
-from createvmwizard import db_utils
+from createvmwizard.models import VMDiskTable as VMDiskTableModel
+from pathlib import Path
+
 try:
     from libvirt import libvirtError, VIR_DOMAIN_XML_SECURE, VIR_MIGRATE_LIVE, \
         VIR_MIGRATE_UNSAFE, VIR_DOMAIN_UNDEFINE_SNAPSHOTS_METADATA
@@ -197,16 +199,7 @@ class CLVVMInstance(ConnectLibvirtd):
         if dom is None:
             self.connect_close()
             return False
-        
         ret = self.__operationOneVM(dom, op)
-        print(f'--operationVM {op} ret: {ret}')
-        if ret == 0 and op == 'deletevm':
-            # 删除对应的数据库表
-            try:
-                db_utils.drop_vm_table(vmName)
-            except Exception as e:
-                print(f'[Error] drop vm table failed: {e}')            
-        
         self.connect_close()
         # print(f'operationVM {op} ret: {ret}')
         if ret == 0:
@@ -562,7 +555,11 @@ class CLVVMInstance(ConnectLibvirtd):
         if dom is None:
             self.connect_close()
             return False, diskList
-        
+        try:
+            dbDisk = VMDiskTableModel.objects.filter(vm_name=vmName)
+            print(f'[Info] [queryVMDisk] select vm disk table entries for vm {vmName} success')
+        except Exception as e:
+            print(f'[Error] drop vm table failed: {e}')
         xml = dom.XMLDesc(0)
         root = ElementTree.fromstring(xml)
         for disk in root.findall("devices/disk[@device='disk']"):
@@ -579,8 +576,12 @@ class CLVVMInstance(ConnectLibvirtd):
                     boot = boot_elm.get('order')
                 else:
                     boot = 'No'
-                    
-            diskList.append({'type': type, 'file': path_file, 'dev': target_dev, 'bus': target_bus, 'size': image_size, 'boot': boot})
+            createflag = 'create'
+            for cd in dbDisk:
+                if cd.dev == target_dev:
+                    createflag = cd.create_flag
+                    break
+            diskList.append({'type': type, 'file': path_file, 'dev': target_dev, 'bus': target_bus, 'size': image_size, 'boot': boot, 'createflag': createflag})
         self.connect_close()
         # print(diskList)
         return True,diskList
@@ -605,8 +606,59 @@ class CLVVMInstance(ConnectLibvirtd):
             root = doc.getRootElement()
             devices = libxml2.newNode('devices')
             root.addChild(devices)
-
-        # 删除所有已有的 disk 节点
+        
+        # 1.删除相应的 disk 节点，但要排除通过创建向导创建的硬盘分区
+        devList = []
+        dbDevList = []
+        dbDevFlagMap = {}
+        for disk in diskList:
+            dev = disk.get('partitionName')
+            devList.append(dev)
+        # 查询数据库，获取当前虚拟机的硬盘分区列表
+        try:
+            dbDisk = VMDiskTableModel.objects.filter(vm_name=vmName)
+            print(f'[Info] [editVMDisk] select vm disk db table entries for vm {vmName} success')
+        except Exception as e:
+            print(f'[Error] drop vm table failed: {e}')
+        
+        for dbd in dbDisk:
+            dbDevList.append(dbd.dev)
+            dbDevFlagMap[dbd.dev] = dbd.create_flag
+            
+        disk_nodes = devices.xpathEval("disk[@device='disk']")
+        for node in disk_nodes:
+            try:
+                # 获取 target 节点（通常只有一个）
+                tgt_nodes = node.xpathEval('target')
+                target_dev = None
+                if tgt_nodes and len(tgt_nodes) > 0:
+                    tgt = tgt_nodes[0]
+                    # 通过 prop 读取 dev 属性
+                    try:
+                        target_dev = tgt.prop('dev')
+                    except Exception:
+                        target_dev = None
+                if devList.count(target_dev) == 0 and dbDevList.count(target_dev) != 0:
+                    # 获取 source 节点
+                    src_nodes = node.xpathEval('source')
+                    src = src_nodes[0] if (src_nodes and len(src_nodes) > 0) else None
+                    src_file = src.prop('file')
+                    print(f'[Info] [editVMDisk] remove disk node dev: {target_dev}')
+                    node.unlinkNode()
+                    try:
+                        node.freeNode()
+                        #TODO: 这里要区分：“使用已有镜像文件”挂载的文件。
+                        createFlag = dbDevFlagMap[target_dev]
+                        print(f'[Info] [editVMDisk] disk dev: {target_dev}, createFlag: {createFlag}')
+                        if src_file and os.path.exists(src_file) and createFlag != 'create' and createFlag != 'mount':
+                            print(f'[Info] [editVMDisk] begin rm disk file: {src_file}')
+                            os.remove(src_file)
+                    except Exception:
+                        print("[Exception] [editVMDisk] Exception in freeNode!")
+            except Exception:
+                print("[Exception] [editVMDisk] Exception in unlinkNode!")
+                
+        # 2.更新所有已有的 disk 节点
         disk_nodes = devices.xpathEval("disk[@device='disk']")
         for node in disk_nodes:
             try:
@@ -633,6 +685,7 @@ class CLVVMInstance(ConnectLibvirtd):
                     if partition is None:
                         continue
                     if tgt_dev == partition:
+                        # TODO: 更新size暂不支持, 使用qemu-img resize命令更新
                         # 更新 bus
                         bus_val = disk.get('bus')
                         if tgt_nodes and len(tgt_nodes) > 0:
@@ -646,10 +699,11 @@ class CLVVMInstance(ConnectLibvirtd):
                         if storage_path and disk_file:
                             file_val = '%s/%s' % (storage_path, disk_file)
                             if src is not None:
-                                try:
-                                    src.setProp('file', '%s' % file_val)
-                                except Exception:
-                                    pass
+                                if src.getProp('file') != file_val:
+                                    try:
+                                        src.setProp('file', '%s' % file_val)
+                                    except Exception:
+                                        pass
                             else:
                                 # 如果没有 source 节点，则添加
                                 new_src = libxml2.newNode('source')
@@ -657,27 +711,31 @@ class CLVVMInstance(ConnectLibvirtd):
                                 node.addChild(new_src)
                         # 仅对第一个匹配项处理
                         diskList.remove(disk)
-                        print(diskList)
+                        # print(f'move out disk: {disk} from diskList')
                         break
             except Exception:
                 # 忽略单节点错误，继续处理其他节点
                 continue
 
-        # 根据 diskList还有新，则重新添加 disk 节点
+        # 3.根据 diskList还有新，则重新添加 disk 节点
+        # print(f'diskList: {diskList}')
         for disk in diskList:
             if disk is None:
                 continue
             if isinstance(disk, dict):
                 file_path = disk.get('storagePoolPath')
-                file_name = disk.get('diskFile')
+                file_name = disk.get('diskName')
                 dev = disk.get('partitionName')
                 bus = disk.get('bus')
-                type = disk.get('type')
+                disk_size = disk.get('size')
+                # type = disk.get('type')
+                type = Path(file_name).suffix[1:]
             else:
                 file_path = disk
-                dev = None
-                bus = None
+                dev = 'vdb'
+                bus = 'virtio'
                 type = 'qcow2'
+                disk_size = '20'
 
             # disk 节点
             diskNode = libxml2.newNode('disk')
@@ -690,14 +748,31 @@ class CLVVMInstance(ConnectLibvirtd):
             subDrvNode.setProp('type', type) # 1
             diskNode.addChild(subDrvNode)
             
+            from storagepool import toolset
+            full_path = '%s/%s' % (file_path, file_name)
+            if not os.path.exists(full_path):
+                print(f'[Info][editVMDisk]create disk image: {full_path}, size: {disk_size}G')
+                toolset.create_disk_image(type, full_path, '%sG' % disk_size) # 默认创建20G大小的磁盘
             subSrcFileNode = libxml2.newNode('source')
-            subSrcFileNode.setProp('file', '%s/%s' % (file_path, file_name)) # 2
+            subSrcFileNode.setProp('file', full_path) # 2
             diskNode.addChild(subSrcFileNode)
             
             subTargetNode = libxml2.newNode('target')
             subTargetNode.setProp('dev', dev) # 3
             subTargetNode.setProp('bus', bus) # 4
             diskNode.addChild(subTargetNode)
+            
+            #TODO: 将新添加的硬盘文件名添加到数据库中
+            try:
+                VMDiskTableModel.objects.create(vm_name=vmName, 
+                                                create_flag=disk.get('createflag', 'create'),
+                                                disk_file=full_path, 
+                                                disk_size=int(disk_size) *1024*1024*1024, 
+                                                dev=dev, 
+                                                bus=bus, 
+                                                type=type)
+            except Exception as e:
+                print(f'[Exception][editVMDisk] insert vm disk table failed: {e}')
 
         # 序列化并应用新的域 XML
         try:

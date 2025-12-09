@@ -106,6 +106,15 @@ def doVMInstance(request):
                 port=opVmConsole(vmName)
                 return render(request, 'vnc-console.html', locals())
             elif opVMInstance(vmName, op) == True:
+                if op == 'deletevm':
+                    # 删除对应的数据库表项
+                    try:
+                        from createvmwizard.models import VMDiskTable as VMDiskTableModel
+                        VMDiskTableModel.objects.filter(vm_name=vmName).delete()
+                        print(f'[Info] delete vm disk table entries for vm {vmName} success')
+                    except Exception as e:
+                        print(f'[Error] drop vm table failed: {e}')
+                        
                 data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"], 
                     "response_json": getVMInstance(vmName),
@@ -192,7 +201,7 @@ def doVMInstance(request):
                 ret = editVMISO(vmName, isoList)
             elif subaction == 'editDisk':
                 diskList = json_data['diskList']
-                print(diskList)
+                # print(diskList)
                 ret = editVMDisk(vmName, diskList)   
             if ret == True:
                 data = {"result": "success", 

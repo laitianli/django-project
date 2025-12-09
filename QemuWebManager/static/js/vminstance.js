@@ -789,21 +789,40 @@ function getVMISOInfo(vmName) {
     }, function () { alert('查询虚拟实例ISO详细信息失败！'); });
 }
 
-function addDiskTabRow(diskPartionName, diskSize, diskBus, diskStoragePoolPath, diskStoragePool, diskBoot, diskName) {
+function addDiskTabRow(diskPartionName, diskSize, diskBus, diskStoragePoolPath, diskStoragePool, diskBoot, diskName, createflag) {
     var newRow;
-    newRow = `
+    if (createflag === 'create') {
+        newRow = `
             <tr>
                 <td>${diskPartionName}</td>                    
                 <td class="editable" data-field="diskPartSize" data-value=${diskSize}>${diskSize}G</td>
                 <td class="editable" data-field="diskPartBus" data-value=${diskBus}>${diskBus}</td>
                 <td class="" data-field="diskPartPool" data-value=${diskStoragePoolPath}>${diskStoragePool}</td>
                 <td class="editable id-diskboot" data-field="bootDisk" data-value="${diskBoot}">${diskBoot}</td>
-                <td class="" data-field="diskFile" data-value=${diskStoragePoolPath}>${diskName}</td>
+                <td class="" data-field="diskFile" data-value=${diskStoragePoolPath} data-createflag='${createflag}'>${diskName}</td>
                 <td>
                     <button class="btn btn-sm btn-danger btn-delete" disabled>删除</button>
                 </td>
             </tr>
             `;
+    }
+    else {
+         newRow = `
+            <tr>
+                <td>${diskPartionName}</td>                    
+                <td class="editable" data-field="diskPartSize" data-value=${diskSize}>${diskSize}G</td>
+                <td class="editable" data-field="diskPartBus" data-value=${diskBus}>${diskBus}</td>
+                <td class="editable" data-field="diskPartPool" data-value=${diskStoragePoolPath}>${diskStoragePool}</td>
+                <td class="editable id-diskboot" data-field="bootDisk" data-value="${diskBoot}">${diskBoot}</td>
+                <td class="editable" data-field="diskFile" data-value=${diskStoragePoolPath} data-createflag='${createflag}'>${diskName}</td>
+                <td>
+                    <button class="btn btn-sm btn-danger btn-delete">删除</button>
+                </td>
+            </tr>
+            `;
+    }
+
+   
     $('#editDiskTab tbody').append(newRow);
 
     editUpdateDiskOptions();
@@ -837,6 +856,7 @@ function getVMDiskInfo(vmName) {
             var diskStoragePoolPath = directoryName;
             var diskStoragePool = 'unknown';
             var diskBoot = 'No';
+            var createflag = disk['createflag'];
             var defaultPoolPath;
             $.each(localstorage_json_data.default, function (key, value) {
                 // console.log('key:' + key + " value:" + value)
@@ -855,7 +875,7 @@ function getVMDiskInfo(vmName) {
 
             var diskName = fileName;
 
-            addDiskTabRow(diskPartionName, diskSize, diskBus, diskStoragePoolPath, diskStoragePool, diskBoot, diskName);
+            addDiskTabRow(diskPartionName, diskSize, diskBus, diskStoragePoolPath, diskStoragePool, diskBoot, diskName, createflag);
         });
 
     }, function () { alert('查询虚拟实例硬盘详细信息失败！'); });
@@ -1078,13 +1098,12 @@ function doEditAddDiskBtn() {
                     <td class="editable" data-field="diskPartBus" data-value=${diskBus}>${diskBus}</td>
                     <td class="editable" data-field="diskPartPool" data-value=${diskStoragePoolPath}>${diskStoragePool}</td>
                     <td class="editable id-diskboot" data-field="bootDisk" data-value="${diskBoot}">${diskBoot}</td>
-                    <td class="editable" data-field="diskFile" data-value=${diskStoragePoolPath}>${diskName}</td>
+                    <td class="editable" data-field="diskFile" data-value=${diskStoragePoolPath} data-createflag='mount'>${diskName}</td>
                     <td>
                          <button class="btn btn-sm btn-danger btn-delete">删除</button>
                     </td>
                 </tr>
             `;
-
     }
     else {
         diskName = vmName + '_' + editGenerateUUID() + '.' + diskPartType;
@@ -1095,7 +1114,7 @@ function doEditAddDiskBtn() {
                     <td class="editable" data-field="diskPartBus" data-value=${diskBus}>${diskBus}</td>
                     <td class="editable" data-field="diskPartPool" data-value=${diskStoragePoolPath}>${diskStoragePool}</td>
                     <td class="editable id-diskboot" data-field="bootDisk" data-value="${diskBoot}">${diskBoot}</td>
-                    <td class="" data-field="NoChange-diskFile" data-value=${diskStoragePoolPath}>${diskName}</td>
+                    <td class="" data-field="NoChange-diskFile" data-value=${diskStoragePoolPath} data-createflag='add'>${diskName}</td>
                     <td>
                          <button class="btn btn-sm btn-danger btn-delete">删除</button>
                     </td>
@@ -1123,7 +1142,8 @@ function editGetDiskTabData() {
             boot: row.find('td.id-diskboot').text().trim(), // 通过class选择器
             diskName: row.find('td').eq(5).text().trim(),
             // 获取data-value属性值
-            storagePoolPath: row.find('td').eq(5).data('value')
+            storagePoolPath: row.find('td').eq(5).data('value'),
+            createflag: row.find('td').eq(5).data('createflag')
         };
         tableData.push(rowData);
     });
@@ -1151,13 +1171,13 @@ function doEditDiskTab() {
         // 按字母顺序重新排序选项
         editSortSelectOptions('#editDiskPartSelect');
         editCheckSelectStatus();
+        $('#editDiskBtn').prop('disabled', false);
     });
 }
 
 // 【新CD/DVD(SATA)】
-
 function editAddISODiskName(prefix) {
-    for (var i = 0; i < 8; i++) {
+    for (var i = 0; i < 4; i++) {
         var num = 97 + i;
         var char = String.fromCharCode(num); // 返回 'a'
         var diskName = `${prefix}${char}`

@@ -280,7 +280,7 @@ $(document).ready(function () {
                     <td>${diskBus}</td>
                     <td>${diskLocalStoragePool}</td>
                     <td class="id-diskboot">${diskBoot}</td>
-                    <td data-value=${diskLocalStoragePoolPath}>${diskName}</td>
+                    <td data-value=${diskLocalStoragePoolPath} data-createflag='create'>${diskName}</td>
                     <td>
                          <button class="btn btn-sm btn-danger btn-delete">删除</button>
                     </td>
@@ -306,7 +306,8 @@ $(document).ready(function () {
                 boot: row.find('td.id-diskboot').text().trim(), // 通过class选择器
                 diskName: row.find('td').eq(5).text().trim(),
                 // 获取data-value属性值
-                storagePoolPath: row.find('td').eq(5).data('value')
+                storagePoolPath: row.find('td').eq(5).data('value'),
+                createflag: row.find('td').eq(5).data('createflag')
             };
             tableData.push(rowData);
         });
@@ -343,7 +344,7 @@ $(document).ready(function () {
         showISODiskNameList();
     }
     function addISODiskName(prefix) {
-        for (var i = 0; i < 8; i++) {
+        for (var i = 0; i < 4; i++) {
             var num = 97 + i;
             var char = String.fromCharCode(num); // 返回 'a'
             var diskName = `${prefix}${char}`

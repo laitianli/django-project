@@ -7,8 +7,7 @@ from pathlib import Path
 from APILibvirt.createXML import createVMXML
 from APILibvirt.LVVMInstance import CLVCreate
 from storagepool import toolset
-import createvmwizard.db_utils as db_utils
-import re
+from .models import VMDiskTable as VMDiskTableModel
 
 # {'immediatelyRun': False, 
 # 'vm': {'name': 'Centos', 'type': 'Linux', 'isBootType': False, 'booType': 'cdrom'}, 
@@ -41,7 +40,10 @@ def doCreateVMXML(data):
         image_size = "%dG" % e['size']
         ret = toolset.create_disk_image(type, path_file, image_size)
         if ret == True:
-            disk.append({'type': type, 'file': path_file, 'dev': e['partitionName'], 'bus': e['bus'], 'size': image_size, 'boot': e['boot']})
+            disk.append({'type': type, 'file': path_file, 
+                         'dev': e['partitionName'], 'bus': e['bus'], 
+                         'size': image_size, 'boot': e['boot'], 
+                         'createflag': e.get('createflag', 'create')})
         
     print('disk: %s' % disk)
     xmlobj.setDiskInfo(disk)
@@ -83,33 +85,19 @@ def doCreateVM(data):
         createobj = CLVCreate()
         isSucc = createobj.createVM(vmName, strXML)
         if isSucc == True:
-            vm_name=re.sub(r'[^a-zA-Z0-9_]', '_', vmName)
-            model, isomodel, diskmodel = db_utils.create_vm_table(vm_name)
-            for e in iso:
-                isomodel.objects.create(
-                    storage_pool_path = os.path.dirname(e['file']),
-                    iso_file = os.path.basename(e['file']),
-                    partition_name = e['dev'],
-                    bus = e['bus'],
-                )
-            for e in disk:
-                diskmodel.objects.create(
-                    disk_file = e['file'],
-                    disk_size = e['size'],
-                    dev = e['dev'],
-                    bus = e['bus'],
-                    type = e['type'],
-                )
-            
-            iso_table_name = f"vm_{vm_name}_iso"
-            disk_table_name = f"vm_{vm_name}_disk"
-            model.objects.create(
-                vm_name=vm_name,
-                cpu_count=data['vmcpu']['totalCores'],
-                memory_mb=data['vmmemory']['memTotal'],
-                iso_table=iso_table_name,
-                disk_table=disk_table_name,
-            )
+            # 将硬盘信息写入数据库
+            for d in disk:
+                try:
+                    print(f'[Info][doCreateVM] insert vm disk table: {d}')
+                    VMDiskTableModel.objects.create(vm_name=vmName, 
+                                                create_flag=d['createflag'],
+                                                disk_file=d['file'], 
+                                                disk_size=int(d['size'][:-1]) *1024*1024*1024, 
+                                                dev=d['dev'], 
+                                                bus=d['bus'], 
+                                                type=d['type'])
+                except Exception as e:
+                    print(f'[Error][doCreateVM] insert vm disk table failed: {e}')
             ret = True
         else:
             ret = False
