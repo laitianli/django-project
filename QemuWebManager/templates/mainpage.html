@@ -1667,30 +1667,77 @@
                                                 </div>
                                             </div>
                                             <button type="button" class="btn btn-primary" id="editISOBtn" disabled>
-                                                        <i class="fas fa-save me-2"></i>保存设置
+                                                <i class="fas fa-save me-2"></i>保存设置
                                             </button>
                                         </div>
                                         <div class="tab-pane fade" id="network-settings" role="tabpanel"
                                             aria-labelledby="network-settings-tab">
                                             <!-- <h5>网络设置</h5> -->
-                                            <div class="mb-3 row">
-                                                <label for="networkMode"
-                                                    class="col-md-2 text-end form-lable col-form-label">网络模式:</label>
-                                                <div class="col-md-4">
-                                                    <select class="form-select" id="networkMode">
-                                                        <option value="nat">NAT</option>
-                                                        <option value="bridge">桥接</option>
-                                                        <option value="private">私有网络</option>
-                                                    </select>
+                                            <div class="section-box">
+                                                <div class="section-title">添加网卡</div>
+                                                <div class="tab-pane" id="editAddVMNIC" role="tabpanel">
+                                                    <div class="row mt-3">
+                                                        <label for="editVmNICMACID"
+                                                            class="col-md-2 text-end form-lable col-form-label">MAC:</label>
+                                                        <div class="col-md-3">
+                                                            <input type="text" id="editVmNICMACID"
+                                                                value="00:1A:2B:AB:9C:13">
+                                                        </div>
+                                                        <div class="col-md-3 ">
+                                                            <button class="btn btn-info"
+                                                                id="editNicGenerateMACBtn">生成</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mt-3">
+                                                        <label for="editNicConnectTypeSelect"
+                                                            class="col-md-2 text-end form-lable col-form-label">类型:</label>
+                                                        <div class="col-md-7">
+                                                            <select class="form-select" id="editNicConnectTypeSelect">
+                                                                <option value="bridge">Bridge模式:直接连接物理网络</option>
+                                                                <option value="nat" selected>NAT模式:共享主机的IP地址</option>
+                                                                <option value="host">Host模式:共享主机的专用网络</option>
+                                                                <option value="ovs">自定义:特定虚拟网络</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mt-3">
+                                                        <label for="editNicNetPoolSelect"
+                                                            class="col-md-2 text-end form-lable col-form-label">网络池:</label>
+                                                        <div class="col-md-7">
+                                                            <select class="form-select" id="editNicNetPoolSelect">
+                                                                <option value="default">demo-default</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-end form-lable col-form-label">
+                                                        <button class="btn btn-primary" id="editAddVMNICBtn">添加</button>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="mb-3 row">
-                                                <div class="col-md-2 text-end form-lable col-form-label">
-                                                    <button type="button" class="btn btn-primary" id="editNetBtn" disabled>
-                                                        <i class="fas fa-save me-2"></i>保存设置
-                                                    </button>
+                                            <div class="section-box">
+                                                <div class="section-title">网卡列表</div>
+                                                <div class="tab-pane" id="editVmNIC-list" role="tabpanel">
+                                                    <table class="table table-hover" id="editVmNICTab">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>#ID</th>
+                                                                <th>MAC</th>
+                                                                <th>连接方式</th>
+                                                                <th>网络池</th>
+                                                                <th>操作</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </div>
+
+                                            <button type="button" class="btn btn-primary" id="editNetBtn" disabled>
+                                                <i class="fas fa-save me-2"></i>保存设置
+                                            </button>
+
                                         </div>
                                         <div class="tab-pane fade" id="disk-settings" role="tabpanel"
                                             aria-labelledby="disk-settings-tab">
@@ -1729,15 +1776,16 @@
                                                                     class="col-md-4 text-end form-lable col-form-label">大小(G):</label>
                                                                 <div class="col-md-6">
                                                                     <input type="number" class="form-control"
-                                                                        id="editDiskPartSize" value="20" min="15" max="800"
-                                                                        step="5">
+                                                                        id="editDiskPartSize" value="20" min="15"
+                                                                        max="800" step="5">
                                                                 </div>
                                                             </div>
                                                             <div class="mb-3 row">
                                                                 <label for="editDiskPartType"
                                                                     class="col-md-4 text-end form-lable col-form-label">格式:</label>
                                                                 <div class="col-md-6">
-                                                                    <select class="form-select" id="editDiskPartTypeSelect">
+                                                                    <select class="form-select"
+                                                                        id="editDiskPartTypeSelect">
                                                                         <option value="qcow2">qcow2</option>
                                                                         <option value="row">row</option>
                                                                     </select>
@@ -1787,7 +1835,8 @@
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-12 d-none" id="editDiskPartStoragePoolFileList">
+                                                        <div class="col-md-12 d-none"
+                                                            id="editDiskPartStoragePoolFileList">
                                                             <div class="row">
                                                                 <label for="editDiskPartStoragePoolFile"
                                                                     class="col-md-2 text-end form-lable col-form-label">镜像文件:</label>
@@ -1829,16 +1878,16 @@
                                                 </div>
                                             </div>
                                             <button type="button" class="btn btn-primary" id="editDiskBtn" disabled>
-                                                        <i class="fas fa-save me-2"></i>保存设置
-                                                    </button>
+                                                <i class="fas fa-save me-2"></i>保存设置
+                                            </button>
                                         </div>
                                         <div class="tab-pane fade" id="xml-settings" role="tabpanel"
                                             aria-labelledby="xml-settings-tab">
                                             <!-- <h5>XML配置</h5> -->
                                             <div class="mb-3">
                                                 <label for="xmlContent" class="form-label">虚拟机XML配置:</label>
-                                                <textarea class="form-control xml-readonly" id="xmlContent" 
-                                                    rows="50" readonly>xml内容</textarea>
+                                                <textarea class="form-control xml-readonly" id="xmlContent" rows="50"
+                                                    readonly>xml内容</textarea>
                                             </div>
                                             <!-- <button type="button" class="btn btn-primary" id="editXMLBtn">
                                                 <i class="fas fa-edit me-2"></i>编辑XML
