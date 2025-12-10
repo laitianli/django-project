@@ -123,6 +123,19 @@ class CLVVMInstance(ConnectLibvirtd):
         self.connect_close()
         return vm
     
+    def saveVMXML(self, vmName, xmlContent=None):
+        conn = self.get_conn()
+        dom = conn.lookupByName(vmName)
+        if dom is None:
+            self.connect_close()
+            return False
+        if xmlContent is None:
+            self.connect_close()
+            return False
+        conn.defineXML(xmlContent)
+        self.connect_close()
+        return True
+    
     def __getDiskDev(self, dom):
         def getDiskDevList(ctx):
             res = []

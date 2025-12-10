@@ -1837,11 +1837,14 @@
                                             <!-- <h5>XML配置</h5> -->
                                             <div class="mb-3">
                                                 <label for="xmlContent" class="form-label">虚拟机XML配置:</label>
-                                                <textarea class="form-control" id="xmlContent"
-                                                    rows="50">xml内容</textarea>
+                                                <textarea class="form-control xml-readonly" id="xmlContent" 
+                                                    rows="50" readonly>xml内容</textarea>
                                             </div>
-                                            <button type="button" class="btn btn-primary" disabled>
-                                                <i class="fas fa-save me-2"></i>保存配置
+                                            <!-- <button type="button" class="btn btn-primary" id="editXMLBtn">
+                                                <i class="fas fa-edit me-2"></i>编辑XML
+                                            </button> -->
+                                            <button type="button" class="btn btn-primary" id="saveXMLBtn" disabled>
+                                                <i class="fas fa-save me-2"></i>保存XML
                                             </button>
                                         </div>
                                         <div class="tab-pane fade" id="kernel-log" role="tabpanel"

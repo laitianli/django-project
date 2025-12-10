@@ -20,6 +20,11 @@ function initVMInstance() {
     $(document).on('input', '#vcpuCount, #memorySize, #currMemorySize', doEditChange);
 
     addButtonEventForEditISODisk();
+
+    // $(document).on('click', '#editXMLBtn', doEditXMLBtn);
+    $(document).on('input', '#xmlContent', doXMLContentChange);
+    $(document).on('dblclick', '#xmlContent', doXMLContentDBLClick);
+    $(document).on('click', '#saveXMLBtn', doSaveXMLBtn);
 }
 
 function showVMInstance() {
@@ -327,25 +332,6 @@ function getVMDetailInfo(vmName) {
     }, function () { alert('查询虚拟实例详细信息失败！'); });
 }
 
-function getVMXMLInfo(vmName) {
-    var jsonData = {
-        action: 'queryXML',
-        vmname: vmName
-    }
-    sendReqeust2vminstance(jsonData, function (jsonData, response) {
-        vminstance = response.response_json;
-        if (vminstance.length === 0) {
-            console.log('vminstance is null');
-            return;
-        }
-        vminstance.forEach(vm => {
-            // console.log(vm);
-            $('#xmlContent').text(vm['xml']);
-        });
-
-    }, function () { alert('查询虚拟实例详细信息失败！'); });
-}
-
 function getCurrentTime() {
     const now = new Date();
 
@@ -487,12 +473,13 @@ function dovmDetailLink(e) {
     initPowersubpage(vmStatus);
 
     getVMDetailInfo(vmName);
-    getVMXMLInfo(vmName);
 
     initSnapshot(vmName);
 
     initVMClone(vmName);
     initForEditISODisk(vmName);
+
+    getVMXMLInfo(vmName);
 }
 
 function doConsoleTypeChange(e) {
@@ -1429,12 +1416,12 @@ function addDiskFileToTableItem(text, currentText) {
         diskFileOptions.forEach(function (option) {
             if (option.text === currentText && option.value === poolPath) {
                 found = true;
-                return ;
+                return;
             }
         });
         if (!found) {
             // 保留当前选择的文件
-            diskFileOptions.push({ value: poolPath, text: currentText});
+            diskFileOptions.push({ value: poolPath, text: currentText });
         }
     }
     return poolPath;
@@ -1503,6 +1490,10 @@ function doISOStoragePoolDblClickChange() {
 $(document).on('click', function (e) {
     if (!$(e.target).closest('td.editable').length) {
         closeAllEditableEditors();
+    }
+    // 如果点击既不在可编辑单元格也不在 xmlContent，则关闭编辑器
+    if (!$(e.target).closest('#xmlContent').length) {
+        changeXMLContent('noedit');
     }
 });
 
@@ -1698,7 +1689,7 @@ function doDiskStoragePoolDblClick(e) {
 function doDiskStoragePoolDblClickChange() {
     const newValue = $(this).val();
     const newText = $(this).find('option:selected').text().trim();
-    
+
     const field = $(this).parent().data('field');
 
     if (field === 'diskPartPool') {
@@ -1887,3 +1878,90 @@ function doEditDisk() {
         alert('修改内存成功！');
     }, function () { alert('修改内存失败！'); });
 }
+
+// 获取虚拟机XML信息
+function getVMXMLInfo(vmName) {
+    var jsonData = {
+        action: 'queryXML',
+        vmname: vmName
+    }
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        vminstance = response.response_json;
+        if (vminstance.length === 0) {
+            console.log('vminstance is null');
+            return;
+        }
+        vminstance.forEach(vm => {
+            // console.log(vm);
+            $('#xmlContent').text(vm['xml']);
+            $('#xmlContent').data('originalValue', vm['xml']);
+        });
+
+    }, function () { alert('查询虚拟实例详细信息失败！'); });
+}
+
+function changeXMLContent(status) {
+    if (status === 'edit') {
+        $('#xmlContent').prop('readonly', false);
+        $('#xmlContent').removeClass('xml-readonly');
+        $('#xmlContent').addClass('xml-editable');
+    }
+    else {
+        $('#xmlContent').prop('readonly', true);
+        $('#xmlContent').removeClass('xml-editable');
+        $('#xmlContent').addClass('xml-readonly');
+    }
+}
+
+function doXMLContentDBLClick() {
+    if ($(this).prop('readonly') == true) {
+        changeXMLContent('edit')
+    }
+    else {
+        changeXMLContent('noedit');
+    }
+}
+
+// 监听XML内容变化，启用保存按钮
+function doXMLContentChange() {
+    // 使用 textarea 的 value（.val）来读取当前内容
+    const $xml = $('#xmlContent');
+    const currVal = $xml.val();
+    // 原始值保存在 data('originalValue') 中；如果不存在则初始化
+    let originalVal = $xml.data('originalValue');
+    // 内容发生变化时启用保存按钮；恢复到原始值时禁用
+    if (currVal !== originalVal) {
+        $('#saveXMLBtn').prop('disabled', false);
+    }
+    else {
+        $('#saveXMLBtn').prop('disabled', true);
+    }
+}
+
+// // 初始化编辑XML模态框
+// function initEditXMLModal() {
+//     $('#xmlContent').val('');
+//     $('#editXMLBtn').prop('disabled', true);
+// }
+
+function doSaveXMLBtn() {
+    const vmName = $('#vm-detail-name').text().trim();
+    var xmlContent = $('#xmlContent').val();
+    var jsonData = {
+        action: 'saveXML',
+        vmname: vmName,
+        xmlContent: xmlContent
+    }
+    var saveXMLBtn = $(this)
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        saveXMLBtn.prop('disabled', true);
+        $('#xmlContent').data('originalValue', xmlContent); // 更新原始值
+        alert('保存XML成功！');
+    }, function () { alert('保存XML失败！'); });
+}
+
+// 初始化保存XML模态框
+// function initSaveXMLModal() {
+//     $('#xmlContent').val('');
+//     $('#saveXMLBtn').prop('disabled', true);
+// }

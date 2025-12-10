@@ -18,6 +18,10 @@ def getVMXML(vmName):
     vmInst = CLVVMInstance()
     return vmInst.queryVMXML(vmName)
 
+def saveVMXML(vmName, xmlContent=None):
+    vmInst = CLVVMInstance()
+    return vmInst.saveVMXML(vmName, xmlContent)
+
 def opVMInstance(vmName, op):
     vmInst = CLVVMInstance()
     return vmInst.operationVM(vmName, op)
@@ -135,6 +139,22 @@ def doVMInstance(request):
             data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"], 
                     "response_json": getVMXML(vmName),
+                    }
+            return JsonResponse(data)
+        elif json_data['action'] == 'saveXML':
+            vmName = json_data["vmname"]
+            xmlContent = json_data["xmlContent"]
+            vmInst = CLVVMInstance()
+            ret = vmInst.saveVMXML(vmName, xmlContent)
+            if ret == True:
+                data = {"result": "success", 
+                    "message": "%s action success!" % json_data["action"], 
+                    "response_json": 'tmp',
+                    }
+            else:
+                data = {"result": "failed", 
+                    "message": "%s action failed!" % json_data["action"], 
+                    "response_json": 'tmp',
                     }
             return JsonResponse(data)
         elif json_data['action'] == 'querySnapshot':
