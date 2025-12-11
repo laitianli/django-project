@@ -480,6 +480,8 @@ function dovmDetailLink(e) {
     initForEditISODisk(vmName);
 
     getVMXMLInfo(vmName);
+
+    editSetDefaultNIC(vmName);
 }
 
 function doConsoleTypeChange(e) {
@@ -1960,8 +1962,188 @@ function doSaveXMLBtn() {
     }, function () { alert('保存XML失败！'); });
 }
 
-// 初始化保存XML模态框
-// function initSaveXMLModal() {
-//     $('#xmlContent').val('');
-//     $('#saveXMLBtn').prop('disabled', true);
-// }
+/* 网卡编辑 */
+// 生成随机十六进制数
+function editRandomHexDigit() {
+    return Math.floor(Math.random() * 16).toString(16);
+}
+
+// 生成随机字节（两位十六进制）
+function editRandomByte() {
+    const digit1 = editRandomHexDigit();
+    const digit2 = editRandomHexDigit();
+    return digit1 + digit2;
+}
+// 生成随机MAC地址
+function editGenerateRandomMAC() {
+    let baseOUI = "60:1A:2B"; // 默认OUI   
+    const separator = ":";
+    // 生成后三个随机字节
+    const randomPart1 = editRandomByte();
+    const randomPart2 = editRandomByte();
+    const randomPart3 = editRandomByte();
+
+    // 组合MAC地址
+    let macAddress = baseOUI;
+
+    macAddress += separator + randomPart1;
+    macAddress += separator + randomPart2;
+    macAddress += separator + randomPart3;
+
+    return macAddress.toUpperCase();
+}
+
+function editSetMAC() {
+    const mac = editGenerateRandomMAC();
+    $('#editVmNICMACID').val(mac);
+}
+
+function addEditNICRow(nicModel, nicMAC, nicConnType, netPoolName) {
+    const newRow = `
+                <tr>
+                    <td class="model-cell">${nicModel}</td>
+                    <td class="mac-cell">${nicMAC}</td>
+                    <td class="connType-cell">${nicConnType}</td>
+                    <td class="poolName-cell">${netPoolName}</td>
+                    <td>
+                         <button class="btn btn-sm btn-danger btn-delete">删除</button>
+                    </td>
+                </tr>
+            `;
+    $('#editVmNICTab tbody').append(newRow);
+}
+
+function editAddNIC2List() {
+    const nicModel = 'virtio';
+    const nicMAC = $('#editVmNICMACID').val();
+    const nicConnType = $('#editNicConnectTypeSelect').val();
+    const netPoolName = $('#editNicNetPoolSelect').find('option:selected').text().trim();
+
+    addEditNICRow(nicModel, nicMAC, nicConnType, netPoolName);
+}
+
+function editGetNICTabData() {
+    const tableData = [];
+
+    $('#editVmNICTab tbody tr').each(function () {
+        const row = $(this);
+        const rowData = {
+            // 获取单元格文本内容
+            mac: row.find('td').eq(1).text().trim(),
+            nicConnType: row.find('td').eq(2).text().trim(),
+            netPoolName: row.find('td').eq(3).text().trim(),
+        };
+        tableData.push(rowData);
+    });
+
+    return tableData;
+}
+function editShowNetPoolSelect() {
+    var netPoolType = $('#editNicConnectTypeSelect').find('option:selected').val();
+    // console.log('--netPoolType: ' + netPoolType);
+    $('#editNicNetPoolSelect').empty();
+    let res_json_data = JSON.parse(sessionStorage.getItem("network_json"));
+    $.each(res_json_data[netPoolType], function (index) {
+        $('#editNicNetPoolSelect').append($('<option>', {
+            value: netPoolType,
+            text: res_json_data[netPoolType][index].name
+        }));
+
+        if (res_json_data[netPoolType][index].name === 'default') {
+            $('#editNicNetPoolSelect').val(res_json_data[netPoolType][index].name);
+        }
+    });
+}
+
+function getVMNICListInfo(vmName) {
+    var jsonData = {
+        action: 'queryVMNIC',
+        vmname: vmName
+    }
+    sendReqeust2vminstance(jsonData, function (jsonData, response) {
+        nicList = response.response_json;
+        if (nicList.length === 0) {
+            console.log('nicList is null');
+            return;
+        }
+        $('#editVmNICTab tbody').empty();
+        nicList.forEach(nic => {
+            console.log(nic);
+            //editUpdateDeleteButtonsState();
+            var netType = 'unknown';
+            let res_json_data = JSON.parse(sessionStorage.getItem("network_json"));
+            $.each(res_json_data, function (key, value) {
+                $.each(value, function (index) {
+                    if (value[index]['name'] === nic['network']) {
+                        netType = key;
+                        return ; // 退出循环
+                    }
+                });
+            });
+            addEditNICRow(nic['model'], nic['mac'].toUpperCase(), netType, nic['network']);
+        });
+    }, function () { alert('查询虚拟实例ISO详细信息失败！'); });
+}
+
+function editSetDefaultNIC(vmName) {
+    editShowNetPoolSelect();
+    /* 默认生成一个MAC地址 */
+    editSetMAC();
+
+    getVMNICListInfo(vmName);
+}
+
+// 保存修改前的初始值
+$('#editVmNICMACID').on('focus', function () {
+    $(this).data('originalValue', $(this).val());
+});
+/* 点击按钮时生成一个MAC地址 */
+$('#editNicGenerateMACBtn').click(function () {
+    editSetMAC()
+    $('#editAddVMNICBtn').removeClass('disabled');
+})
+// 网卡添加按钮
+$('#editAddVMNICBtn').click(function () {
+    editAddNIC2List();
+    $(this).addClass('disabled');
+    editUpdateDeleteButtonsState();
+})
+
+// 检查并更新删除按钮状态
+function editUpdateDeleteButtonsState() {
+    const rowCount = $('#editVmNICTab tbody tr').length;
+    const deleteButtons = $('.btn-delete');
+
+    if (rowCount <= 1) {
+        // 只剩一条记录，禁用所有删除按钮
+        deleteButtons.prop('disabled', true);
+        $('#editVmNICTab tbody tr').each(function (index) {
+            const mac = $(this).find('.mac-cell').text();
+            const connection = $(this).find('.connType-cell').text();
+        });
+    } else {
+        // 多条记录，启用所有删除按钮
+        deleteButtons.prop('disabled', false);
+    }
+}
+/* 删除网卡 */
+$('#editVmNICTab').on('click', '.btn-delete', function () {
+    $(this).closest('tr').fadeOut(300, function () {
+        $(this).remove();
+        nextId -= 1;
+        editUpdateDeleteButtonsState();
+    });
+});
+//输入框的内存修改
+$('#editVmNICMACID').change(function () {
+    const currentValue = $('#editVmNICMACID').val();
+    const originalValue = $('#editVmNICMACID').data('originalValue');
+    if (currentValue !== originalValue) {
+        $('#editAddVMNICBtn').removeClass('disabled');
+    }
+})
+
+
+$('#editNicConnectTypeSelect').on('change', function () {
+    editShowNetPoolSelect();
+});

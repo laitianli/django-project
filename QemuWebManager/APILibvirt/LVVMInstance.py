@@ -809,3 +809,24 @@ class CLVVMInstance(ConnectLibvirtd):
         self.connect_close()
         return True
     
+    def queryVMNIC(self, vmName):
+        conn = self.get_conn()
+        nicList = []
+        dom = conn.lookupByName(vmName)
+        if dom is None:
+            self.connect_close()
+            return False, nicList
+        xml = dom.XMLDesc(0)
+        root = ElementTree.fromstring(xml)
+        for interface in root.findall("devices/interface"):
+            source_elm = interface.find('source')
+            source_network = source_elm.get('network')
+            mac_elm = interface.find('mac')
+            mac_addr = mac_elm.get('address')
+            model_elm = interface.find('model')
+            model_type = model_elm.get('type')
+            nicList.append({'network': source_network, 'mac': mac_addr, 'model': model_type})
+        self.connect_close()
+        # print(f'nicList: {nicList}')
+        return True, nicList
+    

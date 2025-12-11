@@ -83,6 +83,10 @@ def queryVMDisk(vmName):
     vmInst = CLVVMInstance()
     return vmInst.queryVMDisk(vmName)
 
+def queryVMNIC(vmName):
+    vmInst = CLVVMInstance()
+    return vmInst.queryVMNIC(vmName)
+
 def doVMInstance(request):
     if request.method == "POST":
         raw_data = request.body  # 获取原始字节流
@@ -260,6 +264,14 @@ def doVMInstance(request):
                 data = {"result": "failed", 
                     "message": "%s action failed!" % json_data["action"], 
                     "response_json": 'tmp',
+                    }
+            return JsonResponse(data)
+        elif json_data['action'] == 'queryVMNIC':
+            vmName = json_data["vmname"]
+            ret, dataNIC = queryVMNIC(vmName)
+            data = {"result": "success", 
+                    "message": "ping action success!", 
+                    "response_json": dataNIC,
                     }
             return JsonResponse(data)
             
