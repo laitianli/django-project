@@ -273,9 +273,9 @@ class createVMXML():
 
     def __addNIC2Device(self, devNode):
         for e in self.nicInfo:
-            self.__addOneNIC2Device(devNode, e['type'], e['mac'], e['network'])
+            self.__addOneNIC2Device(devNode, e['type'], e['mac'], e['network'], e['nicModel'])
         
-    def __addOneNIC2Device(self, devNode, type, mac, network):
+    def __addOneNIC2Device(self, devNode, type, mac, network, model='virtio'):
         if devNode is not None:
             intfNode = libxml2.newNode('interface')
             intfNode.setProp('type', type) # 1
@@ -290,7 +290,7 @@ class createVMXML():
             intfNode.addChild(srcNode)
             
             modelNode = libxml2.newNode('model')
-            modelNode.setProp('type', 'virtio')
+            modelNode.setProp('type', model)
             intfNode.addChild(modelNode)
 
     def __addEHCI2Device(self, devNode):

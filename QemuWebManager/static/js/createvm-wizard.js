@@ -552,18 +552,13 @@ $(document).ready(function () {
         const mac = generateRandomMAC();
         $('#vmNICMACID').val(mac);
     }
-    /* 初始化网卡编号 */
-    let nextId = $('#vmNICTab tbody tr').length + 1;
 
-    function addNIC2List() {
-        // const nicName = 1;
-        const nicMAC = $('#vmNICMACID').val();
-        const nicConnType = $('#nicConnectTypeSelect').val();
-        const netPoolName = $('#nicNetPoolSelect').find('option:selected').val();
-
-        const newRow = `
+    function addNICtoTable(nicModel, nicMAC, nicConnType, netPoolName, createFlag) {
+        var newRow = '';
+        if (createFlag === 'create') {
+            newRow = `
                 <tr>
-                    <td class="id-cell">${nextId}</td>
+                    <td class="model-cell" data-createflag="${createFlag}">${nicModel}</td>
                     <td class="mac-cell">${nicMAC}</td>
                     <td class="connType-cell">${nicConnType}</td>
                     <td class="poolName-cell">${netPoolName}</td>
@@ -572,8 +567,29 @@ $(document).ready(function () {
                     </td>
                 </tr>
             `;
+        }
+        else if (createFlag === 'default') {
+             newRow = `
+                <tr>
+                    <td class="model-cell" data-createflag="${createFlag}">${nicModel}</td>
+                    <td class="mac-cell">${nicMAC}</td>
+                    <td class="connType-cell">${nicConnType}</td>
+                    <td class="poolName-cell">${netPoolName}</td>
+                    <td>
+                         <button class="btn btn-sm btn-danger btn-delete" disabled>删除</button>
+                    </td>
+                </tr>
+            `;
+        }
         $('#vmNICTab tbody').append(newRow);
-        nextId += 1;
+    }
+
+    function addNIC2List(createFlag = 'create') {
+        const nicModel = $('#nicNetModelSelect').find('option:selected').val();
+        const nicMAC = $('#vmNICMACID').val();
+        const nicConnType = $('#nicConnectTypeSelect').val();
+        const netPoolName = $('#nicNetPoolSelect').find('option:selected').val();
+        addNICtoTable(nicModel, nicMAC, nicConnType, netPoolName, createFlag);        
     }
 
     function getNICTabData() {
@@ -583,6 +599,8 @@ $(document).ready(function () {
             const row = $(this);
             const rowData = {
                 // 获取单元格文本内容
+                nicModel: row.find('td').eq(0).text().trim(),
+                createflag: row.find('td').eq(0).data('createflag'),
                 mac: row.find('td').eq(1).text().trim(),
                 nicConnType: row.find('td').eq(2).text().trim(),
                 netPoolName: row.find('td').eq(3).text().trim(),
@@ -594,7 +612,6 @@ $(document).ready(function () {
     }
     function showNetPoolSelect() {
         var netPoolType = $('#nicConnectTypeSelect').find('option:selected').val();
-        // console.log('--netPoolType: ' + netPoolType);
         $('#nicNetPoolSelect').empty();
         let res_json_data = JSON.parse(sessionStorage.getItem("network_json"));
         $.each(res_json_data[netPoolType], function (index) {
@@ -614,12 +631,9 @@ $(document).ready(function () {
         /* 默认生成一个MAC地址 */
         setMAC();
         updateNetwork2DeviceSummary($('#vmNICMACID').val());
-        addNIC2List();
+        addNIC2List('default');
 
         setMAC();
-        updateDeleteButtonsState();
-
-
     }
     setDefautNIC();
 
@@ -634,42 +648,14 @@ $(document).ready(function () {
     })
     // 网卡添加按钮
     $('#addVMNICBtn').click(function () {
-        addNIC2List();
+        addNIC2List('create');
         $(this).addClass('disabled');
-        updateDeleteButtonsState();
     })
-    // 更新所有行的ID（从1开始重新编号）
-    function updateRowIds() {
-        $('#vmNICTab tbody tr').each(function (index) {
-            $(this).find('.id-cell').text(index + 1);
-        });
-    }
-    // 检查并更新删除按钮状态
-    function updateDeleteButtonsState() {
-        const rowCount = $('#vmNICTab tbody tr').length;
-        const deleteButtons = $('.btn-delete');
 
-        if (rowCount <= 1) {
-            // 只剩一条记录，禁用所有删除按钮
-            deleteButtons.prop('disabled', true);
-            $('#vmNICTab tbody tr').each(function (index) {
-                const mac = $(this).find('.mac-cell').text();
-                const connection = $(this).find('.connType-cell').text();
-                const id = $(this).find('.id-cell').text();
-                updateNetwork2DeviceSummary(mac);
-            });
-        } else {
-            // 多条记录，启用所有删除按钮
-            deleteButtons.prop('disabled', false);
-        }
-    }
     /* 删除网卡 */
     $('#vmNICTab').on('click', '.btn-delete', function () {
         $(this).closest('tr').fadeOut(300, function () {
             $(this).remove();
-            nextId -= 1;
-            updateRowIds();
-            updateDeleteButtonsState();
         });
     });
     //输入框的内存修改

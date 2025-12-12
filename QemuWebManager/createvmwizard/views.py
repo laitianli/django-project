@@ -8,6 +8,7 @@ from APILibvirt.createXML import createVMXML
 from APILibvirt.LVVMInstance import CLVCreate
 from storagepool import toolset
 from .models import VMDiskTable as VMDiskTableModel
+from .models import VMNICTable as VMNICTableModel
 
 # {'immediatelyRun': False, 
 # 'vm': {'name': 'Centos', 'type': 'Linux', 'isBootType': False, 'booType': 'cdrom'}, 
@@ -15,7 +16,7 @@ from .models import VMDiskTable as VMDiskTableModel
 # 'vmcpu': {'countProcessor': 4, 'coresPerProcessor': 2, 'totalCores': 8, 'virtualization': {'vt': True, 'cpu': False}}, 
 # 'vmdisk': [{'partitionName': 'vda', 'size': 20, 'bus': 'virtio', 'storagePool': 'defalut', 'boot': 'No', 'diskName': 'Centos_12124d3f-08f0-4c04-9886-7087121def74.qcow2', 'storagePoolPath': '/var/lib/libvirt/images'}], 
 # 'vmiso': [{'partitionName': 'hda', 'bus': 'ide', 'storagePool': 'isodefalut', 'storagePoolPath': '/var/lib/libvirt/iso', 'isoFile': 'ubuntu-22.04.5-desktop-amd64.iso', 'boot': 'No'}], 
-# 'vmnet': [{'mac': '60:1A:2B:C1:4F:36', 'nicConnType': 'nat', 'netPoolName': 'default'}], 
+# 'vmnet': [{'nicModel':'e1000', 'createflag': 'default', 'mac': '60:1A:2B:C1:4F:36', 'nicConnType': 'nat', 'netPoolName': 'default'}], 
 # 'vmusb': {'compatibility': 'USB 2.0', 'showAllUsb': False}, 
 # 'vmsound': {'connected': False, 'connectAtPowerOn': True, 'soundCardType': 'specificSoundCard', 'specificSoundCard': '耳机 (Realtek(R) Audio)', 'echoCancellation': False}, 
 # 'vmdisplay': {'accelerate3D': True, 'monitorSetting': 'useHostSetting', 'monitorCount': '1', 'maxResolution': '2560 x 1600', 'graphicsMemory': '8 GB (推荐)', 'stretchMode': False}}
@@ -64,13 +65,13 @@ def doCreateVMXML(data):
             type = 'network'
         elif [e['nicConnType'] == 'bridge']:
             type = 'bridge'
-        elif [e['nicConnType'] == 'host']:
+        elif [e['nicConnType'] == 'macvtap']:
             type = 'direct'
         elif [e['nicConnType'] == 'ovs']:
             type = 'ovs'
         else:
             type = 'unknow'
-        net.append({'type': type, 'mac': e['mac'], 'network': e['netPoolName']})
+        net.append({'nicModel':e['nicModel'], 'createflag': e['createflag'],'type': type, 'mac': e['mac'], 'network': e['netPoolName']})
     xmlobj.setNicInfo(net)
     
     xmlobj.create()
@@ -98,6 +99,18 @@ def doCreateVM(data):
                                                 type=d['type'])
                 except Exception as e:
                     print(f'[Error][doCreateVM] insert vm disk table failed: {e}')
+                    
+            for n in net:
+                try:
+                    print(f'[Info][doCreateVM] insert vm nic table: {n}')
+                    VMNICTableModel.objects.create(vm_name=vmName, 
+                                                nicModel=n['nicModel'],
+                                                create_flag=n['createflag'],
+                                                mac=n['mac'], 
+                                                nicConnType=n['type'], 
+                                                netPoolName=n['network'])
+                except Exception as e:
+                    print(f'[Error][doCreateVM] insert vm nic table failed: {e}')
             ret = True
         else:
             ret = False

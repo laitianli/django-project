@@ -74,6 +74,8 @@ function doQueryNetPoolSuccess(jsonData, response) {
     }
     // console.log(g_networkInterfaces)
     sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+
+    addPhyNicOptionsToBridge();
 }
 
 // 渲染网络接口卡片
@@ -83,6 +85,417 @@ function renderNetworkCards() {
     }
     sendReqeust2natpool(jsonData, doQueryNetPoolSuccess, function () { })
 }
+
+function showPHYSelect(container) {
+    // 创建下拉列表
+    const selectElement = $('<select>', {
+        id: 'networkCardSelect',
+        class: 'form-select',
+        html: '<option value="">请选择物理网卡...</option>'
+    });
+    let intface_json_data = JSON.parse(sessionStorage.getItem("networkInterfaces_json"));
+    intface_json_data.forEach(nic => {
+        $('<option>', {
+            value: nic.name,
+            text: nic.name
+        }).appendTo(selectElement);
+
+    });
+    // 清空容器并添加下拉列表
+    container.html('').append(selectElement);
+}
+
+function addPhyNicOptionsToBridge() {
+    showPHYSelect($('#bridgePhyNIC'));
+}
+
+function doAddNATPoolSuccess(jsonData, response) {
+    console.log('---doAddNATPoolSuccess-----')
+    // 添加到数据数组
+    networkPools.nat.push(jsonData.data);
+
+    // 重新渲染表格
+    renderNATPoolTable();
+    // 重置表单
+    $('#natPoolForm')[0].reset();
+    $('#phyNetInfo').addClass('d-none');
+    sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+}
+function addNAT(data) {
+    var jsonData = {
+        action: 'add',
+        type: 'nat',
+        data: data
+    }
+    sendReqeust2natpool(jsonData, doAddNATPoolSuccess, function () { alert('NAT网络池创建失败！'); })
+}
+function delNAT(data) {
+    var jsonData = {
+        action: 'del',
+        type: 'nat',
+        name: data
+    }
+    sendReqeust2natpool(jsonData, doDelNATPoolSuccess, function () { alert('NAT网络池删除失败！'); })
+}
+function doAddBridgePoolSuccess(jsonData, response) {
+    console.log('---doAddBridgePoolSuccess-----')
+    // 添加到数据数组
+    networkPools.bridge.push(jsonData.data);
+
+    // 重新渲染表格
+    renderBridgePoolTable();
+    // 重置表单
+    $('#bridgePoolForm')[0].reset();
+    // $('#phyNetInfo').addClass('d-none');
+    sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+    alert('Bridge网络池创建成功！');
+}
+function addBridge(data) {
+    var jsonData = {
+        action: 'add',
+        type: 'bridge',
+        data: data
+    }
+    sendReqeust2natpool(jsonData, doAddBridgePoolSuccess, function () { alert('Bridge网络池创建失败！'); })
+}
+function delBridge(data) {
+    var jsonData = {
+        action: 'del',
+        type: 'bridge',
+        name: data
+    }
+    sendReqeust2natpool(jsonData, doDelBridgePoolSuccess, function () { alert('Bridge网络池创建失败！'); })
+}
+
+// 渲染NAT网络池表格
+function renderNATPoolTable() {
+    const tableBody = $('#natPoolTable');
+    tableBody.empty();
+
+    networkPools.nat.forEach(pool => {
+        var row;
+        if (pool.is_default === "true") {
+            row = `
+                <tr data-id="${pool.id}">
+                    <td class="id-cell">${pool.id}</td>
+                    <td>${pool.name}</td>
+                    <td class="" data-field="interface">${pool.interface}</td>
+                    <td class="" data-field="subnet">${pool.subnet}</td>
+                    <td class="" data-field="nic">${pool.nic}</td>
+                    <td class="" data-field="dhcp">${pool.dhcp ? '是' : '否'}</td>
+                    <td class="" data-field="dhcp">${pool.dhcp ? pool.dhcpip : 'None'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary me-1 edit-btn" disabled data-id=${pool.id}>编辑</button>
+                        <button class="btn btn-sm btn-danger delete-btn" disabled data-id=${pool.id}>删除</button>
+                    </td>
+                </tr>
+            `;
+        }
+        else {
+            row = `
+                <tr data-id="${pool.id}">
+                    <td class="id-cell">${pool.id}</td>
+                    <td>${pool.name}</td>
+                    <td class="editable-cell" data-field="interface">${pool.interface}</td>
+                    <td class="editable-cell" data-field="subnet">${pool.subnet}</td>
+                    <td class="editable-cell" data-field="nic">${pool.nic}</td>
+                    <td class="editable-cell" data-field="dhcp">${pool.dhcp ? '是' : '否'}</td>
+                    <td class="editable-cell" data-field="dhcp">${pool.dhcp ? pool.dhcpip : 'None'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
+                        <button class="btn btn-sm btn-danger delete-btn" data-id=${pool.id}>删除</button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        tableBody.append(row);
+    });
+
+    // 绑定编辑和删除事件
+    bindTableEvents('#natPoolTable', 'nat');
+}
+
+// 渲染Bridge网络池表格
+function renderBridgePoolTable() {
+    const tableBody = $('#bridgePoolTable');
+    tableBody.empty();
+
+    networkPools.bridge.forEach(pool => {
+        const row = `
+                <tr data-id="${pool.id}">
+                    <td class="id-cell">${pool.id}</td>
+                    <td class="editable-cell" data-field="name">${pool.name}</td>
+                    <td class="editable-cell" data-field="ifacename">${pool.ifacename}</td>
+                    <td class="editable-cell" data-field="mac">${pool.mac}</td>
+                    <td class="editable-cell" data-field="phyNic">${pool.phyNic}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
+                        <button class="btn btn-sm btn-danger delete-btn" data-id=${pool.id}>删除</button>
+                    </td>
+                </tr>
+            `;
+        tableBody.append(row);
+    });
+
+    // 绑定编辑和删除事件
+    bindTableEvents('#bridgePoolTable', 'bridge');
+}
+
+// 渲染Host网络池表格
+function renderHostPoolTable() {
+    const tableBody = $('#hostPoolTable');
+    tableBody.empty();
+
+    networkPools.host.forEach(pool => {
+        const row = `
+                <tr data-id="${pool.id}">
+                    <td class="id-cell">${pool.id}</td>
+                    <td class="editable-cell" data-field="interface">${pool.interface}</td>
+                    <td class="editable-cell" data-field="ip">${pool.ip}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
+                        <button class="btn btn-sm btn-danger delete-btn" data-id=${pool.id}>删除</button>
+                    </td>
+                </tr>
+            `;
+        tableBody.append(row);
+    });
+
+    // 绑定编辑和删除事件
+    bindTableEvents('#hostPoolTable', 'host');
+}
+
+// 绑定表格编辑和删除事件
+function bindTableEvents(tableId, poolType) {
+    // 编辑按钮点击事件
+    $(document).on('click', `${tableId} .edit-btn`, function () {
+        const row = $(this).closest('tr');
+        const id = row.data('id');
+        const pool = networkPools[poolType].find(p => p.id === id);
+
+        if (row.hasClass('editing')) {
+            // 保存编辑
+            saveRowEdit(row, poolType, pool);
+            $(this).text('编辑').removeClass('btn-success').addClass('btn-primary');
+            row.removeClass('editing');
+        } else {
+            // 进入编辑模式
+            enterEditMode(row, pool);
+            $(this).text('保存').removeClass('btn-primary').addClass('btn-success');
+            row.addClass('editing');
+        }
+    });
+
+    // 删除按钮点击事件
+    $(document).on('click', `${tableId} .delete-btn`, function () {
+        const row = $(this).closest('tr');
+        const id = row.data('id');
+        const delbtn = row.find('.delete-btn');
+        const btnid = delbtn.data('id');
+        // console.log(delbtn);
+        // console.log(btnid);
+        if (id == btnid && confirm('确定要删除这个网络池吗？')) {
+            if (poolType == 'nat') {
+                var name = row.find('td').eq(1).text().trim();
+                // console.log('name:' + name);
+                delNAT(name);
+            }
+            else if (poolType == 'bridge' || poolType == 'host' || poolType == 'ovs') {
+                // 从数据数组中删除
+                networkPools[poolType] = networkPools[poolType].filter(p => p.id !== id);
+                // 从DOM中删除行
+                row.remove();
+                alert('网络池删除成功！');
+            }
+        }
+    });
+
+    // 单元格点击事件（直接编辑）
+    $(document).on('click', `${tableId} .editable-cell`, function () {
+        const cell = $(this);
+        const field = cell.data('field');
+        const row = cell.closest('tr');
+        const id = row.data('id');
+        const pool = networkPools[poolType].find(p => p.id === id);
+
+        if (!row.hasClass('editing')) {
+            enterCellEditMode(cell, field, pool);
+        }
+    });
+}
+
+// 进入行编辑模式
+function enterEditMode(row, pool) {
+    row.find('.editable-cell').each(function () {
+        const cell = $(this);
+        const field = cell.data('field');
+        let value = pool[field];
+        // 获取单元格的宽度和高度
+        const cellWidth = cell.width();
+        const cellHeight = cell.height();
+        if (field === 'dhcp' || field === 'dpdk') {
+            value = value ? '是' : '否';
+        }
+
+        cell.html(`<input type="text" class="edit-input" value="${value}" data-field="${field}">`);
+        // 获取新创建的输入框
+        const input = cell.find('.edit-input');
+
+        // 设置输入框的尺寸和样式
+        input.css({
+            'width': cellWidth + 'px',
+            'height': cellHeight + 'px',
+            'box-sizing': 'border-box', // 确保宽高包含padding和border
+            'padding': '0', // 移除内边距，或与单元格保持一致
+            'border': '1px solid #ccc', // 可根据需要调整边框
+            'margin': '0', // 移除外边距
+            'font-size': cell.css('font-size'), // 继承单元格字体大小
+            'font-family': cell.css('font-family') // 继承单元格字体
+        });
+    });
+}
+
+// 进入单元格编辑模式
+function enterCellEditMode(cell, field, pool) {
+    let value = pool[field];
+
+    if (field === 'dhcp' || field === 'dpdk') {
+        value = value ? '是' : '否';
+    }
+
+    cell.html(`<input type="text" class="edit-input" value="${value}" data-field="${field}">`);
+
+    // 输入框失去焦点时保存
+    cell.find('input').blur(function () {
+        const newValue = $(this).val();
+        saveCellEdit(cell, field, newValue, pool);
+    });
+
+    // 输入框获得焦点
+    cell.find('input').focus();
+}
+
+// 保存行编辑
+function saveRowEdit(row, poolType, pool) {
+    row.find('.edit-input').each(function () {
+        const input = $(this);
+        const field = input.data('field');
+        let value = input.val();
+
+        if (field === 'dhcp' || field === 'dpdk') {
+            value = value === '是';
+        }
+
+        pool[field] = value;
+    });
+
+    // 重新渲染行
+    renderTableRow(row, pool);
+}
+
+// 保存单元格编辑
+function saveCellEdit(cell, field, value, pool) {
+    if (field === 'dhcp' || field === 'dpdk') {
+        value = value === '是';
+    }
+
+    pool[field] = value;
+
+    // 重新渲染单元格
+    cell.text(field === 'dhcp' || field === 'dpdk' ? (value ? '是' : '否') : value);
+}
+
+// 渲染表格行
+function renderTableRow(row, pool) {
+    row.find('.editable-cell').each(function () {
+        const cell = $(this);
+        const field = cell.data('field');
+        let value = pool[field];
+
+        if (field === 'dhcp' || field === 'dpdk') {
+            value = value ? '是' : '否';
+        }
+
+        cell.text(value);
+    });
+}
+
+// 渲染OpenVSwitch网络池表格
+function renderOVSPoolTable() {
+    const tableBody = $('#ovsPoolTable');
+    tableBody.empty();
+
+    networkPools.ovs.forEach(pool => {
+        const row = `
+                <tr data-id="${pool.id}">
+                    <td class="id-cell">${pool.id}</td>
+                    <td class="editable-cell" data-field="name">${pool.name}</td>
+                    <td class="editable-cell" data-field="mac">${pool.mac}</td>
+                    <td class="editable-cell" data-field="dpdk">${pool.dpdk ? '是' : '否'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
+                        <button class="btn btn-sm btn-danger delete-btn" data-id=${pool.id}>删除</button>
+                    </td>
+                </tr>
+            `;
+        tableBody.append(row);
+    });
+
+    // 绑定编辑和删除事件
+    bindTableEvents('#ovsPoolTable', 'ovs');
+}
+
+// 更新所有行的ID（从1开始重新编号）
+function updateNatRowIds(tableID) {
+    $("#" + tableID + " tr").each(function (index) {
+        $(this).find('.id-cell').text(index + 1);
+    });
+    var index = 1;
+    networkPools.nat.forEach(pool => {
+        pool.id = index;
+        index += 1;
+    });
+}
+
+function doDelNATPoolSuccess(jsonData, response) {
+    $('#natPoolTable tr').each(function (index) {
+        const name = $(this).find('td').eq(1).text().trim();
+        // console.log('---------name:' + name + ":" + jsonData['name'])
+        if (name === jsonData['name']) {
+            const row = $(this).closest('tr');
+            const id = row.data('id');
+            // 从数据数组中删除
+            networkPools['nat'] = networkPools['nat'].filter(p => p.id !== id);
+            // 从DOM中删除行
+            row.remove();
+            sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+            /* 更新id值 */
+            //updateNatRowIds("natPoolTable");
+            alert('网络池删除成功！');
+        }
+    });
+}
+
+function doDelBridgePoolSuccess(jsonData, response) {
+    $('#bridgePoolTable tr').each(function (index) {
+        const name = $(this).find('td').eq(1).text().trim();
+        // console.log('---------name:' + name + ":" + jsonData['name'])
+        if (name === jsonData['name']) {
+            const row = $(this).closest('tr');
+            const id = row.data('id');
+            // 从数据数组中删除
+            networkPools['bridge'] = networkPools['bridge'].filter(p => p.id !== id);
+            // 从DOM中删除行
+            row.remove();
+            sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+            /* 更新id值 */
+            //updateNatRowIds("natPoolTable");
+            alert('Bridge网络池删除成功！');
+        }
+    });
+}
+
 function initNetpool() {
     console.log('initNetpool....')
     renderNetworkCards();
@@ -146,24 +559,7 @@ function initNetpool() {
         alert('新建网络池功能（模拟）');
     });
 
-    function showPHYSelect(container) {
-        // 创建下拉列表
-        const selectElement = $('<select>', {
-            id: 'networkCardSelect',
-            class: 'form-select form-select-sm',
-            html: '<option value="">请选择物理网卡...</option>'
-        });
-        let intface_json_data = JSON.parse(sessionStorage.getItem("networkInterfaces_json"));
-        intface_json_data.forEach(nic => {
-            $('<option>', {
-                value: nic.name,
-                text: nic.name
-            }).appendTo(selectElement);
 
-        });
-        // 清空容器并添加下拉列表
-        container.html('').append(selectElement);
-    }
     $('#natPHYnic').on('change', function () {
         // 判断逻辑同上
         console.log('当前状态:', $(this).prop('checked'));
@@ -193,63 +589,7 @@ function initNetpool() {
         }
     });
 
-    function doAddNATPoolSuccess(jsonData, response) {
-        console.log('---doAddNATPoolSuccess-----')
-        // 添加到数据数组
-        networkPools.nat.push(jsonData.data);
 
-        // 重新渲染表格
-        renderNATPoolTable();
-        // 重置表单
-        $('#natPoolForm')[0].reset();
-        $('#phyNetInfo').addClass('d-none');
-        sessionStorage.setItem("network_json", JSON.stringify(networkPools));
-    }
-    function addNAT(data) {
-        var jsonData = {
-            action: 'add',
-            type: 'nat',
-            data: data
-        }
-        sendReqeust2natpool(jsonData, doAddNATPoolSuccess, function () { alert('NAT网络池创建失败！'); })
-    }
-    function delNAT(data) {
-        var jsonData = {
-            action: 'del',
-            type: 'nat',
-            name: data
-        }
-        sendReqeust2natpool(jsonData, doDelNATPoolSuccess, function () { alert('NAT网络池删除失败！'); })
-    }
-    function doAddBridgePoolSuccess(jsonData, response) {
-        console.log('---doAddBridgePoolSuccess-----')
-        // 添加到数据数组
-        networkPools.bridge.push(jsonData.data);
-
-        // 重新渲染表格
-        renderBridgePoolTable();
-        // 重置表单
-        $('#bridgePoolForm')[0].reset();
-        // $('#phyNetInfo').addClass('d-none');
-        sessionStorage.setItem("network_json", JSON.stringify(networkPools));
-        alert('Bridge网络池创建成功！');
-    }
-    function addBridge(data) {
-        var jsonData = {
-            action: 'add',
-            type: 'bridge',
-            data: data
-        }
-        sendReqeust2natpool(jsonData, doAddBridgePoolSuccess, function () { alert('Bridge网络池创建失败！'); })
-    }
-    function delBridge(data) {
-        var jsonData = {
-            action: 'del',
-            type: 'bridge',
-            name: data
-        }
-        sendReqeust2natpool(jsonData, doDelBridgePoolSuccess, function () { alert('Bridge网络池创建失败！'); })
-    }
     // NAT表单提交处理
     $('#natPoolForm').on('submit', function (e) {
         e.preventDefault();
@@ -285,54 +625,6 @@ function initNetpool() {
         // alert('NAT网络池创建成功！');
     });
 
-    // 渲染NAT网络池表格
-    function renderNATPoolTable() {
-        const tableBody = $('#natPoolTable');
-        tableBody.empty();
-
-        networkPools.nat.forEach(pool => {
-            var row;
-            if (pool.is_default === "true") {
-                row = `
-                <tr data-id="${pool.id}">
-                    <td class="id-cell">${pool.id}</td>
-                    <td>${pool.name}</td>
-                    <td class="" data-field="interface">${pool.interface}</td>
-                    <td class="" data-field="subnet">${pool.subnet}</td>
-                    <td class="" data-field="nic">${pool.nic}</td>
-                    <td class="" data-field="dhcp">${pool.dhcp ? '是' : '否'}</td>
-                    <td class="" data-field="dhcp">${pool.dhcp ? pool.dhcpip : 'None'}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary me-1 edit-btn" disabled data-id=${pool.id}>编辑</button>
-                        <button class="btn btn-sm btn-danger delete-btn" disabled data-id=${pool.id}>删除</button>
-                    </td>
-                </tr>
-            `;
-            }
-            else {
-                row = `
-                <tr data-id="${pool.id}">
-                    <td class="id-cell">${pool.id}</td>
-                    <td>${pool.name}</td>
-                    <td class="editable-cell" data-field="interface">${pool.interface}</td>
-                    <td class="editable-cell" data-field="subnet">${pool.subnet}</td>
-                    <td class="editable-cell" data-field="nic">${pool.nic}</td>
-                    <td class="editable-cell" data-field="dhcp">${pool.dhcp ? '是' : '否'}</td>
-                    <td class="editable-cell" data-field="dhcp">${pool.dhcp ? pool.dhcpip : 'None'}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
-                        <button class="btn btn-sm btn-danger delete-btn" data-id=${pool.id}>删除</button>
-                    </td>
-                </tr>
-            `;
-            }
-
-            tableBody.append(row);
-        });
-
-        // 绑定编辑和删除事件
-        bindTableEvents('#natPoolTable', 'nat');
-    }
 
     // Bridge表单提交处理
     $('#bridgePoolForm').on('submit', function (e) {
@@ -340,6 +632,7 @@ function initNetpool() {
         const name = $('#bridgeName').val();
         const ifacename = $('#bridgeIfaceName').val();
         const mac = $('#bridgeMAC').val();
+        const phyNic = $('#bridgePhyNIC').val();
 
         // 生成新ID
         const newId = networkPools.bridge.length > 0 ? Math.max(...networkPools.bridge.map(p => p.id)) + 1 : 1;
@@ -348,7 +641,8 @@ function initNetpool() {
             id: newId,
             name: name,
             ifacename: ifacename,
-            mac: mac
+            mac: mac,
+            phyNic: phyNic
         };
         addBridge(newData);
         // // 添加到数据数组
@@ -362,32 +656,6 @@ function initNetpool() {
 
         // alert('Bridge网络池创建成功！');
     });
-
-    // 渲染Bridge网络池表格
-    function renderBridgePoolTable() {
-        const tableBody = $('#bridgePoolTable');
-        tableBody.empty();
-
-        networkPools.bridge.forEach(pool => {
-            const row = `
-                <tr data-id="${pool.id}">
-                    <td class="id-cell">${pool.id}</td>
-                    <td class="editable-cell" data-field="name">${pool.name}</td>
-                    <td class="editable-cell" data-field="name">${pool.ifacename}</td>
-                    <td class="editable-cell" data-field="mac">${pool.mac}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
-                        <button class="btn btn-sm btn-danger delete-btn" data-id=${pool.id}>删除</button>
-                    </td>
-                </tr>
-            `;
-            tableBody.append(row);
-        });
-
-        // 绑定编辑和删除事件
-        bindTableEvents('#bridgePoolTable', 'bridge');
-    }
-
 
     // Host表单提交处理
     $('#hostPoolForm').on('submit', function (e) {
@@ -413,30 +681,6 @@ function initNetpool() {
 
         alert('Host网络池创建成功！');
     });
-
-    // 渲染Host网络池表格
-    function renderHostPoolTable() {
-        const tableBody = $('#hostPoolTable');
-        tableBody.empty();
-
-        networkPools.host.forEach(pool => {
-            const row = `
-                <tr data-id="${pool.id}">
-                    <td class="id-cell">${pool.id}</td>
-                    <td class="editable-cell" data-field="interface">${pool.interface}</td>
-                    <td class="editable-cell" data-field="ip">${pool.ip}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
-                        <button class="btn btn-sm btn-danger delete-btn" data-id=${pool.id}>删除</button>
-                    </td>
-                </tr>
-            `;
-            tableBody.append(row);
-        });
-
-        // 绑定编辑和删除事件
-        bindTableEvents('#hostPoolTable', 'host');
-    }
 
     // OVS表单提交处理
     $('#ovsPoolForm').on('submit', function (e) {
@@ -464,236 +708,4 @@ function initNetpool() {
 
         alert('OpenVSwitch网络池创建成功！');
     });
-
-    // 渲染OpenVSwitch网络池表格
-    function renderOVSPoolTable() {
-        const tableBody = $('#ovsPoolTable');
-        tableBody.empty();
-
-        networkPools.ovs.forEach(pool => {
-            const row = `
-                <tr data-id="${pool.id}">
-                    <td class="id-cell">${pool.id}</td>
-                    <td class="editable-cell" data-field="name">${pool.name}</td>
-                    <td class="editable-cell" data-field="mac">${pool.mac}</td>
-                    <td class="editable-cell" data-field="dpdk">${pool.dpdk ? '是' : '否'}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
-                        <button class="btn btn-sm btn-danger delete-btn" data-id=${pool.id}>删除</button>
-                    </td>
-                </tr>
-            `;
-            tableBody.append(row);
-        });
-
-        // 绑定编辑和删除事件
-        bindTableEvents('#ovsPoolTable', 'ovs');
-    }
-
-    // 更新所有行的ID（从1开始重新编号）
-    function updateNatRowIds(tableID) {
-        $("#" + tableID + " tr").each(function (index) {
-            $(this).find('.id-cell').text(index + 1);
-        });
-        var index = 1;
-        networkPools.nat.forEach(pool => {
-            pool.id = index;
-            index += 1;
-        });
-    }
-
-    function doDelNATPoolSuccess(jsonData, response) {
-        $('#natPoolTable tr').each(function (index) {
-            const name = $(this).find('td').eq(1).text().trim();
-            // console.log('---------name:' + name + ":" + jsonData['name'])
-            if (name === jsonData['name']) {
-                const row = $(this).closest('tr');
-                const id = row.data('id');
-                // 从数据数组中删除
-                networkPools['nat'] = networkPools['nat'].filter(p => p.id !== id);
-                // 从DOM中删除行
-                row.remove();
-                sessionStorage.setItem("network_json", JSON.stringify(networkPools));
-                /* 更新id值 */
-                //updateNatRowIds("natPoolTable");
-                alert('网络池删除成功！');
-            }
-        });
-    }
-
-        function doDelBridgePoolSuccess(jsonData, response) {
-        $('#bridgePoolTable tr').each(function (index) {
-            const name = $(this).find('td').eq(1).text().trim();
-            // console.log('---------name:' + name + ":" + jsonData['name'])
-            if (name === jsonData['name']) {
-                const row = $(this).closest('tr');
-                const id = row.data('id');
-                // 从数据数组中删除
-                networkPools['bridge'] = networkPools['bridge'].filter(p => p.id !== id);
-                // 从DOM中删除行
-                row.remove();
-                sessionStorage.setItem("network_json", JSON.stringify(networkPools));
-                /* 更新id值 */
-                //updateNatRowIds("natPoolTable");
-                alert('Bridge网络池删除成功！');
-            }
-        });
-    }
-
-    // 绑定表格编辑和删除事件
-    function bindTableEvents(tableId, poolType) {
-        // 编辑按钮点击事件
-        $(document).on('click', `${tableId} .edit-btn`, function () {
-            const row = $(this).closest('tr');
-            const id = row.data('id');
-            const pool = networkPools[poolType].find(p => p.id === id);
-
-            if (row.hasClass('editing')) {
-                // 保存编辑
-                saveRowEdit(row, poolType, pool);
-                $(this).text('编辑').removeClass('btn-success').addClass('btn-primary');
-                row.removeClass('editing');
-            } else {
-                // 进入编辑模式
-                enterEditMode(row, pool);
-                $(this).text('保存').removeClass('btn-primary').addClass('btn-success');
-                row.addClass('editing');
-            }
-        });
-
-        // 删除按钮点击事件
-        $(document).on('click', `${tableId} .delete-btn`, function () {
-            const row = $(this).closest('tr');
-            const id = row.data('id');
-            const delbtn = row.find('.delete-btn');
-            const btnid = delbtn.data('id');
-            // console.log(delbtn);
-            // console.log(btnid);
-            if (id == btnid && confirm('确定要删除这个网络池吗？')) {
-                if (poolType == 'nat') {
-                    var name = row.find('td').eq(1).text().trim();
-                    // console.log('name:' + name);
-                    delNAT(name);
-                }
-                else if (poolType == 'bridge' || poolType == 'host' || poolType == 'ovs') {
-                    // 从数据数组中删除
-                    networkPools[poolType] = networkPools[poolType].filter(p => p.id !== id);
-                    // 从DOM中删除行
-                    row.remove();
-                    alert('网络池删除成功！');
-                }
-            }
-        });
-
-        // 单元格点击事件（直接编辑）
-        $(document).on('click', `${tableId} .editable-cell`, function () {
-            const cell = $(this);
-            const field = cell.data('field');
-            const row = cell.closest('tr');
-            const id = row.data('id');
-            const pool = networkPools[poolType].find(p => p.id === id);
-
-            if (!row.hasClass('editing')) {
-                enterCellEditMode(cell, field, pool);
-            }
-        });
-    }
-
-    // 进入行编辑模式
-    function enterEditMode(row, pool) {
-        row.find('.editable-cell').each(function () {
-            const cell = $(this);
-            const field = cell.data('field');
-            let value = pool[field];
-            // 获取单元格的宽度和高度
-            const cellWidth = cell.width();
-            const cellHeight = cell.height();
-            if (field === 'dhcp' || field === 'dpdk') {
-                value = value ? '是' : '否';
-            }
-
-            cell.html(`<input type="text" class="edit-input" value="${value}" data-field="${field}">`);
-            // 获取新创建的输入框
-            const input = cell.find('.edit-input');
-
-            // 设置输入框的尺寸和样式
-            input.css({
-                'width': cellWidth + 'px',
-                'height': cellHeight + 'px',
-                'box-sizing': 'border-box', // 确保宽高包含padding和border
-                'padding': '0', // 移除内边距，或与单元格保持一致
-                'border': '1px solid #ccc', // 可根据需要调整边框
-                'margin': '0', // 移除外边距
-                'font-size': cell.css('font-size'), // 继承单元格字体大小
-                'font-family': cell.css('font-family') // 继承单元格字体
-            });
-        });
-    }
-
-    // 进入单元格编辑模式
-    function enterCellEditMode(cell, field, pool) {
-        let value = pool[field];
-
-        if (field === 'dhcp' || field === 'dpdk') {
-            value = value ? '是' : '否';
-        }
-
-        cell.html(`<input type="text" class="edit-input" value="${value}" data-field="${field}">`);
-
-        // 输入框失去焦点时保存
-        cell.find('input').blur(function () {
-            const newValue = $(this).val();
-            saveCellEdit(cell, field, newValue, pool);
-        });
-
-        // 输入框获得焦点
-        cell.find('input').focus();
-    }
-
-    // 保存行编辑
-    function saveRowEdit(row, poolType, pool) {
-        row.find('.edit-input').each(function () {
-            const input = $(this);
-            const field = input.data('field');
-            let value = input.val();
-
-            if (field === 'dhcp' || field === 'dpdk') {
-                value = value === '是';
-            }
-
-            pool[field] = value;
-        });
-
-        // 重新渲染行
-        renderTableRow(row, pool);
-    }
-
-    // 保存单元格编辑
-    function saveCellEdit(cell, field, value, pool) {
-        if (field === 'dhcp' || field === 'dpdk') {
-            value = value === '是';
-        }
-
-        pool[field] = value;
-
-        // 重新渲染单元格
-        cell.text(field === 'dhcp' || field === 'dpdk' ? (value ? '是' : '否') : value);
-    }
-
-    // 渲染表格行
-    function renderTableRow(row, pool) {
-        row.find('.editable-cell').each(function () {
-            const cell = $(this);
-            const field = cell.data('field');
-            let value = pool[field];
-
-            if (field === 'dhcp' || field === 'dpdk') {
-                value = value ? '是' : '否';
-            }
-
-            cell.text(value);
-        });
-    }
-
-
 }

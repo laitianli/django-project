@@ -964,11 +964,19 @@
                                                                     id="bridgeIfaceName" placeholder="br0" required>
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-6">
+                                                        <div class="col-md-3">
                                                             <div class="mb-3">
                                                                 <label for="bridgeMAC" class="form-label">MAC地址</label>
                                                                 <input type="text" class="form-control" id="bridgeMAC"
                                                                     placeholder="52:54:00:6b:90:a8" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div class="mb-3">
+                                                                <label for="bridgePhyNIC" class="form-label">物理网卡</label>
+                                                                <div id="bridgePhyNIC">
+                                                                    <p>显示所有的物理网卡</p>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -990,6 +998,7 @@
                                                                 <th>名字</th>
                                                                 <th>网桥名</th>
                                                                 <th>MAC地址</th>
+                                                                <th>物理网卡</th>
                                                                 <th>操作</th>
                                                             </tr>
                                                         </thead>
@@ -1680,7 +1689,7 @@
                                                         <label for="editVmNICMACID"
                                                             class="col-md-2 text-end form-lable col-form-label">MAC:</label>
                                                         <div class="col-md-3">
-                                                            <input type="text" id="editVmNICMACID"
+                                                            <input type="text" class="form-control" id="editVmNICMACID"
                                                                 value="00:1A:2B:AB:9C:13">
                                                         </div>
                                                         <div class="col-md-3 ">

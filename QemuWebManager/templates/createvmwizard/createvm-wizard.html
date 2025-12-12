@@ -385,9 +385,19 @@
                         <div class="section-title">添加网卡</div>
                         <div class="tab-pane" id="addVMNIC" role="tabpanel">
                             <div class="row mt-3">
+                                <label for="nicNetModelSelect"
+                                    class="col-md-2 text-end form-lable col-form-label">模型:</label>
+                                <div class="col-md-7">
+                                    <select class="form-select" id="nicNetModelSelect">
+                                        <option value="e1000">e1000</option>
+                                        <option value="virtio">virtio</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
                                 <label for="vmNICMACID" class="col-md-2 text-end form-lable col-form-label">MAC:</label>
-                                <div class="col-md-5 text-end form-lable col-form-label">
-                                    <input type="text" id="vmNICMACID" value="00:1A:2B:AB:9C:13">
+                                <div class="col-md-5">
+                                    <input type="text" class="mac-form-control" id="vmNICMACID" value="00:1A:2B:AB:9C:13">
                                 </div>
                                 <div class="col-md-3 ">
                                     <button class="btn btn-info" id="nicGenerateMACBtn">生成</button>
@@ -414,6 +424,7 @@
                                     </select>
                                 </div>
                             </div>
+                            
                             <div class="text-end form-lable col-form-label">
                                 <button class="btn btn-primary" id="addVMNICBtn">添加</button>
                             </div>
@@ -425,7 +436,7 @@
                             <table class="table table-hover" id="vmNICTab">
                                 <thead>
                                     <tr>
-                                        <th>#ID</th>
+                                        <th>模型</th>
                                         <th>MAC</th>
                                         <th>连接方式</th>
                                         <th>网络池</th>

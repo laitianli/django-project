@@ -11,9 +11,9 @@ def getNetpoolData():
             { 'id': 3, 'name': 'vir2', 'interface': 'virbr2', 'subnet': '192.168.13.0/24', 'nic': 'enp27s0f2np2', 'dhcp': 'true', 'is_default': 'false'},
         ],
         'bridge': [
-            { 'id': 1, 'name': 'bridge0', 'ifacename': 'br0', 'mac': '00:10.ab:12:a1:2c' },
-            { 'id': 2, 'name': 'bridge1', 'ifacename': 'br1', 'mac': '00:20.ab:12:a1:2c' },
-            { 'id': 3, 'name': 'bridge2', 'ifacename': 'br2', 'mac': '00:30.ab:12:a1:2c' },
+            { 'id': 1, 'name': 'bridge0', 'ifacename': 'br0', 'mac': '00:10.ab:12:a1:2c', 'phyNic':'enp2s0'},
+            { 'id': 2, 'name': 'bridge1', 'ifacename': 'br1', 'mac': '00:20.ab:12:a1:2c', 'phyNic':'enp27s0f0np0'},
+            { 'id': 3, 'name': 'bridge2', 'ifacename': 'br2', 'mac': '00:30.ab:12:a1:2c', 'phyNic':'enp27s0f2np2'},
         ],
         'host': [
             { 'id': 1, 'interface': 'enp3s0', 'ip': '192.168.10.1' },
