@@ -11,9 +11,9 @@ def getNetpoolData():
             { 'id': 3, 'name': 'vir2', 'interface': 'virbr2', 'subnet': '192.168.13.0/24', 'nic': 'enp27s0f2np2', 'dhcp': 'true', 'is_default': 'false'},
         ],
         'bridge': [
-            { 'id': 1, 'name': 'bridge0', 'ifacename': 'br0', 'mac': '00:10.ab:12:a1:2c', 'phyNic':'enp2s0'},
-            { 'id': 2, 'name': 'bridge1', 'ifacename': 'br1', 'mac': '00:20.ab:12:a1:2c', 'phyNic':'enp27s0f0np0'},
-            { 'id': 3, 'name': 'bridge2', 'ifacename': 'br2', 'mac': '00:30.ab:12:a1:2c', 'phyNic':'enp27s0f2np2'},
+            { 'id': 1, 'name': 'bridge0', 'interface': 'br0', 'mac': '00:10.ab:12:a1:2c', 'phyNic':'enp2s0'},
+            { 'id': 2, 'name': 'bridge1', 'interface': 'br1', 'mac': '00:20.ab:12:a1:2d', 'phyNic':'enp27s0f0np0'},
+            { 'id': 3, 'name': 'bridge2', 'interface': 'br2', 'mac': '00:30.ab:12:a1:2e', 'phyNic':'enp27s0f2np2'},
         ],
         'host': [
             { 'id': 1, 'interface': 'enp3s0', 'ip': '192.168.10.1' },
@@ -27,9 +27,32 @@ def getNetpoolData():
     network = CLVNetwork()
     
     networkPools['nat']=network.getNATNetworkData()
+    networkPools['bridge']=network.getBridgeNetworkData()
     # print(networkPools)
     return networkPools
+
+def getNatpoolData():
+    network = CLVNetwork()
+    return network.getNATNetworkData();
+
+def getBridgepoolData():
+    network = CLVNetwork()
+    return network.getBridgeNetworkData();
       
+
+def doNetworkPool(request):
+    if request.method == "POST":
+        raw_data = request.body  # 获取原始字节流
+        json_data = json.loads(raw_data.decode("utf-8"))  # 解码并解析JSON
+        # print(json_data)
+        if json_data["action"] == "query":
+            data = {
+                "result": "success",
+                "message": "%s action success." % json_data["action"],
+                "response_json": getNetpoolData(),
+            }
+            print(data)
+            return JsonResponse(data)
 
 # Create your views here.
 def doNatPool(request):
@@ -43,6 +66,7 @@ def doNatPool(request):
                 "message": "%s action success." % json_data["action"],
                 "response_json": getNetpoolData(),
             }
+            print(data)
             return JsonResponse(data)
         elif json_data['action'] == 'add':
             data = json_data.get("data")
@@ -89,9 +113,9 @@ def doBridgePool(request):
             data = json_data.get("data")
             if len(data) == 0:
                 return JsonResponse('{"result": "failed", "message": "data is None"}')
-            # print('data: %s' % data)
+            print('data: %s' % data)
             network = CLVNetwork()
-            if network.addNATNetworkData(data) == True:
+            if network.addBridgeNetworkData(data) == True:
                 data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"]}
             else:
@@ -106,7 +130,7 @@ def doBridgePool(request):
                 return JsonResponse('{"result": "failed", "message": "name is None"}')
             
             network = CLVNetwork()
-            if network.delNATNetworkData(name) == True:
+            if network.delBridgeNetworkData(name) == True:
                 data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"]}
             else:

@@ -5,9 +5,9 @@ var networkPools = {
         { id: 3, name: 'vir2', interface: 'virbr2', subnet: '192.168.13.0/24', nic: 'enp4s0', dhcp: true },
     ],
     bridge: [
-        { id: 1, name: 'bridge0', ifacename: 'br0', mac: '00:10.ab:12:a1:2c' },
-        { id: 2, name: 'bridge1', ifacename: 'br1', mac: '00:20.ab:12:a1:2c' },
-        { id: 3, name: 'bridge2', ifacename: 'br2', mac: '00:30.ab:12:a1:2c' },
+        { id: 1, name: 'bridge0', interface: 'br0', mac: '00:10.ab:12:a1:2c' },
+        { id: 2, name: 'bridge1', interface: 'br1', mac: '00:20.ab:12:a1:2c' },
+        { id: 3, name: 'bridge2', interface: 'br2', mac: '00:30.ab:12:a1:2c' },
     ],
     host: [
         { id: 1, interface: 'enp3s0', ip: '192.168.10.1' },
@@ -47,6 +47,10 @@ function sendRequest(url, jsonData, successFunc, failFunc) {
     });
 }
 
+function sendReqeust2networkpool(jsonData, successFunc, failFunc) {
+    return sendRequest('/net/networkpool/', jsonData, successFunc, failFunc);
+}
+
 function sendReqeust2natpool(jsonData, successFunc, failFunc) {
     return sendRequest('/net/natpool/', jsonData, successFunc, failFunc);
 }
@@ -65,8 +69,7 @@ function sendReqeust2ovspool(jsonData, successFunc, failFunc) {
 }
 
 // 渲染网络接口卡片
-function doQueryNetPoolSuccess(jsonData, response) {
-    // console.log('--sendReqeust2netpool doQuerySuccess-');
+function doQueryNetworkPoolSuccess(jsonData, response) {
     networkPools = response.response_json;
     if (networkPools.length === 0) {
         console.log('networkPools is null');
@@ -74,8 +77,6 @@ function doQueryNetPoolSuccess(jsonData, response) {
     }
     // console.log(g_networkInterfaces)
     sessionStorage.setItem("network_json", JSON.stringify(networkPools));
-
-    addPhyNicOptionsToBridge();
 }
 
 // 渲染网络接口卡片
@@ -83,7 +84,7 @@ function renderNetworkCards() {
     var jsonData = {
         action: 'query',
     }
-    sendReqeust2natpool(jsonData, doQueryNetPoolSuccess, function () { })
+    sendReqeust2networkpool(jsonData, doQueryNetworkPoolSuccess, function () { })
 }
 
 function showPHYSelect(container) {
@@ -156,7 +157,7 @@ function addBridge(data) {
         type: 'bridge',
         data: data
     }
-    sendReqeust2natpool(jsonData, doAddBridgePoolSuccess, function () { alert('Bridge网络池创建失败！'); })
+    sendReqeust2bridgepool(jsonData, doAddBridgePoolSuccess, function () { alert('Bridge网络池创建失败！'); })
 }
 function delBridge(data) {
     var jsonData = {
@@ -164,7 +165,7 @@ function delBridge(data) {
         type: 'bridge',
         name: data
     }
-    sendReqeust2natpool(jsonData, doDelBridgePoolSuccess, function () { alert('Bridge网络池创建失败！'); })
+    sendReqeust2bridgepool(jsonData, doDelBridgePoolSuccess, function () { alert('Bridge网络池删除失败！'); })
 }
 
 // 渲染NAT网络池表格
@@ -226,7 +227,7 @@ function renderBridgePoolTable() {
                 <tr data-id="${pool.id}">
                     <td class="id-cell">${pool.id}</td>
                     <td class="editable-cell" data-field="name">${pool.name}</td>
-                    <td class="editable-cell" data-field="ifacename">${pool.ifacename}</td>
+                    <td class="editable-cell" data-field="interface">${pool.interface}</td>
                     <td class="editable-cell" data-field="mac">${pool.mac}</td>
                     <td class="editable-cell" data-field="phyNic">${pool.phyNic}</td>
                     <td>
@@ -301,7 +302,11 @@ function bindTableEvents(tableId, poolType) {
                 // console.log('name:' + name);
                 delNAT(name);
             }
-            else if (poolType == 'bridge' || poolType == 'host' || poolType == 'ovs') {
+            else if (poolType == 'bridge') {
+                var name = row.find('td').eq(1).text().trim();
+                delBridge(name);
+            }
+            else if (poolType == 'host' || poolType == 'ovs') {
                 // 从数据数组中删除
                 networkPools[poolType] = networkPools[poolType].filter(p => p.id !== id);
                 // 从DOM中删除行
@@ -511,6 +516,7 @@ function initNetpool() {
     function showSubPage(type) {
         $('#network-panel .content-section').addClass('d-none');
         console.log(type);
+        addPhyNicOptionsToBridge();
         switch (type) {
             case 'nat':
                 $('#nat-content').removeClass('d-none');
@@ -630,9 +636,9 @@ function initNetpool() {
     $('#bridgePoolForm').on('submit', function (e) {
         e.preventDefault();
         const name = $('#bridgeName').val();
-        const ifacename = $('#bridgeIfaceName').val();
+        const interface = $('#bridgeIfaceName').val();
         const mac = $('#bridgeMAC').val();
-        const phyNic = $('#bridgePhyNIC').val();
+        const phyNic = $('#bridgePoolForm #networkCardSelect').val();
 
         // 生成新ID
         const newId = networkPools.bridge.length > 0 ? Math.max(...networkPools.bridge.map(p => p.id)) + 1 : 1;
@@ -640,10 +646,11 @@ function initNetpool() {
         var newData = {
             id: newId,
             name: name,
-            ifacename: ifacename,
+            interface: interface,
             mac: mac,
             phyNic: phyNic
         };
+        // console.log('newData:', newData);
         addBridge(newData);
         // // 添加到数据数组
         // networkPools.bridge.push(newData);
