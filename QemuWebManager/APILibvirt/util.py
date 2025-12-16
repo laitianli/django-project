@@ -9,6 +9,7 @@ import random
 import libxml2
 import subprocess
 import re
+import logging
 
 def randomMAC():
     oui = [0x60, 0x1A, 0x2B]
@@ -133,9 +134,82 @@ def get_network_info(ifname = "ALL"):
 
     return network_info
 
+def check_bridge_exists(bridge_name):
+    cmd_list = ['ip', 'link', 'show', 'dev', bridge_name, 'type', 'bridge']
+    try:        
+        result = subprocess.run(
+            cmd_list,
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        return bridge_name in result.stdout
+    except subprocess.CalledProcessError as e:
+        # logging.error(f"run cmd: {cmd_list}  error: {e}")
+        ## bridge does not exist.
+        return False
+    except FileNotFoundError:
+        logging.error("'ip' command not found, please run command in Linux operation system!")
+        return False
 
+def create_bridge_safely(bridge_name="br1", mac_address="5e:b6:9b:5a:48:f1"):
+    # 1. 检查网桥是否已存在
+    if check_bridge_exists(bridge_name):
+        logging.info(f"bridge '{bridge_name}' has exist!")
+        return True
+
+    print(f"bridge '{bridge_name}' does not exist, try to create it...")
+    try:
+        # 2. 创建网桥
+        subprocess.run(['ip', 'link', 'add', 'dev', bridge_name, 'type', 'bridge'], check=True)
+        print(f"bridge '{bridge_name}' create success.")
+
+        # 3. 设置MAC地址
+        subprocess.run(['ip', 'link', 'set', bridge_name, 'address', mac_address], check=True)
+        print(f"bridge MAC set address {mac_address}.")
+
+        # 4. 启用网桥
+        subprocess.run(['ip', 'link', 'set', bridge_name, 'up'], check=True)
+        print(f"set bridge '{bridge_name}' up.")
+
+        return True
+
+    except subprocess.CalledProcessError as e:
+        logging.error(f"create bridge {bridge_name} failed: {e}")
+        # 可以考虑在此处添加创建失败后的清理操作，例如删除可能已部分创建的网桥
+        return False
+
+def add_nic2bridge(bridge_name='br0', nic_name = ''):
+    if check_bridge_exists(bridge_name) == False:
+        print(f"bridge '{bridge_name}' does not exist, Please crate it before add nic!")
+        return False
+    try:
+        # 1. 物理网口down
+        subprocess.run(['ip', 'link', 'set', 'dev', nic_name, 'down'], check=True)
+        print(f"set nic {nic_name} down success.")
+        # 2. 启用网桥
+        subprocess.run(['ip', 'link', 'set', 'dev', nic_name, 'master', bridge_name], check=True)
+        print(f"add nic {nic_name} to bridge {bridge_name} success.")
+        
+        # 3. 物理网口up
+        subprocess.run(['ip', 'link', 'set', 'dev', nic_name, 'up'], check=True)
+        print(f"set nic {nic_name} up success.")
+        return True
+    except subprocess.CalledProcessError as e:
+        logging.error(f"add nic {nic_name} to bridge {bridge_name} failed: {e}")
+        # 可以考虑在此处添加创建失败后的清理操作，例如删除可能已部分创建的网桥
+        return False
+
+# 使用示例
 if __name__ == '__main__':
     
     test()
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+    
+    success = create_bridge_safely()
+    if success:
+        print("操作成功完成！")
+    else:
+        print("操作失败。")
     
     

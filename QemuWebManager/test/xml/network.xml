@@ -130,6 +130,13 @@ or other application using the libvirt API.
  net-start example_bridge
  net-autostart example_bridge
 
+ip link set dev enp27s0f0np0 down
+ip addr flush dev enp27s0f0np0
+ip link set dev enp27s0f0np0 master br0
+ip link set dev enp27s0f0np0 up
+ip link set dev br0 up
+
+ip link show master br0 
 
 /* ovs */
 <network>

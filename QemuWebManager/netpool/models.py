@@ -3,7 +3,7 @@ from django.db import models
 # Create your models here.
 # { 'id': 1, 'name': 'bridge0', 'interface': 'br0', 'mac': '00:10.ab:12:a1:2c', 'phyNic':'enp2s0'},
 class VMBridgePoolTable(models.Model):
-    name = models.CharField(max_length=64)
+    name = models.CharField(max_length=64, primary_key=True)
     interface = models.CharField(max_length=32)
     mac = models.CharField(max_length=32)    
     phyNic = models.CharField(max_length=64)
@@ -13,7 +13,7 @@ class VMBridgePoolTable(models.Model):
 
 
 class VMMacvtapPoolTable(models.Model):
-    name = models.CharField(max_length=64)
+    name = models.CharField(max_length=64, primary_key=True)
     interface = models.CharField(max_length=32)
     # mac = models.CharField(max_length=32)    
     phyNic = models.CharField(max_length=64)
@@ -24,7 +24,7 @@ class VMMacvtapPoolTable(models.Model):
 
 
 class VMOVSPoolTable(models.Model):
-    name = models.CharField(max_length=64)
+    name = models.CharField(max_length=64, primary_key=True)
     interface = models.CharField(max_length=32)
     mac = models.CharField(max_length=32)    
     phyNic = models.CharField(max_length=64)

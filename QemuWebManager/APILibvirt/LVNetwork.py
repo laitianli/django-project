@@ -25,6 +25,7 @@ class CLVNetwork(ConnectLibvirtd):
         networkconn = self.get_conn()
         networks = []
         networkInterfaces = []
+        # print('enter getNATNetworkData')
         for network in networkconn.listNetworks():
             networks.append(network)
         for network in networkconn.listDefinedNetworks():
@@ -43,7 +44,7 @@ class CLVNetwork(ConnectLibvirtd):
             id = id + 1
             
         self.connect_close()
-        # print(networkInterfaces)
+        # print(f'leave getNATNetworkData {networkInterfaces}')
         return networkInterfaces
     def getBridgeNetworkData(self):
         networkconn = self.get_conn()
@@ -52,8 +53,7 @@ class CLVNetwork(ConnectLibvirtd):
         for network in networkconn.listNetworks():
             networks.append(network)
         for network in networkconn.listDefinedNetworks():
-            networks.append(network)
-            
+            networks.append(network)  
         # print('network: %s' % networks)
         id = 0
         for name in networks:
@@ -61,20 +61,27 @@ class CLVNetwork(ConnectLibvirtd):
             xml = iface.XMLDesc(0)
             # print('%s: %s' % (name, xml))
             # { 'id': 2, 'name': 'bridge1', 'interface': 'br1', 'mac': '00:20.ab:12:a1:2d', 'phyNic':'enp27s0f0np0'},
-            interface = self._getOneBridgeNetwork(id + 1, xml)
-            if len(interface) == 0:
+            name, interface = self._getOneBridgeNetwork(id + 1, xml)
+            if interface == None:
                 continue
             try:
                 intfs = BridgeTable.objects.filter(interface=interface)
                 print(f'[Info] [getBridgeNetworkData] select vm Bridge table entries for vm {interface} success')
             except Exception as e:
-                print(f'[Error] drop vm table failed: {e}')
-            oneNetwork = {'id': id, 'name':intfs['name'], 'interface':interface, 'mac': intfs['mac'], 'phyNic': intfs['phyNic']}
-            networkInterfaces.append(oneNetwork)
-            id = id + 1
+                print(f'[Error] Querry BridgeTable {interface} table failed: {e}')
+            if len(intfs): 
+                for bp in intfs:
+                    print(f'--bp: {bp}')
+                    oneNetwork = {'id': id, 'name':bp.name, 'interface':interface, 'mac': bp.mac, 'phyNic': bp.phyNic}
+                    networkInterfaces.append(oneNetwork)
+                    id = id + 1
+            else:
+                oneNetwork = {'id': id, 'name':name, 'interface':interface, 'mac': '00:00:00:00:00', 'phyNic': 'unknow'}
+                networkInterfaces.append(oneNetwork)
+                id = id + 1
             
         self.connect_close()
-        # print(networkInterfaces)
+        print(networkInterfaces)
         return networkInterfaces
 # <network>
 #   <name>default</name>
@@ -126,8 +133,23 @@ class CLVNetwork(ConnectLibvirtd):
         name = util.get_xml_path(xml, '/network/name')
         mode = util.get_xml_path(xml, '/network/forward/@mode')
         if mode == "bridge":
-            interface = util.get_xml_path(xml, '/network/bridge/@name')            
-            return interface
+            interface = util.get_xml_path(xml, '/network/bridge/@name')
+            virtualport = util.get_xml_path(xml, '/network/virtualport/@type')
+            if virtualport and virtualport == 'openvswitch':
+                return None, None
+            return name, interface
+        else:
+            return None, None
+        
+    def _getOneOVSNetwork(self, id, xml):
+        name = util.get_xml_path(xml, '/network/name')
+        mode = util.get_xml_path(xml, '/network/forward/@mode')
+        if mode == "bridge":
+            interface = util.get_xml_path(xml, '/network/bridge/@name')
+            virtualport = util.get_xml_path(xml, '/network/virtualport/@type')
+            if virtualport and virtualport == 'openvswitch':
+                return interface
+            return None
         else:
             return None
         
@@ -185,7 +207,7 @@ class CLVNetwork(ConnectLibvirtd):
         <forward mode='bridge'/>
         <bridge name='br0'/>
     </network>
-    {'id': 4, 'name': 'bridge3', ' 'mac': '52:12:ab:cd:ef', 'phyNic': 'enp27s0f3np3'}
+    {'id': 1, 'name': 'bridge3', 'interface': 'br3', 'mac': '52:12:ab:cd:ef', 'phyNic': 'enp27s0f3np3'}
     '''
     def _createBridgeNetwork(self, data):
         xml = """
@@ -195,8 +217,31 @@ class CLVNetwork(ConnectLibvirtd):
               <forward mode='bridge'/>
               <bridge name='%s'/>
             </network>
-        """ % (data['name'], util.randomUUID(), data['ifacename'])
+        """ % (data['name'], util.randomUUID(), data['interface'])
         return xml
+    
+    '''
+    <network>
+        <name>example_ovs_bridge</name>
+        <uuid>d6e01520-9c10-4cd1-8163-a488293790a3</uuid>
+        <forward mode='bridge'/>
+        <bridge name='ovs'/>
+        <virtualport type='openvswitch'/>
+    </network>
+    {'id': 1, 'name': 'ovs-bridge', 'interface': 'ovs3', 'mac': '52:12:ab:cd:ef', 'phyNic': 'enp27s0f3np3', 'userdpdk': True}
+    '''
+    def _createOVSNetwork(self, data):
+        xml = """
+            <network>
+              <name>%s</name>
+              <uuid>%s</uuid>
+              <forward mode='bridge'/>
+              <bridge name='%s'/>
+              <virtualport type='openvswitch'/>
+            </network>
+        """ % (data['name'], util.randomUUID(), data['interface'])
+        return xml
+
 
     def addNATNetworkData(self, data):
         networkconn = self.get_conn()
@@ -215,12 +260,25 @@ class CLVNetwork(ConnectLibvirtd):
                 print("[Error] Nat: %s has exist!" % name)
                 return False
 
-        xml = self._createNatNetwork(data)
-        networkconn.networkDefineXML(xml)
         
-        newNetwork = networkconn.networkLookupByName(data['name'])
-        newNetwork.create()
-        newNetwork.setAutostart(1)
+        xml = self._createNatNetwork(data)
+        
+        try:
+            networkconn.networkDefineXML(xml)
+        except Exception as e:
+            print(f'[Exception] networkDefineXML failed: {e}')
+            self.connect_close()
+            return False
+        
+        try:
+            newNetwork = networkconn.networkLookupByName(data['name'])
+            newNetwork.create()
+            newNetwork.setAutostart(1)
+        except Exception as e:
+            print(f'[Exception] create/setAutostart failed: {e}')
+            self.connect_close()
+            return False
+
         self.connect_close()
         # print(networkInterfaces)
         return True
@@ -247,7 +305,7 @@ class CLVNetwork(ConnectLibvirtd):
 
         return False
     
-    # {'id': 4, 'name': 'bridge3', 'ifacename': 'br3', 'mac': '52:12:ab:cd:ef', 'phyNic': 'enp27s0f3np3'}
+    # {'id': 4, 'name': 'bridge3', 'interface': 'br3', 'mac': '52:12:ab:cd:ef', 'phyNic': 'enp27s0f3np3'}
     def addBridgeNetworkData(self, data):
         networkconn = self.get_conn()
         networks = []
@@ -265,16 +323,43 @@ class CLVNetwork(ConnectLibvirtd):
                 return False
 
         xml = self._createBridgeNetwork(data)
-        networkconn.networkDefineXML(xml)
+        try:
+            networkconn.networkDefineXML(xml)
+        except Exception as e:
+            print(f'[Exception] networkDefineXML failed: {e}')
+            self.connect_close()
+            return False
         
-        newNetwork = networkconn.networkLookupByName(data['name'])
-        newNetwork.create()
-        newNetwork.setAutostart(1)
+        try:
+            newNetwork = networkconn.networkLookupByName(data['name'])
+            newNetwork.create()
+            newNetwork.setAutostart(1)
+        except Exception as e:
+            print(f'[Exception] create/setAutostart failed: {e}')
+            self.connect_close()
+            return False
+        
         self.connect_close()
+        
+        try:
+            BridgeTable.objects.create(name=data['name'],
+                                               interface=data['interface'],
+                                               mac = data['mac'],
+                                               phyNic = data['phyNic'])
+        except Exception as e:
+            print(f'[Exception] BridgeTable.objects.create failed: {e}')
+            self.connect_close()
+            return False
+        
+        
         # print(networkInterfaces)
-        return True
+        if util.create_bridge_safely(data['interface'], data['mac']):
+            ret = util.add_nic2bridge(data['interface'], data['phyNic'])
+            return ret
+        return False
     
-    def delBridgeNetworkData(self, networkname):
+    
+    def delBridgeNetworkData(self, networkname, interface):
         networkconn = self.get_conn()
         networks = []
         networkInterfaces = []
@@ -282,19 +367,31 @@ class CLVNetwork(ConnectLibvirtd):
             networks.append(network)
         for network in networkconn.listDefinedNetworks():
             networks.append(network)
-
-        id = 0
         for name in networks:
-            if name == networkname:
-                network = networkconn.networkLookupByName(networkname)
-                network.destroy()
-                network.undefine()
+            print(f'name: {name}, networkname: {networkname}')
+            if name == networkname:                
+                try:
+                    network = networkconn.networkLookupByName(networkname)
+                    network.destroy()
+                    network.undefine()
+                except Exception as e:
+                    print(f'[Exception] destroy/undefine failed: {e}')
+                    self.connect_close()
+                    return False
+                
+                try:
+                    BridgeTable.objects.filter(name = networkname).delete()
+                except Exception as e:
+                    print(f'[Exception] BridgeTable.objects.delete(name = {networkname}) failed: {e}')
+                    self.connect_close()
+                    return False
                 self.connect_close()
+                
+                #TODO: 删除br0：若没有虚拟机在使用此网卡--通过查找数据库表。
                 print("[Info] Bridge: %s has delete!" % name)
                 return True
         self.connect_close()
 
         return False
-
 
     

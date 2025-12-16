@@ -24,10 +24,9 @@ def getNetpoolData():
             { 'id': 2, 'name': 'ovs1', 'mac': '10:20.ab:12:a1:2c', 'dpdk': 'true' }
         ]
     }
-    network = CLVNetwork()
     
-    networkPools['nat']=network.getNATNetworkData()
-    networkPools['bridge']=network.getBridgeNetworkData()
+    networkPools['nat']=CLVNetwork().getNATNetworkData()
+    networkPools['bridge']=CLVNetwork().getBridgeNetworkData()
     # print(networkPools)
     return networkPools
 
@@ -126,11 +125,12 @@ def doBridgePool(request):
         elif json_data['action'] == 'del':
             name = json_data.get("name")
             # print('name: %s' % name)
+            interface = json_data.get('interface')
             if name == "":
                 return JsonResponse('{"result": "failed", "message": "name is None"}')
             
             network = CLVNetwork()
-            if network.delBridgeNetworkData(name) == True:
+            if network.delBridgeNetworkData(name, interface) == True:
                 data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"]}
             else:

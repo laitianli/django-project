@@ -159,11 +159,12 @@ function addBridge(data) {
     }
     sendReqeust2bridgepool(jsonData, doAddBridgePoolSuccess, function () { alert('Bridge网络池创建失败！'); })
 }
-function delBridge(data) {
+function delBridge(data, interface) {
     var jsonData = {
         action: 'del',
         type: 'bridge',
-        name: data
+        name: data,
+        interface: interface
     }
     sendReqeust2bridgepool(jsonData, doDelBridgePoolSuccess, function () { alert('Bridge网络池删除失败！'); })
 }
@@ -212,9 +213,6 @@ function renderNATPoolTable() {
 
         tableBody.append(row);
     });
-
-    // 绑定编辑和删除事件
-    bindTableEvents('#natPoolTable', 'nat');
 }
 
 // 渲染Bridge网络池表格
@@ -238,9 +236,6 @@ function renderBridgePoolTable() {
             `;
         tableBody.append(row);
     });
-
-    // 绑定编辑和删除事件
-    bindTableEvents('#bridgePoolTable', 'bridge');
 }
 
 // 渲染Host网络池表格
@@ -263,8 +258,7 @@ function renderHostPoolTable() {
         tableBody.append(row);
     });
 
-    // 绑定编辑和删除事件
-    bindTableEvents('#hostPoolTable', 'host');
+
 }
 
 // 绑定表格编辑和删除事件
@@ -294,6 +288,7 @@ function bindTableEvents(tableId, poolType) {
         const id = row.data('id');
         const delbtn = row.find('.delete-btn');
         const btnid = delbtn.data('id');
+        console.log('--tableId: ' + tableId);
         // console.log(delbtn);
         // console.log(btnid);
         if (id == btnid && confirm('确定要删除这个网络池吗？')) {
@@ -301,10 +296,13 @@ function bindTableEvents(tableId, poolType) {
                 var name = row.find('td').eq(1).text().trim();
                 // console.log('name:' + name);
                 delNAT(name);
+                return true;
             }
             else if (poolType == 'bridge') {
                 var name = row.find('td').eq(1).text().trim();
-                delBridge(name);
+                var interface = row.find('td').eq(2).text().trim();
+                delBridge(name, interface);
+                return true;
             }
             else if (poolType == 'host' || poolType == 'ovs') {
                 // 从数据数组中删除
@@ -312,8 +310,10 @@ function bindTableEvents(tableId, poolType) {
                 // 从DOM中删除行
                 row.remove();
                 alert('网络池删除成功！');
+                return true;
             }
         }
+        return false;
     });
 
     // 单元格点击事件（直接编辑）
@@ -446,9 +446,6 @@ function renderOVSPoolTable() {
             `;
         tableBody.append(row);
     });
-
-    // 绑定编辑和删除事件
-    bindTableEvents('#ovsPoolTable', 'ovs');
 }
 
 // 更新所有行的ID（从1开始重新编号）
@@ -497,6 +494,7 @@ function doDelBridgePoolSuccess(jsonData, response) {
             /* 更新id值 */
             //updateNatRowIds("natPoolTable");
             alert('Bridge网络池删除成功！');
+            return;
         }
     });
 }
@@ -512,6 +510,17 @@ function initNetpool() {
         }
         // 其他内容显示逻辑...
     }
+    // 绑定编辑和删除事件
+    bindTableEvents('#natPoolTable', 'nat');
+
+    // 绑定编辑和删除事件
+    bindTableEvents('#bridgePoolTable', 'bridge');
+
+    // 绑定编辑和删除事件
+    bindTableEvents('#hostPoolTable', 'host');
+
+    // 绑定编辑和删除事件
+    bindTableEvents('#ovsPoolTable', 'ovs');
 
     function showSubPage(type) {
         $('#network-panel .content-section').addClass('d-none');
