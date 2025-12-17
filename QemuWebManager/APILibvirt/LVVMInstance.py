@@ -21,11 +21,17 @@ class CLVCreate(ConnectLibvirtd):
         conn = self.get_conn()
         listVMName = conn.listDefinedDomains()
         if vmName not in listVMName:
-            conn.defineXML(strXML)
+            try:
+                conn.defineXML(strXML)
+            except Exception as e:
+                print(f'[Exception] defineXML failed: {e}')
             
         vm = conn.lookupByName(vmName)
         if vm:
-            vm.create()
+            try:
+                vm.create()
+            except Exception as e:
+                print(f'[Exception] create failed: {e}')
             
         self.connect_close()
         return True

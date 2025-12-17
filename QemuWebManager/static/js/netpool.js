@@ -87,10 +87,10 @@ function renderNetworkCards() {
     sendReqeust2networkpool(jsonData, doQueryNetworkPoolSuccess, function () { })
 }
 
-function showPHYSelect(container) {
+function showPHYSelect(container, tag) {
     // 创建下拉列表
     const selectElement = $('<select>', {
-        id: 'networkCardSelect',
+        id: 'networkCardSelect_'+ tag,
         class: 'form-select',
         html: '<option value="">请选择物理网卡...</option>'
     });
@@ -107,7 +107,11 @@ function showPHYSelect(container) {
 }
 
 function addPhyNicOptionsToBridge() {
-    showPHYSelect($('#bridgePhyNIC'));
+    showPHYSelect($('#bridgePhyNIC'), 'bridge');
+}
+
+function addPhyNicOptionsToOVSBridge() {
+    showPHYSelect($('#ovsPhyNIC'), 'ovs');
 }
 
 function doAddNATPoolSuccess(jsonData, response) {
@@ -167,6 +171,37 @@ function delBridge(data, interface) {
         interface: interface
     }
     sendReqeust2bridgepool(jsonData, doDelBridgePoolSuccess, function () { alert('Bridge网络池删除失败！'); })
+}
+
+
+function doAddOVSPoolSuccess(jsonData, response) {
+    console.log('---doAddOVSPoolSuccess-----')
+    // 添加到数据数组
+    networkPools.ovs.push(jsonData.data);
+
+    // 重新渲染表格
+    renderOVSPoolTable();
+    // 重置表单
+    $('#ovsPoolForm')[0].reset();
+    sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+    alert('OpenVSwitch网络池创建成功！');
+}
+function addOVSBridge(data) {
+    var jsonData = {
+        action: 'add',
+        type: 'ovs',
+        data: data
+    }
+    sendReqeust2ovspool(jsonData, doAddOVSPoolSuccess, function () { alert('OpenVSwitch网络池创建失败！'); })
+}
+function delOVSBridge(data, interface) {
+    var jsonData = {
+        action: 'del',
+        type: 'ovs',
+        name: data,
+        interface: interface
+    }
+    sendReqeust2ovspool(jsonData, doDelOVSPoolSuccess, function () { alert('OpenVSwitch网络池删除失败！'); })
 }
 
 // 渲染NAT网络池表格
@@ -304,7 +339,13 @@ function bindTableEvents(tableId, poolType) {
                 delBridge(name, interface);
                 return true;
             }
-            else if (poolType == 'host' || poolType == 'ovs') {
+            else if (poolType == 'ovs') {
+                var name = row.find('td').eq(1).text().trim();
+                var interface = row.find('td').eq(2).text().trim();
+                delOVSBridge(name, interface);
+                return true;
+            }
+            else if (poolType == 'host') {
                 // 从数据数组中删除
                 networkPools[poolType] = networkPools[poolType].filter(p => p.id !== id);
                 // 从DOM中删除行
@@ -436,8 +477,10 @@ function renderOVSPoolTable() {
                 <tr data-id="${pool.id}">
                     <td class="id-cell">${pool.id}</td>
                     <td class="editable-cell" data-field="name">${pool.name}</td>
+                    <td class="editable-cell" data-field="interface">${pool.interface}</td>
                     <td class="editable-cell" data-field="mac">${pool.mac}</td>
-                    <td class="editable-cell" data-field="dpdk">${pool.dpdk ? '是' : '否'}</td>
+                    <td class="editable-cell" data-field="phyNic">${pool.phyNic}</td>
+                    <td class="editable-cell" data-field="${pool.userdpdk}">${pool.userdpdk ? '是':'否'}</td>
                     <td>
                         <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
                         <button class="btn btn-sm btn-danger delete-btn" data-id=${pool.id}>删除</button>
@@ -499,6 +542,27 @@ function doDelBridgePoolSuccess(jsonData, response) {
     });
 }
 
+
+function doDelOVSPoolSuccess(jsonData, response) {
+    $('#ovsPoolTable tr').each(function (index) {
+        const name = $(this).find('td').eq(1).text().trim();
+        // console.log('---------name:' + name + ":" + jsonData['name'])
+        if (name === jsonData['name']) {
+            const row = $(this).closest('tr');
+            const id = row.data('id');
+            // 从数据数组中删除
+            networkPools['ovs'] = networkPools['ovs'].filter(p => p.id !== id);
+            // 从DOM中删除行
+            row.remove();
+            sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+            /* 更新id值 */
+            //updateNatRowIds("natPoolTable");
+            alert('OVS Bridge网络池删除成功！');
+            return;
+        }
+    });
+}
+
 function initNetpool() {
     console.log('initNetpool....')
     renderNetworkCards();
@@ -526,6 +590,7 @@ function initNetpool() {
         $('#network-panel .content-section').addClass('d-none');
         console.log(type);
         addPhyNicOptionsToBridge();
+        addPhyNicOptionsToOVSBridge();
         switch (type) {
             case 'nat':
                 $('#nat-content').removeClass('d-none');
@@ -582,7 +647,7 @@ function initNetpool() {
         var phyNetInfo = $('#phyNetInfo');
         if (status == true) {
             phyNetInfo.removeClass('d-none');
-            showPHYSelect(phyNetInfo);
+            showPHYSelect(phyNetInfo, 'nat');
         }
         else {
             phyNetInfo.addClass('d-none');
@@ -612,7 +677,7 @@ function initNetpool() {
         const interface = $('#natInterface').val();
         const subnet = $('#natSubnet').val();
         const dhcp = $('#natDHCP').is(':checked');
-        var phyNic = $('#networkCardSelect').val();
+        var phyNic = $('#natPoolForm #networkCardSelect_nat').val();
         if (phyNic === null || phyNic === undefined)
             phyNic = "ALL";
 
@@ -647,7 +712,7 @@ function initNetpool() {
         const name = $('#bridgeName').val();
         const interface = $('#bridgeIfaceName').val();
         const mac = $('#bridgeMAC').val();
-        const phyNic = $('#bridgePoolForm #networkCardSelect').val();
+        const phyNic = $('#bridgePoolForm #networkCardSelect_bridge').val();
 
         // 生成新ID
         const newId = networkPools.bridge.length > 0 ? Math.max(...networkPools.bridge.map(p => p.id)) + 1 : 1;
@@ -702,26 +767,32 @@ function initNetpool() {
     $('#ovsPoolForm').on('submit', function (e) {
         e.preventDefault();
         const name = $('#ovsName').val();
+        const interface = $('#ovsIfaceName').val();
         const mac = $('#ovsMAC').val();
+        const phyNic = $('#ovsPoolForm #networkCardSelect_ovs').val();
         const dpdk = $('#ovsDPDK').is(':checked');
 
         // 生成新ID
         const newId = networkPools.ovs.length > 0 ? Math.max(...networkPools.ovs.map(p => p.id)) + 1 : 1;
 
-        // 添加到数据数组
-        networkPools.ovs.push({
+        var newData = {
             id: newId,
             name: name,
+            interface: interface,
             mac: mac,
-            dpdk: dpdk
-        });
+            phyNic: phyNic,
+            userdpdk: dpdk
+        };
+        addOVSBridge(newData)
+        // 添加到数据数组
+        // networkPools.ovs.push(newData);
 
-        // 重新渲染表格
-        renderOVSPoolTable();
+        // // 重新渲染表格
+        // renderOVSPoolTable();
 
-        // 重置表单
-        $(this)[0].reset();
+        // // 重置表单
+        // $(this)[0].reset();
 
-        alert('OpenVSwitch网络池创建成功！');
+        // alert('OpenVSwitch网络池创建成功！');
     });
 }

@@ -5,6 +5,7 @@ import ipaddress
 from netpool.models import VMBridgePoolTable as BridgeTable
 from netpool.models import VMMacvtapPoolTable as MacvtapTable
 from netpool.models import VMOVSPoolTable as OVSTable
+from createvmwizard.models import VMNICTable as VMNICTableModel
 
 def netmask_to_prefix_length(netmask):
     network = ipaddress.IPv4Network(f'0.0.0.0/{netmask}', strict=False)
@@ -71,7 +72,7 @@ class CLVNetwork(ConnectLibvirtd):
                 print(f'[Error] Querry BridgeTable {interface} table failed: {e}')
             if len(intfs): 
                 for bp in intfs:
-                    print(f'--bp: {bp}')
+                    # print(f'--bp: {bp}')
                     oneNetwork = {'id': id, 'name':bp.name, 'interface':interface, 'mac': bp.mac, 'phyNic': bp.phyNic}
                     networkInterfaces.append(oneNetwork)
                     id = id + 1
@@ -81,7 +82,45 @@ class CLVNetwork(ConnectLibvirtd):
                 id = id + 1
             
         self.connect_close()
-        print(networkInterfaces)
+        # print(networkInterfaces)
+        return networkInterfaces
+    
+    def getOVSNetworkData(self):
+        networkconn = self.get_conn()
+        networks = []
+        networkInterfaces = []
+        for network in networkconn.listNetworks():
+            networks.append(network)
+        for network in networkconn.listDefinedNetworks():
+            networks.append(network)  
+        # print('network: %s' % networks)
+        id = 0
+        for name in networks:
+            iface = networkconn.networkLookupByName(name)
+            xml = iface.XMLDesc(0)
+            # print('%s: %s' % (name, xml))
+            # { 'id': 2, 'name': 'bridge1', 'interface': 'br1', 'mac': '00:20.ab:12:a1:2d', 'phyNic':'enp27s0f0np0'},
+            name, interface = self._getOneOVSNetwork(id + 1, xml)
+            if interface == None:
+                continue
+            try:
+                intfs = OVSTable.objects.filter(interface=interface)
+                print(f'[Info] [getOVSNetworkData] select vm OVS Bridge table entries for vm {interface} success')
+            except Exception as e:
+                print(f'[Error] Querry OVSTable {interface} table failed: {e}')
+            if len(intfs): 
+                for bp in intfs:
+                    # print(f'--bp: {bp}')
+                    oneNetwork = {'id': id, 'name':bp.name, 'interface':interface, 'mac': bp.mac, 'phyNic': bp.phyNic, 'userdpdk': bp.userdpdk}
+                    networkInterfaces.append(oneNetwork)
+                    id = id + 1
+            else:
+                oneNetwork = {'id': id, 'name':name, 'interface':interface, 'mac': '00:00:00:00:00', 'phyNic': 'unknow', 'userdpdk': False}
+                networkInterfaces.append(oneNetwork)
+                id = id + 1
+            
+        self.connect_close()
+        # print(networkInterfaces)
         return networkInterfaces
 # <network>
 #   <name>default</name>
@@ -148,10 +187,10 @@ class CLVNetwork(ConnectLibvirtd):
             interface = util.get_xml_path(xml, '/network/bridge/@name')
             virtualport = util.get_xml_path(xml, '/network/virtualport/@type')
             if virtualport and virtualport == 'openvswitch':
-                return interface
-            return None
+                return name, interface
+            return None, None
         else:
-            return None
+            return None, None
         
         # 'data': {'id': 2, 'name': 'default', 'interface': 'virbr1', 'subnet': '192.168.1.1/24', 'nic': 'enp2s0', 'dhcp': True, 'dhcpip': '10.1.1.2/10.1.1.254', 'is_default': 'false'}
     def _createNatNetwork(self, data):
@@ -350,8 +389,7 @@ class CLVNetwork(ConnectLibvirtd):
             print(f'[Exception] BridgeTable.objects.create failed: {e}')
             self.connect_close()
             return False
-        
-        
+
         # print(networkInterfaces)
         if util.create_bridge_safely(data['interface'], data['mac']):
             ret = util.add_nic2bridge(data['interface'], data['phyNic'])
@@ -360,6 +398,15 @@ class CLVNetwork(ConnectLibvirtd):
     
     
     def delBridgeNetworkData(self, networkname, interface):
+        #TODO: 删除br0：若没有虚拟机在使用此网卡--通过查找数据库表。
+        try:
+            recodes = VMNICTableModel.objects.filter(netPoolName=networkname)
+            if len(recodes): 
+                print(f'[Note] {networkname}:{interface} is using, can not delete!')
+                return False
+        except Exception as e:
+            print(f"[Exception] Query VMNICTableModel failed: {e}")
+            return False
         networkconn = self.get_conn()
         networks = []
         networkInterfaces = []
@@ -378,20 +425,122 @@ class CLVNetwork(ConnectLibvirtd):
                     print(f'[Exception] destroy/undefine failed: {e}')
                     self.connect_close()
                     return False
+                self.connect_close()
                 
                 try:
                     BridgeTable.objects.filter(name = networkname).delete()
                 except Exception as e:
                     print(f'[Exception] BridgeTable.objects.delete(name = {networkname}) failed: {e}')
+                    return False
+                                
+                ret = util.delete_bridge(interface)
+                if ret == True:
+                    print("[Info] Bridge: %s:%s delete success!" % (name, interface))
+                else:
+                    print("[Info] Bridge: %s:%s delete failed!" % (name, interface))
+                return ret
+            
+        self.connect_close()
+        return False
+
+    # {'id': 4, 'name': 'bridge3', 'interface': 'br3', 'mac': '52:12:ab:cd:ef', 'phyNic': 'enp27s0f3np3'}
+    def addOVSNetworkData(self, data):
+        networkconn = self.get_conn()
+        networks = []
+        for network in networkconn.listNetworks():
+            networks.append(network)
+        for network in networkconn.listDefinedNetworks():
+            networks.append(network)
+            
+        # print('network: %s' % networks)
+        id = 0
+        for name in networks:
+            if name == data['name']:
+                self.connect_close()
+                print("[Error][addOVSNetworkData] OVS Bridge: %s has exist!" % name)
+                return False
+
+        xml = self._createOVSNetwork(data)
+        try:
+            networkconn.networkDefineXML(xml)
+        except Exception as e:
+            print(f'[Exception] ovs networkDefineXML failed: {e}')
+            self.connect_close()
+            return False
+        
+        try:
+            newNetwork = networkconn.networkLookupByName(data['name'])
+            newNetwork.create()
+            newNetwork.setAutostart(1)
+        except Exception as e:
+            print(f'[Exception] ovs create/setAutostart failed: {e}')
+            self.connect_close()
+            return False
+        
+        self.connect_close()
+        
+        try:
+            OVSTable.objects.create(name=data['name'],
+                                               interface=data['interface'],
+                                               mac = data['mac'],
+                                               phyNic = data['phyNic'],
+                                               userdpdk = data['userdpdk'])
+        except Exception as e:
+            print(f'[Exception] OVSTable.objects.create failed: {e}')
+            self.connect_close()
+            return False
+
+        # print(networkInterfaces)
+        if util.create_ovs_bridge_safely(data['interface'], data['mac']):
+            ret = util.add_nic2ovsbridge(data['interface'], data['phyNic'])
+            return ret
+        return False
+    
+    
+    def delOVSNetworkData(self, networkname, interface):
+        #TODO: 删除ovs0：若没有虚拟机在使用此网卡--通过查找数据库表。
+        try:
+            recodes = VMNICTableModel.objects.filter(netPoolName=networkname)
+            if len(recodes): 
+                print(f'[Note] {networkname}:{interface} is using, can not delete!')
+                return False
+        except Exception as e:
+            print(f"[Exception] Query VMNICTableModel failed: {e}")
+            return False
+        networkconn = self.get_conn()
+        networks = []
+        networkInterfaces = []
+        for network in networkconn.listNetworks():
+            networks.append(network)
+        for network in networkconn.listDefinedNetworks():
+            networks.append(network)
+        for name in networks:
+            print(f'name: {name}, networkname: {networkname}')
+            if name == networkname:                
+                try:
+                    network = networkconn.networkLookupByName(networkname)
+                    network.destroy()
+                    network.undefine()
+                except Exception as e:
+                    print(f'[Exception] OVS destroy/undefine failed: {e}')
                     self.connect_close()
                     return False
                 self.connect_close()
                 
-                #TODO: 删除br0：若没有虚拟机在使用此网卡--通过查找数据库表。
-                print("[Info] Bridge: %s has delete!" % name)
-                return True
+                try:
+                    OVSTable.objects.filter(name = networkname).delete()
+                except Exception as e:
+                    print(f'[Exception] OVS BridgeTable.objects.delete(name = {networkname}) failed: {e}')
+                    return False
+                                
+                ret = util.delete_ovs_bridge(interface)
+                if ret == True:
+                    print("[Info] OVS Bridge: %s:%s delete success!" % (name, interface))
+                else:
+                    print("[Info] OVS Bridge: %s:%s delete failed!" % (name, interface))
+                return ret
+            
         self.connect_close()
-
         return False
 
     

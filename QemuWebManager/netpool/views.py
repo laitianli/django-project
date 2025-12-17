@@ -27,6 +27,7 @@ def getNetpoolData():
     
     networkPools['nat']=CLVNetwork().getNATNetworkData()
     networkPools['bridge']=CLVNetwork().getBridgeNetworkData()
+    networkPools['ovs']=CLVNetwork().getOVSNetworkData()
     # print(networkPools)
     return networkPools
 
@@ -59,15 +60,7 @@ def doNatPool(request):
         raw_data = request.body  # 获取原始字节流
         json_data = json.loads(raw_data.decode("utf-8"))  # 解码并解析JSON
         # print(json_data)
-        if json_data["action"] == "query":
-            data = {
-                "result": "success",
-                "message": "%s action success." % json_data["action"],
-                "response_json": getNetpoolData(),
-            }
-            print(data)
-            return JsonResponse(data)
-        elif json_data['action'] == 'add':
+        if json_data['action'] == 'add':
             data = json_data.get("data")
             if len(data) == 0:
                 return JsonResponse('{"result": "failed", "message": "data is None"}')
@@ -101,14 +94,7 @@ def doBridgePool(request):
         raw_data = request.body  # 获取原始字节流
         json_data = json.loads(raw_data.decode("utf-8"))  # 解码并解析JSON
         # print(json_data)
-        if json_data["action"] == "query":
-            data = {
-                "result": "success",
-                "message": "%s action success." % json_data["action"],
-                "response_json": getNetpoolData(),
-            }
-            return JsonResponse(data)
-        elif json_data['action'] == 'add':
+        if json_data['action'] == 'add':
             data = json_data.get("data")
             if len(data) == 0:
                 return JsonResponse('{"result": "failed", "message": "data is None"}')
@@ -142,15 +128,7 @@ def doHostPool(request):
     if request.method == "POST":
         raw_data = request.body  # 获取原始字节流
         json_data = json.loads(raw_data.decode("utf-8"))  # 解码并解析JSON
-        # print(json_data)
-        if json_data["action"] == "query":
-            data = {
-                "result": "success",
-                "message": "%s action success." % json_data["action"],
-                "response_json": getNetpoolData(),
-            }
-            return JsonResponse(data)
-        elif json_data['action'] == 'add':
+        if json_data['action'] == 'add':
             data = json_data.get("data")
             if len(data) == 0:
                 return JsonResponse('{"result": "failed", "message": "data is None"}')
@@ -183,21 +161,13 @@ def doOVSPool(request):
     if request.method == "POST":
         raw_data = request.body  # 获取原始字节流
         json_data = json.loads(raw_data.decode("utf-8"))  # 解码并解析JSON
-        # print(json_data)
-        if json_data["action"] == "query":
-            data = {
-                "result": "success",
-                "message": "%s action success." % json_data["action"],
-                "response_json": getNetpoolData(),
-            }
-            return JsonResponse(data)
-        elif json_data['action'] == 'add':
+        if json_data['action'] == 'add':
             data = json_data.get("data")
             if len(data) == 0:
                 return JsonResponse('{"result": "failed", "message": "data is None"}')
-            # print('data: %s' % data)
+            print('ovs data: %s' % data)
             network = CLVNetwork()
-            if network.addNATNetworkData(data) == True:
+            if network.addOVSNetworkData(data) == True:
                 data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"]}
             else:
@@ -207,12 +177,13 @@ def doOVSPool(request):
         
         elif json_data['action'] == 'del':
             name = json_data.get("name")
+            interface = json_data.get('interface')
             # print('name: %s' % name)
             if name == "":
                 return JsonResponse('{"result": "failed", "message": "name is None"}')
             
             network = CLVNetwork()
-            if network.delNATNetworkData(name) == True:
+            if network.delOVSNetworkData(name, interface) == True:
                 data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"]}
             else:

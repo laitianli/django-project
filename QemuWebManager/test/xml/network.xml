@@ -16,6 +16,14 @@
     <address type="pci" domain="0x0000" bus="0x01" slot="0x00" function="0x0" />
 </interface>
 
+<!-- ovs bridge -->
+<interface type='bridge'> 
+  <mac address='52:54:00:4a:c3:3b'/>
+  <source bridge='br0'/> 
+  <virtualport type='openvswitch'/> <!-- 明确指定使用OVS -->
+  <model type='virtio'/> 
+</interface>
+
 <!-- Macvtap -->
 <interface type="direct">
     <mac address="52:54:00:c7:dc:18" />

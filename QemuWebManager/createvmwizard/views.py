@@ -10,6 +10,10 @@ from storagepool import toolset
 from .models import VMDiskTable as VMDiskTableModel
 from .models import VMNICTable as VMNICTableModel
 
+from netpool.models import VMBridgePoolTable as BridgeTable
+from netpool.models import VMMacvtapPoolTable as MacvtapTable
+from netpool.models import VMOVSPoolTable as OVSTable
+
 # {'immediatelyRun': False, 
 # 'vm': {'name': 'Centos', 'type': 'Linux', 'isBootType': False, 'booType': 'cdrom'}, 
 # 'vmmemory': {'memCurrent': 4294967296, 'memTotal': 4294967296}, 
@@ -61,17 +65,39 @@ def doCreateVMXML(data):
     net = []
     for e in vmNet:
         type = ''
-        if [e['nicConnType'] == 'nat']:
+        nic = ''
+        if e['nicConnType'] == 'nat':
             type = 'network'
-        elif [e['nicConnType'] == 'bridge']:
+        elif e['nicConnType'] == 'bridge':
             type = 'bridge'
-        elif [e['nicConnType'] == 'macvtap']:
+            try:
+                recode = BridgeTable.objects.get(name=e['netPoolName'])
+                if recode is not None:
+                    nic = recode.interface
+            except Exception as e:
+                print(f'[Exception] Query Table BridgeTable failed: {e}')
+                nic = ''
+        elif e['nicConnType'] == 'macvtap':
             type = 'direct'
-        elif [e['nicConnType'] == 'ovs']:
+            try:
+                recode = MacvtapTable.objects.get(name=e['netPoolName'])
+                if recode is not None:
+                    nic = recode.interface
+            except Exception as e:
+                print(f'[Exception] Query Table OVSTable failed: {e}')
+                nic = ''
+        elif e['nicConnType'] == 'ovs':
             type = 'ovs'
+            try:
+                recode = OVSTable.objects.get(name=e['netPoolName'])
+                if recode is not None:
+                    nic = recode.interface
+            except Exception as e:
+                print(f'[Exception] Query Table OVSTable failed: {e}')
+                nic = ''
         else:
             type = 'unknow'
-        net.append({'nicModel':e['nicModel'], 'createflag': e['createflag'],'type': type, 'mac': e['mac'], 'network': e['netPoolName']})
+        net.append({'nicModel':e['nicModel'], 'createflag': e['createflag'],'type': type, 'mac': e['mac'], 'network': e['netPoolName'], 'nic': nic})
     xmlobj.setNicInfo(net)
     
     xmlobj.create()

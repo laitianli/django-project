@@ -1095,21 +1095,36 @@
                                             <div class="card-body">
                                                 <form id="ovsPoolForm">
                                                     <div class="row">
-                                                        <div class="col-md-4">
+                                                        <div class="col-md-2">
                                                             <div class="mb-3">
-                                                                <label for="ovsName" class="form-label">网桥名</label>
+                                                                <label for="ovsName" class="form-label">名字</label>
                                                                 <input type="text" class="form-control" id="ovsName"
+                                                                    placeholder="bridge-ovs0" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <div class="mb-3">
+                                                                <label for="ovsIfaceName" class="form-label">网桥名</label>
+                                                                <input type="text" class="form-control" id="ovsIfaceName" placeholder="ovs0"
                                                                     required>
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-4">
+                                                        <div class="col-md-3">
                                                             <div class="mb-3">
                                                                 <label for="ovsMAC" class="form-label">MAC地址</label>
                                                                 <input type="text" class="form-control" id="ovsMAC"
-                                                                    placeholder="00:00:00:00:00:00" required>
+                                                                    placeholder="52:54:00:5b:aa:1a" required>
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-4">
+                                                         <div class="col-md-3">
+                                                            <div class="mb-3">
+                                                                <label for="ovsPhyNIC" class="form-label">物理网卡</label>
+                                                                <div id="ovsPhyNIC">
+                                                                    <p>显示所有的物理网卡</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-2">
                                                             <div class="mb-3">
                                                                 <label class="form-label">DPDK</label>
                                                                 <div class="form-check">
@@ -1136,8 +1151,10 @@
                                                         <thead>
                                                             <tr>
                                                                 <th>ID</th>
+                                                                <th>名字</th>
                                                                 <th>网桥名</th>
                                                                 <th>MAC地址</th>
+                                                                <th>物理网卡</th>
                                                                 <th>DPDK</th>
                                                                 <th>操作</th>
                                                             </tr>
