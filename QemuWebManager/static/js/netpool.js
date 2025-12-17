@@ -1,21 +1,15 @@
 var networkPools = {
     nat: [
         { id: 1, name: 'default', interface: 'virbr0', subnet: '192.168.122.0/24', nic: 'enp2s0', dhcp: true },
-        { id: 2, name: 'vir1', interface: 'virbr1', subnet: '172.16.123.0/24', nic: 'enp3s0', dhcp: false },
-        { id: 3, name: 'vir2', interface: 'virbr2', subnet: '192.168.13.0/24', nic: 'enp4s0', dhcp: true },
     ],
     bridge: [
         { id: 1, name: 'bridge0', interface: 'br0', mac: '00:10.ab:12:a1:2c' },
-        { id: 2, name: 'bridge1', interface: 'br1', mac: '00:20.ab:12:a1:2c' },
-        { id: 3, name: 'bridge2', interface: 'br2', mac: '00:30.ab:12:a1:2c' },
     ],
-    host: [
-        { id: 1, interface: 'enp3s0', ip: '192.168.10.1' },
-        { id: 2, interface: 'enp4s0', ip: '172.15.88.1' }
+    macvtap: [
+        { id: 1, name: 'enp3s0', interface: 'enp3s0', phyNic: 'enp3s0' },
     ],
     ovs: [
         { id: 1, name: 'ovs0', mac: '10:10.ab:12:a1:2c', dpdk: false },
-        { id: 2, name: 'ovs1', mac: '10:20.ab:12:a1:2c', dpdk: true }
     ]
 };
 
@@ -59,10 +53,9 @@ function sendReqeust2bridgepool(jsonData, successFunc, failFunc) {
     return sendRequest('/net/bridgepool/', jsonData, successFunc, failFunc);
 }
 
-function sendReqeust2hostpool(jsonData, successFunc, failFunc) {
-    return sendRequest('/net/hostpool/', jsonData, successFunc, failFunc);
+function sendReqeust2macvtappool(jsonData, successFunc, failFunc) {
+    return sendRequest('/net/macvtappool/', jsonData, successFunc, failFunc);
 }
-
 
 function sendReqeust2ovspool(jsonData, successFunc, failFunc) {
     return sendRequest('/net/ovspool/', jsonData, successFunc, failFunc);
@@ -90,37 +83,37 @@ function renderNetworkCards() {
 function showPHYSelect(container, tag) {
     // 创建下拉列表
     const selectElement = $('<select>', {
-        id: 'networkCardSelect_'+ tag,
+        id: 'networkCardSelect_' + tag,
         class: 'form-select',
         html: '<option value="">请选择物理网卡...</option>'
     });
     let intface_json_data = JSON.parse(sessionStorage.getItem("networkInterfaces_json"));
     intface_json_data.forEach(nic => {
-        $('<option>', {
-            value: nic.name,
-            text: nic.name
-        }).appendTo(selectElement);
-
+        if (nic.used == false) {
+            $('<option>', {
+                value: nic.name,
+                text: nic.name
+            }).appendTo(selectElement);
+        }
     });
     // 清空容器并添加下拉列表
     container.html('').append(selectElement);
 }
 
-function addPhyNicOptionsToBridge() {
+function showPHYNIC2Html() {
+    showPHYSelect($('#phyNetInfo'), 'nat');
     showPHYSelect($('#bridgePhyNIC'), 'bridge');
-}
-
-function addPhyNicOptionsToOVSBridge() {
+    showPHYSelect($('#macvtapPhyNIC'), 'macvtap');
     showPHYSelect($('#ovsPhyNIC'), 'ovs');
 }
 
 function doAddNATPoolSuccess(jsonData, response) {
-    console.log('---doAddNATPoolSuccess-----')
     // 添加到数据数组
     networkPools.nat.push(jsonData.data);
 
     // 重新渲染表格
     renderNATPoolTable();
+    showPHYNIC2Html();
     // 重置表单
     $('#natPoolForm')[0].reset();
     $('#phyNetInfo').addClass('d-none');
@@ -134,21 +127,22 @@ function addNAT(data) {
     }
     sendReqeust2natpool(jsonData, doAddNATPoolSuccess, function () { alert('NAT网络池创建失败！'); })
 }
-function delNAT(data) {
+function delNAT(data, interface) {
     var jsonData = {
         action: 'del',
         type: 'nat',
-        name: data
+        name: data,
+        interface: interface
     }
     sendReqeust2natpool(jsonData, doDelNATPoolSuccess, function () { alert('NAT网络池删除失败！'); })
 }
 function doAddBridgePoolSuccess(jsonData, response) {
-    console.log('---doAddBridgePoolSuccess-----')
     // 添加到数据数组
     networkPools.bridge.push(jsonData.data);
 
     // 重新渲染表格
     renderBridgePoolTable();
+    showPHYNIC2Html();
     // 重置表单
     $('#bridgePoolForm')[0].reset();
     // $('#phyNetInfo').addClass('d-none');
@@ -173,6 +167,35 @@ function delBridge(data, interface) {
     sendReqeust2bridgepool(jsonData, doDelBridgePoolSuccess, function () { alert('Bridge网络池删除失败！'); })
 }
 
+function doAddMacvtapPoolSuccess(jsonData, response) {
+    // 添加到数据数组
+    networkPools.macvtap.push(jsonData.data);
+
+    // 重新渲染表格
+    renderMacvtapPoolTable();
+    showPHYNIC2Html();
+    // 重置表单
+    $('#macvtapPoolForm')[0].reset();
+    sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+    alert('Macvtap网络池创建成功！');
+}
+function addMacvtapBridge(data) {
+    var jsonData = {
+        action: 'add',
+        type: 'macvtap',
+        data: data
+    }
+    sendReqeust2macvtappool(jsonData, doAddMacvtapPoolSuccess, function () { alert('Macvtap网络池创建失败！'); })
+}
+function delMacvtapBridge(data, interface) {
+    var jsonData = {
+        action: 'del',
+        type: 'macvtap',
+        name: data,
+        interface: interface
+    }
+    sendReqeust2macvtappool(jsonData, doDelMacvtapPoolSuccess, function () { alert('Macvtap网络池删除失败！'); })
+}
 
 function doAddOVSPoolSuccess(jsonData, response) {
     console.log('---doAddOVSPoolSuccess-----')
@@ -181,6 +204,7 @@ function doAddOVSPoolSuccess(jsonData, response) {
 
     // 重新渲染表格
     renderOVSPoolTable();
+    showPHYNIC2Html();
     // 重置表单
     $('#ovsPoolForm')[0].reset();
     sessionStorage.setItem("network_json", JSON.stringify(networkPools));
@@ -202,6 +226,16 @@ function delOVSBridge(data, interface) {
         interface: interface
     }
     sendReqeust2ovspool(jsonData, doDelOVSPoolSuccess, function () { alert('OpenVSwitch网络池删除失败！'); })
+}
+
+function update_networkInterfaces_json(phyNic, val = true) {
+    let intface_json_data = JSON.parse(sessionStorage.getItem("networkInterfaces_json"));
+    intface_json_data.forEach(nic => {
+        if (nic.name == phyNic) {
+            nic.used = val;
+            sessionStorage.setItem("networkInterfaces_json", JSON.stringify(intface_json_data));
+        }
+    });
 }
 
 // 渲染NAT网络池表格
@@ -247,6 +281,9 @@ function renderNATPoolTable() {
         }
 
         tableBody.append(row);
+        if (pool.nic !== 'ALL') {
+            update_networkInterfaces_json(pool.nic);
+        }
     });
 }
 
@@ -270,20 +307,22 @@ function renderBridgePoolTable() {
                 </tr>
             `;
         tableBody.append(row);
+        if (pool.phyNic !== 'ALL') {
+            update_networkInterfaces_json(pool.phyNic);
+        }
     });
 }
 
-// 渲染Host网络池表格
-function renderHostPoolTable() {
-    const tableBody = $('#hostPoolTable');
+// 渲染Macvtap网络池表格
+function renderMacvtapPoolTable() {
+    const tableBody = $('#macvtapPoolTable');
     tableBody.empty();
 
-    networkPools.host.forEach(pool => {
+    networkPools.macvtap.forEach(pool => {
         const row = `
                 <tr data-id="${pool.id}">
                     <td class="id-cell">${pool.id}</td>
-                    <td class="editable-cell" data-field="interface">${pool.interface}</td>
-                    <td class="editable-cell" data-field="ip">${pool.ip}</td>
+                    <td class="editable-cell" data-field="phyNic">${pool.phyNic}</td>
                     <td>
                         <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
                         <button class="btn btn-sm btn-danger delete-btn" data-id=${pool.id}>删除</button>
@@ -291,9 +330,10 @@ function renderHostPoolTable() {
                 </tr>
             `;
         tableBody.append(row);
+        if (pool.phyNic !== 'ALL') {
+            update_networkInterfaces_json(pool.phyNic);
+        }
     });
-
-
 }
 
 // 绑定表格编辑和删除事件
@@ -329,8 +369,9 @@ function bindTableEvents(tableId, poolType) {
         if (id == btnid && confirm('确定要删除这个网络池吗？')) {
             if (poolType == 'nat') {
                 var name = row.find('td').eq(1).text().trim();
+                var interface = row.find('td').eq(1).text().trim();
                 // console.log('name:' + name);
-                delNAT(name);
+                delNAT(name, interface);
                 return true;
             }
             else if (poolType == 'bridge') {
@@ -345,12 +386,11 @@ function bindTableEvents(tableId, poolType) {
                 delOVSBridge(name, interface);
                 return true;
             }
-            else if (poolType == 'host') {
+            else if (poolType == 'macvtap') {
                 // 从数据数组中删除
-                networkPools[poolType] = networkPools[poolType].filter(p => p.id !== id);
-                // 从DOM中删除行
-                row.remove();
-                alert('网络池删除成功！');
+                var name = row.find('td').eq(1).text().trim();
+                var interface = name;
+                delMacvtapBridge(name, interface);
                 return true;
             }
         }
@@ -480,7 +520,7 @@ function renderOVSPoolTable() {
                     <td class="editable-cell" data-field="interface">${pool.interface}</td>
                     <td class="editable-cell" data-field="mac">${pool.mac}</td>
                     <td class="editable-cell" data-field="phyNic">${pool.phyNic}</td>
-                    <td class="editable-cell" data-field="${pool.userdpdk}">${pool.userdpdk ? '是':'否'}</td>
+                    <td class="editable-cell" data-field="${pool.userdpdk}">${pool.userdpdk ? '是' : '否'}</td>
                     <td>
                         <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
                         <button class="btn btn-sm btn-danger delete-btn" data-id=${pool.id}>删除</button>
@@ -488,6 +528,9 @@ function renderOVSPoolTable() {
                 </tr>
             `;
         tableBody.append(row);
+        if (pool.phyNic !== 'ALL') {
+            update_networkInterfaces_json(pool.phyNic);
+        }
     });
 }
 
@@ -506,7 +549,6 @@ function updateNatRowIds(tableID) {
 function doDelNATPoolSuccess(jsonData, response) {
     $('#natPoolTable tr').each(function (index) {
         const name = $(this).find('td').eq(1).text().trim();
-        // console.log('---------name:' + name + ":" + jsonData['name'])
         if (name === jsonData['name']) {
             const row = $(this).closest('tr');
             const id = row.data('id');
@@ -517,6 +559,8 @@ function doDelNATPoolSuccess(jsonData, response) {
             sessionStorage.setItem("network_json", JSON.stringify(networkPools));
             /* 更新id值 */
             //updateNatRowIds("natPoolTable");
+            update_networkInterfaces_json(jsonData['interface'], false);
+            showPHYNIC2Html();
             alert('网络池删除成功！');
         }
     });
@@ -525,7 +569,6 @@ function doDelNATPoolSuccess(jsonData, response) {
 function doDelBridgePoolSuccess(jsonData, response) {
     $('#bridgePoolTable tr').each(function (index) {
         const name = $(this).find('td').eq(1).text().trim();
-        // console.log('---------name:' + name + ":" + jsonData['name'])
         if (name === jsonData['name']) {
             const row = $(this).closest('tr');
             const id = row.data('id');
@@ -536,17 +579,38 @@ function doDelBridgePoolSuccess(jsonData, response) {
             sessionStorage.setItem("network_json", JSON.stringify(networkPools));
             /* 更新id值 */
             //updateNatRowIds("natPoolTable");
+            update_networkInterfaces_json(jsonData['interface'], false);
+            showPHYNIC2Html();
             alert('Bridge网络池删除成功！');
             return;
         }
     });
 }
 
+function doDelMacvtapPoolSuccess(jsonData, response) {
+    $('#macvtapPoolTable tr').each(function (index) {
+        const name = $(this).find('td').eq(1).text().trim();
+        if (name === jsonData['name']) {
+            const row = $(this).closest('tr');
+            const id = row.data('id');
+            // 从数据数组中删除
+            networkPools['macvtap'] = networkPools['macvtap'].filter(p => p.id !== id);
+            // 从DOM中删除行
+            row.remove();
+            sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+            /* 更新id值 */
+            //updateNatRowIds("natPoolTable");
+            update_networkInterfaces_json(jsonData['interface'], false);
+            showPHYNIC2Html();
+            alert('Macvtap网络池删除成功！');
+            return;
+        }
+    });
+}
 
 function doDelOVSPoolSuccess(jsonData, response) {
     $('#ovsPoolTable tr').each(function (index) {
         const name = $(this).find('td').eq(1).text().trim();
-        // console.log('---------name:' + name + ":" + jsonData['name'])
         if (name === jsonData['name']) {
             const row = $(this).closest('tr');
             const id = row.data('id');
@@ -557,6 +621,8 @@ function doDelOVSPoolSuccess(jsonData, response) {
             sessionStorage.setItem("network_json", JSON.stringify(networkPools));
             /* 更新id值 */
             //updateNatRowIds("natPoolTable");
+            update_networkInterfaces_json(jsonData['interface'], false);
+            showPHYNIC2Html();
             alert('OVS Bridge网络池删除成功！');
             return;
         }
@@ -566,14 +632,7 @@ function doDelOVSPoolSuccess(jsonData, response) {
 function initNetpool() {
     console.log('initNetpool....')
     renderNetworkCards();
-    function showContent(target) {
-        // 根据目标显示相应内容
-        if (target === 'network-pool') {
-            $('#network-pool-content').show();
-            $('.sub-view').hide();
-        }
-        // 其他内容显示逻辑...
-    }
+
     // 绑定编辑和删除事件
     bindTableEvents('#natPoolTable', 'nat');
 
@@ -581,16 +640,14 @@ function initNetpool() {
     bindTableEvents('#bridgePoolTable', 'bridge');
 
     // 绑定编辑和删除事件
-    bindTableEvents('#hostPoolTable', 'host');
+    bindTableEvents('#macvtapPoolTable', 'macvtap');
 
     // 绑定编辑和删除事件
     bindTableEvents('#ovsPoolTable', 'ovs');
 
     function showSubPage(type) {
         $('#network-panel .content-section').addClass('d-none');
-        console.log(type);
-        addPhyNicOptionsToBridge();
-        addPhyNicOptionsToOVSBridge();
+
         switch (type) {
             case 'nat':
                 $('#nat-content').removeClass('d-none');
@@ -600,26 +657,19 @@ function initNetpool() {
                 $('#bridge-content').removeClass('d-none');
                 renderBridgePoolTable();
                 break;
-            case 'host':
-                $('#host-content').removeClass('d-none');
-                renderHostPoolTable();
+            case 'macvtap':
+                $('#macvtap-content').removeClass('d-none');
+                renderMacvtapPoolTable();
                 break;
             case 'ovs':
                 $('#ovs-content').removeClass('d-none');
                 renderOVSPoolTable();
                 break;
         }
+        if (type === 'nat' || type === 'bridge' || type === 'macvtap' || type === 'ovs') {
+            showPHYNIC2Html();
+        }        
     }
-    // 导航链接点击事件
-    // $('.sidebar .nav-link').click(function (e) {
-    //     e.preventDefault();
-    //     $('.sidebar .nav-link').removeClass('active');
-    //     $(this).addClass('active');
-
-    //     const target = $(this).data('target');
-    //     showContent(target);
-    // });
-
 
     // 网络池卡片点击事件
     $('.storage-card').click(function () {
@@ -647,7 +697,6 @@ function initNetpool() {
         var phyNetInfo = $('#phyNetInfo');
         if (status == true) {
             phyNetInfo.removeClass('d-none');
-            showPHYSelect(phyNetInfo, 'nat');
         }
         else {
             phyNetInfo.addClass('d-none');
@@ -678,8 +727,9 @@ function initNetpool() {
         const subnet = $('#natSubnet').val();
         const dhcp = $('#natDHCP').is(':checked');
         var phyNic = $('#natPoolForm #networkCardSelect_nat').val();
-        if (phyNic === null || phyNic === undefined)
+        if (phyNic === '') {
             phyNic = "ALL";
+        }
 
         var dhcpip = "None";
         if (dhcp == true) {
@@ -702,7 +752,6 @@ function initNetpool() {
         };
 
         addNAT(newData);
-        // alert('NAT网络池创建成功！');
     });
 
 
@@ -713,6 +762,10 @@ function initNetpool() {
         const interface = $('#bridgeIfaceName').val();
         const mac = $('#bridgeMAC').val();
         const phyNic = $('#bridgePoolForm #networkCardSelect_bridge').val();
+        if (phyNic === '') {
+            alert('请选择物理网卡！');
+            return;
+        }
 
         // 生成新ID
         const newId = networkPools.bridge.length > 0 ? Math.max(...networkPools.bridge.map(p => p.id)) + 1 : 1;
@@ -724,43 +777,29 @@ function initNetpool() {
             mac: mac,
             phyNic: phyNic
         };
-        // console.log('newData:', newData);
+
         addBridge(newData);
-        // // 添加到数据数组
-        // networkPools.bridge.push(newData);
-
-        // // 重新渲染表格
-        // renderBridgePoolTable();
-
-        // // 重置表单
-        // $(this)[0].reset();
-
-        // alert('Bridge网络池创建成功！');
     });
 
-    // Host表单提交处理
-    $('#hostPoolForm').on('submit', function (e) {
+    // Macvtap表单提交处理
+    $('#macvtapPoolForm').on('submit', function (e) {
         e.preventDefault();
-        const interface = $('#hostInterface').val();
-        const ip = $('#hostIP').val();
-
+        const phyNic = $('#macvtapPoolForm #networkCardSelect_macvtap').val();
+        if (phyNic === '') {
+            alert('请选择物理网卡！');
+            return;
+        }
         // 生成新ID
-        const newId = networkPools.host.length > 0 ? Math.max(...networkPools.host.map(p => p.id)) + 1 : 1;
+        const newId = networkPools.macvtap.length > 0 ? Math.max(...networkPools.macvtap.map(p => p.id)) + 1 : 1;
 
-        // 添加到数据数组
-        networkPools.host.push({
+        var newData = {
             id: newId,
-            interface: interface,
-            ip: ip
-        });
+            name: phyNic,
+            interface: phyNic,
+            phyNic: phyNic
+        };
 
-        // 重新渲染表格
-        renderHostPoolTable();
-
-        // 重置表单
-        $(this)[0].reset();
-
-        alert('Host网络池创建成功！');
+        addMacvtapBridge(newData);
     });
 
     // OVS表单提交处理
@@ -771,7 +810,10 @@ function initNetpool() {
         const mac = $('#ovsMAC').val();
         const phyNic = $('#ovsPoolForm #networkCardSelect_ovs').val();
         const dpdk = $('#ovsDPDK').is(':checked');
-
+        if (phyNic === '') {
+            alert('请选择物理网卡！');
+            return;
+        }
         // 生成新ID
         const newId = networkPools.ovs.length > 0 ? Math.max(...networkPools.ovs.map(p => p.id)) + 1 : 1;
 
@@ -783,16 +825,6 @@ function initNetpool() {
             phyNic: phyNic,
             userdpdk: dpdk
         };
-        addOVSBridge(newData)
-        // 添加到数据数组
-        // networkPools.ovs.push(newData);
-
-        // // 重新渲染表格
-        // renderOVSPoolTable();
-
-        // // 重置表单
-        // $(this)[0].reset();
-
-        // alert('OpenVSwitch网络池创建成功！');
+        addOVSBridge(newData);
     });
 }

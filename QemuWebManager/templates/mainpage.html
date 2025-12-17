@@ -756,7 +756,7 @@
 
                                             <!-- Macvtap网络池卡片 -->
                                             <div class="col-md-6 mb-4">
-                                                <div class="card storage-card" data-type="host">
+                                                <div class="card storage-card" data-type="macvtap">
                                                     <div class="card-header bg-dark-subtle">
                                                         <i class="fas fa-server me-2"></i>Macvtap网络池
                                                     </div>
@@ -1012,7 +1012,7 @@
                                     </div>
 
                                     <!-- Macvtap网络池子页面 -->
-                                    <div class="content-section d-none" id="host-content">
+                                    <div class="content-section d-none" id="macvtap-content">
                                         <!-- 内容会在JS中动态生成 -->
                                         <div class="sub-page-header mb-4">
                                             <button class="btn btn-secondary back-to-main">
@@ -1026,26 +1026,14 @@
                                                 <h5 class="mb-0">新建Macvtap网络池</h5>
                                             </div>
                                             <div class="card-body">
-                                                <form id="hostPoolForm">
+                                                <form id="macvtapPoolForm">
                                                     <div class="row">
-                                                        <div class="col-md-6">
+                                                        <div class="col-md-3">
                                                             <div class="mb-3">
-                                                                <label for="hostInterface"
-                                                                    class="form-label">物理网卡</label>
-                                                                <select class="form-select" id="hostInterface" required>
-                                                                    <option value="">选择物理网卡</option>
-                                                                    <option value="enp3s0">enp3s0</option>
-                                                                    <option value="enp4s0">enp4s0</option>
-                                                                    <option value="eth0">eth0</option>
-                                                                    <option value="eth1">eth1</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="mb-3">
-                                                                <label for="hostIP" class="form-label">IP地址</label>
-                                                                <input type="text" class="form-control" id="hostIP"
-                                                                    placeholder="192.168.1.1" required>
+                                                                <label for="macvtapPhyNIC" class="form-label">物理网卡</label>
+                                                                <div id="macvtapPhyNIC">
+                                                                    <p>显示所有的物理网卡</p>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1064,12 +1052,11 @@
                                                         <thead>
                                                             <tr>
                                                                 <th>ID</th>
-                                                                <th>物理网卡名</th>
-                                                                <th>IP地址</th>
+                                                                <th>物理网卡名</th>                                                                
                                                                 <th>操作</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody id="hostPoolTable">
+                                                        <tbody id="macvtapPoolTable">
                                                             <!-- 动态生成的行 -->
                                                         </tbody>
                                                     </table>

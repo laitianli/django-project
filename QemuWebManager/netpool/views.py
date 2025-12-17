@@ -15,18 +15,20 @@ def getNetpoolData():
             { 'id': 2, 'name': 'bridge1', 'interface': 'br1', 'mac': '00:20.ab:12:a1:2d', 'phyNic':'enp27s0f0np0'},
             { 'id': 3, 'name': 'bridge2', 'interface': 'br2', 'mac': '00:30.ab:12:a1:2e', 'phyNic':'enp27s0f2np2'},
         ],
-        'host': [
-            { 'id': 1, 'interface': 'enp3s0', 'ip': '192.168.10.1' },
-            { 'id': 2, 'interface': 'enp4s0', 'ip': '172.15.88.1' }
+        'macvtap': [
+            { 'id': 1, 'name': 'enp3s0', 'interface': 'enp3s0', 'phyNic':'enp3s0'},
+            { 'id': 2, 'name': 'enp27s0f0np0', 'interface': 'enp27s0f0np0', 'phyNic':'enp27s0f0np0'},
         ],
         'ovs': [
-            { 'id': 1, 'name': 'ovs0', 'mac': '10:10.ab:12:a1:2c', 'dpdk': 'false' },
-            { 'id': 2, 'name': 'ovs1', 'mac': '10:20.ab:12:a1:2c', 'dpdk': 'true' }
+            { 'id': 1, 'name': 'bridge-ovs0', 'interface': 'ovs0', 'mac': '00:10.ab:12:a1:2c', 'phyNic':'enp2s0', 'userdpdk': False},
+            { 'id': 2, 'name': 'bridge-ovs1', 'interface': 'ovs1', 'mac': '00:20.ab:12:a1:2d', 'phyNic':'enp27s0f0np0', 'userdpdk': False},
+            { 'id': 3, 'name': 'bridge-ovs2', 'interface': 'ovs2', 'mac': '00:30.ab:12:a1:2e', 'phyNic':'enp27s0f2np2', 'userdpdk': False},
         ]
     }
     
     networkPools['nat']=CLVNetwork().getNATNetworkData()
     networkPools['bridge']=CLVNetwork().getBridgeNetworkData()
+    networkPools['macvtap']=CLVNetwork().getMacvtapNetworkData()
     networkPools['ovs']=CLVNetwork().getOVSNetworkData()
     # print(networkPools)
     return networkPools
@@ -51,7 +53,7 @@ def doNetworkPool(request):
                 "message": "%s action success." % json_data["action"],
                 "response_json": getNetpoolData(),
             }
-            print(data)
+            # print(data)
             return JsonResponse(data)
 
 # Create your views here.
@@ -124,7 +126,7 @@ def doBridgePool(request):
                     "message": "%s action failed!" % json_data["action"]}
             return JsonResponse(data)
 
-def doHostPool(request):
+def doMacvtapPool(request):
     if request.method == "POST":
         raw_data = request.body  # 获取原始字节流
         json_data = json.loads(raw_data.decode("utf-8"))  # 解码并解析JSON
@@ -132,9 +134,9 @@ def doHostPool(request):
             data = json_data.get("data")
             if len(data) == 0:
                 return JsonResponse('{"result": "failed", "message": "data is None"}')
-            # print('data: %s' % data)
+            print('doMacvtapPool data: %s' % data)
             network = CLVNetwork()
-            if network.addNATNetworkData(data) == True:
+            if network.addMacvtapNetworkData(data) == True:
                 data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"]}
             else:
@@ -144,12 +146,13 @@ def doHostPool(request):
         
         elif json_data['action'] == 'del':
             name = json_data.get("name")
+            interface = json_data.get('interface')
             # print('name: %s' % name)
             if name == "":
                 return JsonResponse('{"result": "failed", "message": "name is None"}')
             
             network = CLVNetwork()
-            if network.delNATNetworkData(name) == True:
+            if network.delMacvtapNetworkData(name, interface) == True:
                 data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"]}
             else:

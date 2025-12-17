@@ -16,7 +16,7 @@
     <span class="d-block p-2 text-bg-dark">新建虚拟机向导>></span>
     <div class="row g-0">
         <!-- 左侧设备列表 -->
-        <div class="col-md-4 device-list">
+        <div class="col-md-2 device-list">
             <div class="device-item active" data-device="vmname">
                 <div class="fw-bold">虚拟机</div>
                 <div class="device-summary">centos8.4</div>
@@ -56,7 +56,7 @@
         </div>
 
         <!-- 右侧设置面板 -->
-        <div class="col-md-8 settings-panel">
+        <div class="col-md-10 settings-panel">
             <!-- 【虚拟机】设置面板 -->
             <div class="device-settings " id="vmname-settings">
                 <div class="settings-panel">
@@ -391,6 +391,7 @@
                                     <select class="form-select" id="nicNetModelSelect">
                                         <option value="e1000">e1000</option>
                                         <option value="virtio">virtio</option>
+                                        <option value="rtl8139">rtl8139</option>
                                     </select>
                                 </div>
                             </div>

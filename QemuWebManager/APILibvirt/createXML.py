@@ -334,6 +334,7 @@ class createVMXML():
                 
                 modelNode = libxml2.newNode('model')
                 modelNode.setProp('type', model)
+                intfNode.addChild(modelNode)
             elif type == 'ovs':
                 intfNode = libxml2.newNode('interface')
                 intfNode.setProp('type', 'bridge')

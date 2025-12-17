@@ -67,7 +67,6 @@ function renderNetworkInterfaceCards() {
 
 // 渲染网络接口卡片
 function doQuerySuccess(response) {
-    console.log('--doQuerySuccess-');
     g_networkInterfaces = response.response_json;
     if (g_networkInterfaces.length === 0) {
         console.log('networkInterface is null');

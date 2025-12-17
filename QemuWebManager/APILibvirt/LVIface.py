@@ -50,7 +50,7 @@ class CLVIface(ConnectLibvirtd):
             ipv4s = "None"
         if ipv6s == "":
             ipv6s = "None"
-        record = { 'id': id, 'name': name, 'type': type, 'mac': mac, 'status': state, 'ipv4': ipv4s, 'ipv6': ipv6s }
+        record = { 'id': id, 'name': name, 'type': type, 'mac': mac, 'status': state, 'ipv4': ipv4s, 'ipv6': ipv6s, 'used': False}
         # print(record)
         return record
         

@@ -85,6 +85,21 @@ class CLVNetwork(ConnectLibvirtd):
         # print(networkInterfaces)
         return networkInterfaces
     
+    def getMacvtapNetworkData(self):
+        networkInterfaces = []
+        try:
+            id = 0
+            intfs = MacvtapTable.objects.filter()
+            print(f'[Info] [getMacvtapNetworkData] select vm Macvtap table entries for vm  success')
+            for mp in intfs: #{ 'id': 1, 'name': 'enp3s0', 'interface': 'enp3s0', 'phyNic':'enp3s0'},
+                oneNetwork = {'id': id, 'name':mp.name, 'interface':mp.interface,  'phyNic': mp.phyNic}
+                networkInterfaces.append(oneNetwork)
+                id = id + 1
+        except Exception as e:
+            print(f'[Error] Querry MacvtapTable table failed: {e}')
+        
+        return networkInterfaces
+    
     def getOVSNetworkData(self):
         networkconn = self.get_conn()
         networks = []
@@ -334,14 +349,18 @@ class CLVNetwork(ConnectLibvirtd):
         id = 0
         for name in networks:
             if name == networkname:
-                network = networkconn.networkLookupByName(networkname)
-                network.destroy()
-                network.undefine()
+                try:
+                    network = networkconn.networkLookupByName(networkname)
+                    network.destroy()
+                    network.undefine()
+                except Exception as e:
+                    print(f'[Exception] destroy/undefine failed: {e}')
+                    self.connect_close()
+                    return False
                 self.connect_close()
                 print("[Inof] Nat: %s has delete!" % name)
                 return True
         self.connect_close()
-
         return False
     
     # {'id': 4, 'name': 'bridge3', 'interface': 'br3', 'mac': '52:12:ab:cd:ef', 'phyNic': 'enp27s0f3np3'}
@@ -443,6 +462,35 @@ class CLVNetwork(ConnectLibvirtd):
         self.connect_close()
         return False
 
+    def addMacvtapNetworkData(self, data):
+        if data['name'] == '':
+            return False
+        try:
+            MacvtapTable.objects.create(name=data['name'],
+                                        interface=data['interface'],
+                                        phyNic = data['phyNic'])
+        except Exception as e:
+            print(f'[Exception] MacvtapTable.objects.create failed: {e}')
+            return False
+        return True
+    
+    def delMacvtapNetworkData(self, name, interface):
+        #TODO: 判断网卡是否在虚拟机上使用
+        try:
+            recodes = VMNICTableModel.objects.filter(netPoolName=interface)
+            if len(recodes): 
+                print(f'[Note] delMacvtapNetworkData {interface} is using, can not delete!')
+                return False
+        except Exception as e:
+            print(f"[Exception] delMacvtapNetworkData Query VMNICTableModel failed: {e}")
+            return False
+        try:
+            MacvtapTable.objects.filter(interface=interface).delete()
+        except Exception as e:
+            print(f'[Exception] MacvtapTable.objects.delete({interface}) failed: {e}')
+            return False
+        return True
+    
     # {'id': 4, 'name': 'bridge3', 'interface': 'br3', 'mac': '52:12:ab:cd:ef', 'phyNic': 'enp27s0f3np3'}
     def addOVSNetworkData(self, data):
         networkconn = self.get_conn()

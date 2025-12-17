@@ -9,7 +9,7 @@
     border-radius: 5px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    max-width: 900px;
+    /* max-width: 900px; */
     margin: 0 auto;
 }
 
