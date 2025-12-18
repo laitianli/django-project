@@ -719,7 +719,7 @@ function initNetpool() {
     });
 
     // 返回按钮事件处理（使用事件委托）
-    $(document).on('click', '.back-to-main', function () {
+    $(document).on('click', '#network-panel .back-to-main', function () {
         $('#network-panel .content-section').addClass('d-none');
         // $('.sub-view').hide();
         $('#network-main').removeClass('d-none');

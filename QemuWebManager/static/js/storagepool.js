@@ -25,6 +25,9 @@ function initStroagepool() {
 
     // 上传ISO对话框的确定按钮点击事件
     $(document).on('click', '#confirmUpload', do_confirmUpload);
+
+    // 返回按钮事件处理（使用事件委托）
+    $(document).on('click', '.back-to-main', doStoragePanelBacktoMain);
 }
 
 // 新建存储池按钮点击事件
@@ -60,6 +63,14 @@ $('#cephStorageCard').click(function () {
     $('.content-section').addClass('d-none');
     $('#ceph-storage-content').removeClass('d-none');
 });
+
+// 返回按钮事件处理（使用事件委托）
+function doStoragePanelBacktoMain() {
+    console.log("-------------storage-panel .back-to-main---");
+    $('#storage-panel .content-section').addClass('d-none');
+    // $('.sub-view').hide();
+    $('#storage-main').removeClass('d-none');
+}
 
 // 上传ISO按钮点击事件
 function do_uploadIsoBtn() {
@@ -106,7 +117,7 @@ function do_confirmAddDirectoryBtn() {
 }
 
 // 添加ISO本地目录对话框中的确定按钮点击事件
-function do_confirmAddISODirectoryBtn() { 
+function do_confirmAddISODirectoryBtn() {
     handleISOFormSubmit();
 }
 
