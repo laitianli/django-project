@@ -238,6 +238,23 @@ function update_networkInterfaces_json(phyNic, val = true) {
     });
 }
 
+function init_networkInterfaces_json_nicused() {
+    g_networkPools.nat.forEach(pool => {
+        if (pool.nic !== 'ALL') {
+            update_networkInterfaces_json(pool.nic);
+        }
+    });
+    g_networkPools.bridge.forEach(pool => {
+        update_networkInterfaces_json(pool.phyNic);
+    });
+    g_networkPools.macvtap.forEach(pool => {
+        update_networkInterfaces_json(pool.phyNic);
+    });
+    g_networkPools.ovs.forEach(pool => {
+        update_networkInterfaces_json(pool.phyNic);
+    });
+}
+
 // 渲染NAT网络池表格
 function renderNATPoolTable() {
     const tableBody = $('#natPoolTable');
@@ -648,6 +665,9 @@ function initNetpool() {
     function showSubPage(type) {
         $('#network-panel .content-section').addClass('d-none');
 
+        init_networkInterfaces_json_nicused();
+        showPHYNIC2Html();
+
         switch (type) {
             case 'nat':
                 $('#nat-content').removeClass('d-none');
@@ -666,13 +686,10 @@ function initNetpool() {
                 renderOVSPoolTable();
                 break;
         }
-        if (type === 'nat' || type === 'bridge' || type === 'macvtap' || type === 'ovs') {
-            showPHYNIC2Html();
-        }        
     }
 
     // 网络池卡片点击事件
-    $('.storage-card').click(function () {
+    $('#network-panel .storage-card').click(function () {
         const type = $(this).data('type');
         showSubPage(type);
     });
