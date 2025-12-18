@@ -888,3 +888,6 @@ class CLVVMInstance(ConnectLibvirtd):
         # print(f'nicList: {nicList}')
         return True, nicList
     
+    def editVMNic(self, vmName, nicList):
+        print(f'[Info] editVMNic TODO: {vmName}, {nicList}')
+        return True

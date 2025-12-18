@@ -74,6 +74,10 @@ def editVMISO(vmName, isoList):
 def editVMDisk(vmName, diskList):
     vmInst = CLVVMInstance()
     return vmInst.editVMDisk(vmName, diskList)
+
+def editVMNic(vmName, nicList):
+    vmInst = CLVVMInstance()
+    return vmInst.editVMNic(vmName, nicList)
     
 def queryVMISO(vmName):
     vmInst = CLVVMInstance()
@@ -226,7 +230,11 @@ def doVMInstance(request):
             elif subaction == 'editDisk':
                 diskList = json_data['diskList']
                 # print(diskList)
-                ret = editVMDisk(vmName, diskList)   
+                ret = editVMDisk(vmName, diskList)
+            elif subaction == 'editNic':
+                nicList = json_data['nicList']
+                print(f'nicList: {nicList}')
+                ret = editVMNic(vmName, nicList)
             if ret == True:
                 data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"], 
