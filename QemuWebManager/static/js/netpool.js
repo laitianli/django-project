@@ -234,6 +234,13 @@ function delOVSBridge(data, interface, phyNic) {
 function update_networkInterfaces_json(phyNic, val = true) {
     let intface_json_data = JSON.parse(sessionStorage.getItem("networkInterfaces_json"));
     intface_json_data.forEach(nic => {
+        if (nic.ipv4 !== "None") {
+            const ip = nic.ipv4.split('/')[0];
+            if (ip === window.location.hostname) {
+                nic.used = true;
+                return;
+            }
+        }
         if (nic.name == phyNic) {
             nic.used = val;
             sessionStorage.setItem("networkInterfaces_json", JSON.stringify(intface_json_data));
@@ -653,9 +660,19 @@ function doDelOVSPoolSuccess(jsonData, response) {
     });
 }
 
+function getServerInfo()
+{
+    var protocol = window.location.protocol; // 例如 "https:"
+    var hostname = window.location.hostname; // 域名，例如 "www.example.com" 或 IP地址
+    var port = window.location.port; // 端口号
+    var host = window.location.host; // 主机名+端口，例如 "www.example.com:8080"
+    console.log('protocol: ' + protocol + ' hostname: '+hostname + ' port: ' + port + ' host: ' + host);
+}
+
 function initNetpool() {
     console.log('initNetpool....')
     renderNetworkCards();
+    getServerInfo();
 
     // 绑定编辑和删除事件
     bindTableEvents('#natPoolTable', 'nat');
