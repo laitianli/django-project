@@ -127,12 +127,13 @@ function addNAT(data) {
     }
     sendReqeust2natpool(jsonData, doAddNATPoolSuccess, function () { alert('NAT网络池创建失败！'); })
 }
-function delNAT(data, interface) {
+function delNAT(data, interface, phyNic) {
     var jsonData = {
         action: 'del',
         type: 'nat',
         name: data,
-        interface: interface
+        interface: interface, 
+        phyNic: phyNic
     }
     sendReqeust2natpool(jsonData, doDelNATPoolSuccess, function () { alert('NAT网络池删除失败！'); })
 }
@@ -157,12 +158,13 @@ function addBridge(data) {
     }
     sendReqeust2bridgepool(jsonData, doAddBridgePoolSuccess, function () { alert('Bridge网络池创建失败！'); })
 }
-function delBridge(data, interface) {
+function delBridge(data, interface, phyNic) {
     var jsonData = {
         action: 'del',
         type: 'bridge',
         name: data,
-        interface: interface
+        interface: interface, 
+        phyNic: phyNic
     }
     sendReqeust2bridgepool(jsonData, doDelBridgePoolSuccess, function () { alert('Bridge网络池删除失败！'); })
 }
@@ -218,12 +220,13 @@ function addOVSBridge(data) {
     }
     sendReqeust2ovspool(jsonData, doAddOVSPoolSuccess, function () { alert('OpenVSwitch网络池创建失败！'); })
 }
-function delOVSBridge(data, interface) {
+function delOVSBridge(data, interface, phyNic) {
     var jsonData = {
         action: 'del',
         type: 'ovs',
         name: data,
-        interface: interface
+        interface: interface, 
+        phyNic:phyNic
     }
     sendReqeust2ovspool(jsonData, doDelOVSPoolSuccess, function () { alert('OpenVSwitch网络池删除失败！'); })
 }
@@ -386,21 +389,24 @@ function bindTableEvents(tableId, poolType) {
         if (id == btnid && confirm('确定要删除这个网络池吗？')) {
             if (poolType == 'nat') {
                 var name = row.find('td').eq(1).text().trim();
-                var interface = row.find('td').eq(1).text().trim();
+                var interface = row.find('td').eq(2).text().trim();
+                var phyNic = row.find('td').eq(4).text().trim();
                 // console.log('name:' + name);
-                delNAT(name, interface);
+                delNAT(name, interface, phyNic);
                 return true;
             }
             else if (poolType == 'bridge') {
                 var name = row.find('td').eq(1).text().trim();
                 var interface = row.find('td').eq(2).text().trim();
-                delBridge(name, interface);
+                var phyNic = row.find('td').eq(4).text().trim();
+                delBridge(name, interface, phyNic);
                 return true;
             }
             else if (poolType == 'ovs') {
                 var name = row.find('td').eq(1).text().trim();
                 var interface = row.find('td').eq(2).text().trim();
-                delOVSBridge(name, interface);
+                var phyNic = row.find('td').eq(4).text().trim();
+                delOVSBridge(name, interface, phyNic);
                 return true;
             }
             else if (poolType == 'macvtap') {
@@ -575,8 +581,9 @@ function doDelNATPoolSuccess(jsonData, response) {
             row.remove();
             sessionStorage.setItem("network_json", JSON.stringify(g_networkPools));
             /* 更新id值 */
-            //updateNatRowIds("natPoolTable");
-            update_networkInterfaces_json(jsonData['interface'], false);
+            updateNatRowIds("natPoolTable");
+            console.log('------phyNic: ' + jsonData['phyNic']);
+            update_networkInterfaces_json(jsonData['phyNic'], false);
             showPHYNIC2Html();
             alert('网络池删除成功！');
         }
@@ -595,8 +602,8 @@ function doDelBridgePoolSuccess(jsonData, response) {
             row.remove();
             sessionStorage.setItem("network_json", JSON.stringify(g_networkPools));
             /* 更新id值 */
-            //updateNatRowIds("natPoolTable");
-            update_networkInterfaces_json(jsonData['interface'], false);
+            updateNatRowIds("bridgePoolTable");
+            update_networkInterfaces_json(jsonData['phyNic'], false);
             showPHYNIC2Html();
             alert('Bridge网络池删除成功！');
             return;
@@ -616,7 +623,7 @@ function doDelMacvtapPoolSuccess(jsonData, response) {
             row.remove();
             sessionStorage.setItem("network_json", JSON.stringify(g_networkPools));
             /* 更新id值 */
-            //updateNatRowIds("natPoolTable");
+            updateNatRowIds("macvtapPoolTable");
             update_networkInterfaces_json(jsonData['interface'], false);
             showPHYNIC2Html();
             alert('Macvtap网络池删除成功！');
@@ -637,8 +644,8 @@ function doDelOVSPoolSuccess(jsonData, response) {
             row.remove();
             sessionStorage.setItem("network_json", JSON.stringify(g_networkPools));
             /* 更新id值 */
-            //updateNatRowIds("natPoolTable");
-            update_networkInterfaces_json(jsonData['interface'], false);
+            updateNatRowIds("ovsPoolTable");
+            update_networkInterfaces_json(jsonData['phyNic'], false);
             showPHYNIC2Html();
             alert('OVS Bridge网络池删除成功！');
             return;

@@ -56,13 +56,13 @@ class CLVNetwork(ConnectLibvirtd):
         for network in networkconn.listDefinedNetworks():
             networks.append(network)  
         # print('network: %s' % networks)
-        id = 0
+        id = 1
         for name in networks:
             iface = networkconn.networkLookupByName(name)
             xml = iface.XMLDesc(0)
             # print('%s: %s' % (name, xml))
             # { 'id': 2, 'name': 'bridge1', 'interface': 'br1', 'mac': '00:20.ab:12:a1:2d', 'phyNic':'enp27s0f0np0'},
-            name, interface = self._getOneBridgeNetwork(id + 1, xml)
+            name, interface = self._getOneBridgeNetwork(xml)
             if interface == None:
                 continue
             try:
@@ -88,7 +88,7 @@ class CLVNetwork(ConnectLibvirtd):
     def getMacvtapNetworkData(self):
         networkInterfaces = []
         try:
-            id = 0
+            id = 1
             intfs = MacvtapTable.objects.filter()
             print(f'[Info] [getMacvtapNetworkData] select vm Macvtap table entries for vm  success')
             for mp in intfs: #{ 'id': 1, 'name': 'enp3s0', 'interface': 'enp3s0', 'phyNic':'enp3s0'},
@@ -109,13 +109,13 @@ class CLVNetwork(ConnectLibvirtd):
         for network in networkconn.listDefinedNetworks():
             networks.append(network)  
         # print('network: %s' % networks)
-        id = 0
+        id = 1
         for name in networks:
             iface = networkconn.networkLookupByName(name)
             xml = iface.XMLDesc(0)
             # print('%s: %s' % (name, xml))
             # { 'id': 2, 'name': 'bridge1', 'interface': 'br1', 'mac': '00:20.ab:12:a1:2d', 'phyNic':'enp27s0f0np0'},
-            name, interface = self._getOneOVSNetwork(id + 1, xml)
+            name, interface = self._getOneOVSNetwork(xml)
             if interface == None:
                 continue
             try:
@@ -125,7 +125,6 @@ class CLVNetwork(ConnectLibvirtd):
                 print(f'[Error] Querry OVSTable {interface} table failed: {e}')
             if len(intfs): 
                 for bp in intfs:
-                    # print(f'--bp: {bp}')
                     oneNetwork = {'id': id, 'name':bp.name, 'interface':interface, 'mac': bp.mac, 'phyNic': bp.phyNic, 'userdpdk': bp.userdpdk}
                     networkInterfaces.append(oneNetwork)
                     id = id + 1
@@ -183,7 +182,7 @@ class CLVNetwork(ConnectLibvirtd):
             return recode
         else:
             return {}
-    def _getOneBridgeNetwork(self, id, xml):
+    def _getOneBridgeNetwork(self, xml):
         name = util.get_xml_path(xml, '/network/name')
         mode = util.get_xml_path(xml, '/network/forward/@mode')
         if mode == "bridge":
@@ -195,7 +194,7 @@ class CLVNetwork(ConnectLibvirtd):
         else:
             return None, None
         
-    def _getOneOVSNetwork(self, id, xml):
+    def _getOneOVSNetwork(self, xml):
         name = util.get_xml_path(xml, '/network/name')
         mode = util.get_xml_path(xml, '/network/forward/@mode')
         if mode == "bridge":
@@ -451,7 +450,7 @@ class CLVNetwork(ConnectLibvirtd):
                 except Exception as e:
                     print(f'[Exception] BridgeTable.objects.delete(name = {networkname}) failed: {e}')
                     return False
-                                
+            
                 ret = util.delete_bridge(interface)
                 if ret == True:
                     print("[Info] Bridge: %s:%s delete success!" % (name, interface))
