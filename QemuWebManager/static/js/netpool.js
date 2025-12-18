@@ -1,4 +1,4 @@
-var networkPools = {
+var g_networkPools = {
     nat: [
         { id: 1, name: 'default', interface: 'virbr0', subnet: '192.168.122.0/24', nic: 'enp2s0', dhcp: true },
     ],
@@ -63,13 +63,13 @@ function sendReqeust2ovspool(jsonData, successFunc, failFunc) {
 
 // 渲染网络接口卡片
 function doQueryNetworkPoolSuccess(jsonData, response) {
-    networkPools = response.response_json;
-    if (networkPools.length === 0) {
-        console.log('networkPools is null');
+    g_networkPools = response.response_json;
+    if (g_networkPools.length === 0) {
+        console.log('g_networkPools is null');
         return;
     }
     // console.log(g_networkInterfaces)
-    sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+    sessionStorage.setItem("network_json", JSON.stringify(g_networkPools));
 }
 
 // 渲染网络接口卡片
@@ -109,7 +109,7 @@ function showPHYNIC2Html() {
 
 function doAddNATPoolSuccess(jsonData, response) {
     // 添加到数据数组
-    networkPools.nat.push(jsonData.data);
+    g_networkPools.nat.push(jsonData.data);
 
     // 重新渲染表格
     renderNATPoolTable();
@@ -117,7 +117,7 @@ function doAddNATPoolSuccess(jsonData, response) {
     // 重置表单
     $('#natPoolForm')[0].reset();
     $('#phyNetInfo').addClass('d-none');
-    sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+    sessionStorage.setItem("network_json", JSON.stringify(g_networkPools));
 }
 function addNAT(data) {
     var jsonData = {
@@ -138,7 +138,7 @@ function delNAT(data, interface) {
 }
 function doAddBridgePoolSuccess(jsonData, response) {
     // 添加到数据数组
-    networkPools.bridge.push(jsonData.data);
+    g_networkPools.bridge.push(jsonData.data);
 
     // 重新渲染表格
     renderBridgePoolTable();
@@ -146,7 +146,7 @@ function doAddBridgePoolSuccess(jsonData, response) {
     // 重置表单
     $('#bridgePoolForm')[0].reset();
     // $('#phyNetInfo').addClass('d-none');
-    sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+    sessionStorage.setItem("network_json", JSON.stringify(g_networkPools));
     alert('Bridge网络池创建成功！');
 }
 function addBridge(data) {
@@ -169,14 +169,14 @@ function delBridge(data, interface) {
 
 function doAddMacvtapPoolSuccess(jsonData, response) {
     // 添加到数据数组
-    networkPools.macvtap.push(jsonData.data);
+    g_networkPools.macvtap.push(jsonData.data);
 
     // 重新渲染表格
     renderMacvtapPoolTable();
     showPHYNIC2Html();
     // 重置表单
     $('#macvtapPoolForm')[0].reset();
-    sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+    sessionStorage.setItem("network_json", JSON.stringify(g_networkPools));
     alert('Macvtap网络池创建成功！');
 }
 function addMacvtapBridge(data) {
@@ -200,14 +200,14 @@ function delMacvtapBridge(data, interface) {
 function doAddOVSPoolSuccess(jsonData, response) {
     console.log('---doAddOVSPoolSuccess-----')
     // 添加到数据数组
-    networkPools.ovs.push(jsonData.data);
+    g_networkPools.ovs.push(jsonData.data);
 
     // 重新渲染表格
     renderOVSPoolTable();
     showPHYNIC2Html();
     // 重置表单
     $('#ovsPoolForm')[0].reset();
-    sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+    sessionStorage.setItem("network_json", JSON.stringify(g_networkPools));
     alert('OpenVSwitch网络池创建成功！');
 }
 function addOVSBridge(data) {
@@ -243,7 +243,7 @@ function renderNATPoolTable() {
     const tableBody = $('#natPoolTable');
     tableBody.empty();
 
-    networkPools.nat.forEach(pool => {
+    g_networkPools.nat.forEach(pool => {
         var row;
         if (pool.is_default === "true") {
             row = `
@@ -292,7 +292,7 @@ function renderBridgePoolTable() {
     const tableBody = $('#bridgePoolTable');
     tableBody.empty();
 
-    networkPools.bridge.forEach(pool => {
+    g_networkPools.bridge.forEach(pool => {
         const row = `
                 <tr data-id="${pool.id}">
                     <td class="id-cell">${pool.id}</td>
@@ -318,7 +318,7 @@ function renderMacvtapPoolTable() {
     const tableBody = $('#macvtapPoolTable');
     tableBody.empty();
 
-    networkPools.macvtap.forEach(pool => {
+    g_networkPools.macvtap.forEach(pool => {
         const row = `
                 <tr data-id="${pool.id}">
                     <td class="id-cell">${pool.id}</td>
@@ -342,7 +342,7 @@ function bindTableEvents(tableId, poolType) {
     $(document).on('click', `${tableId} .edit-btn`, function () {
         const row = $(this).closest('tr');
         const id = row.data('id');
-        const pool = networkPools[poolType].find(p => p.id === id);
+        const pool = g_networkPools[poolType].find(p => p.id === id);
 
         if (row.hasClass('editing')) {
             // 保存编辑
@@ -403,7 +403,7 @@ function bindTableEvents(tableId, poolType) {
         const field = cell.data('field');
         const row = cell.closest('tr');
         const id = row.data('id');
-        const pool = networkPools[poolType].find(p => p.id === id);
+        const pool = g_networkPools[poolType].find(p => p.id === id);
 
         if (!row.hasClass('editing')) {
             enterCellEditMode(cell, field, pool);
@@ -512,7 +512,7 @@ function renderOVSPoolTable() {
     const tableBody = $('#ovsPoolTable');
     tableBody.empty();
 
-    networkPools.ovs.forEach(pool => {
+    g_networkPools.ovs.forEach(pool => {
         const row = `
                 <tr data-id="${pool.id}">
                     <td class="id-cell">${pool.id}</td>
@@ -540,7 +540,7 @@ function updateNatRowIds(tableID) {
         $(this).find('.id-cell').text(index + 1);
     });
     var index = 1;
-    networkPools.nat.forEach(pool => {
+    g_networkPools.nat.forEach(pool => {
         pool.id = index;
         index += 1;
     });
@@ -553,10 +553,10 @@ function doDelNATPoolSuccess(jsonData, response) {
             const row = $(this).closest('tr');
             const id = row.data('id');
             // 从数据数组中删除
-            networkPools['nat'] = networkPools['nat'].filter(p => p.id !== id);
+            g_networkPools['nat'] = g_networkPools['nat'].filter(p => p.id !== id);
             // 从DOM中删除行
             row.remove();
-            sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+            sessionStorage.setItem("network_json", JSON.stringify(g_networkPools));
             /* 更新id值 */
             //updateNatRowIds("natPoolTable");
             update_networkInterfaces_json(jsonData['interface'], false);
@@ -573,10 +573,10 @@ function doDelBridgePoolSuccess(jsonData, response) {
             const row = $(this).closest('tr');
             const id = row.data('id');
             // 从数据数组中删除
-            networkPools['bridge'] = networkPools['bridge'].filter(p => p.id !== id);
+            g_networkPools['bridge'] = g_networkPools['bridge'].filter(p => p.id !== id);
             // 从DOM中删除行
             row.remove();
-            sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+            sessionStorage.setItem("network_json", JSON.stringify(g_networkPools));
             /* 更新id值 */
             //updateNatRowIds("natPoolTable");
             update_networkInterfaces_json(jsonData['interface'], false);
@@ -594,10 +594,10 @@ function doDelMacvtapPoolSuccess(jsonData, response) {
             const row = $(this).closest('tr');
             const id = row.data('id');
             // 从数据数组中删除
-            networkPools['macvtap'] = networkPools['macvtap'].filter(p => p.id !== id);
+            g_networkPools['macvtap'] = g_networkPools['macvtap'].filter(p => p.id !== id);
             // 从DOM中删除行
             row.remove();
-            sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+            sessionStorage.setItem("network_json", JSON.stringify(g_networkPools));
             /* 更新id值 */
             //updateNatRowIds("natPoolTable");
             update_networkInterfaces_json(jsonData['interface'], false);
@@ -615,10 +615,10 @@ function doDelOVSPoolSuccess(jsonData, response) {
             const row = $(this).closest('tr');
             const id = row.data('id');
             // 从数据数组中删除
-            networkPools['ovs'] = networkPools['ovs'].filter(p => p.id !== id);
+            g_networkPools['ovs'] = g_networkPools['ovs'].filter(p => p.id !== id);
             // 从DOM中删除行
             row.remove();
-            sessionStorage.setItem("network_json", JSON.stringify(networkPools));
+            sessionStorage.setItem("network_json", JSON.stringify(g_networkPools));
             /* 更新id值 */
             //updateNatRowIds("natPoolTable");
             update_networkInterfaces_json(jsonData['interface'], false);
@@ -739,7 +739,7 @@ function initNetpool() {
         }
 
         // 生成新ID
-        const newId = networkPools.nat.length > 0 ? Math.max(...networkPools.nat.map(p => p.id)) + 1 : 1;
+        const newId = g_networkPools.nat.length > 0 ? Math.max(...g_networkPools.nat.map(p => p.id)) + 1 : 1;
         var newData = {
             id: newId,
             name: name,
@@ -768,7 +768,7 @@ function initNetpool() {
         }
 
         // 生成新ID
-        const newId = networkPools.bridge.length > 0 ? Math.max(...networkPools.bridge.map(p => p.id)) + 1 : 1;
+        const newId = g_networkPools.bridge.length > 0 ? Math.max(...g_networkPools.bridge.map(p => p.id)) + 1 : 1;
 
         var newData = {
             id: newId,
@@ -790,7 +790,7 @@ function initNetpool() {
             return;
         }
         // 生成新ID
-        const newId = networkPools.macvtap.length > 0 ? Math.max(...networkPools.macvtap.map(p => p.id)) + 1 : 1;
+        const newId = g_networkPools.macvtap.length > 0 ? Math.max(...g_networkPools.macvtap.map(p => p.id)) + 1 : 1;
 
         var newData = {
             id: newId,
@@ -815,7 +815,7 @@ function initNetpool() {
             return;
         }
         // 生成新ID
-        const newId = networkPools.ovs.length > 0 ? Math.max(...networkPools.ovs.map(p => p.id)) + 1 : 1;
+        const newId = g_networkPools.ovs.length > 0 ? Math.max(...g_networkPools.ovs.map(p => p.id)) + 1 : 1;
 
         var newData = {
             id: newId,
