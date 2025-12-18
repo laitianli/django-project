@@ -9,6 +9,9 @@ import libxml2
 from storagepool import toolset
 from createvmwizard.models import VMDiskTable as VMDiskTableModel
 from pathlib import Path
+from netpool.models import VMBridgePoolTable as BridgeTable
+from netpool.models import VMMacvtapPoolTable as MacvtapTable
+from netpool.models import VMOVSPoolTable as OVSTable
 
 try:
     from libvirt import libvirtError, VIR_DOMAIN_XML_SECURE, VIR_MIGRATE_LIVE, \
@@ -218,7 +221,11 @@ class CLVVMInstance(ConnectLibvirtd):
         if dom is None:
             self.connect_close()
             return False
-        ret = self.__operationOneVM(dom, op)
+        ret = -1
+        try:
+            ret = self.__operationOneVM(dom, op)
+        except Exception as e:
+            print(f'[Exception] __operationOneVM({op}) failed: ${e}')
         self.connect_close()
         # print(f'operationVM {op} ret: {ret}')
         if ret == 0:
@@ -818,6 +825,7 @@ class CLVVMInstance(ConnectLibvirtd):
     def queryVMNIC(self, vmName):
         conn = self.get_conn()
         nicList = []
+        createflag = 'create'
         dom = conn.lookupByName(vmName)
         if dom is None:
             self.connect_close()
@@ -825,13 +833,57 @@ class CLVVMInstance(ConnectLibvirtd):
         xml = dom.XMLDesc(0)
         root = ElementTree.fromstring(xml)
         for interface in root.findall("devices/interface"):
-            source_elm = interface.find('source')
-            source_network = source_elm.get('network')
-            mac_elm = interface.find('mac')
-            mac_addr = mac_elm.get('address')
-            model_elm = interface.find('model')
-            model_type = model_elm.get('type')
-            nicList.append({'network': source_network, 'mac': mac_addr, 'model': model_type})
+            type = interface.get('type')
+            print(f'--queryVMNIC: {type}')
+            if type == 'network': #nat
+                source_elm = interface.find('source')
+                source_networkPool = source_elm.get('network')
+                mac_elm = interface.find('mac')
+                mac_addr = mac_elm.get('address')
+                model_elm = interface.find('model')
+                model_type = model_elm.get('type')
+                networkType = 'nat'
+                if source_networkPool == 'default':
+                    createflag = 'default'
+                nicList.append({'nicModel':model_type, 'createflag': createflag, 'networkType': networkType, 'mac': mac_addr, 'networkPool': source_networkPool})
+            elif type == 'bridge': # bridge/ovs
+                model_elm = interface.find('model')
+                model_type = model_elm.get('type')
+                mac_elm = interface.find('mac')
+                mac_addr = mac_elm.get('address')
+                source_elm = interface.find('source')
+                bridge_inf = source_elm.get('bridge') #br0
+                networkType = 'bridge'
+                source_networkPool = 'unknow'
+                createflag = 'create'
+                virtualport = interface.find('virtualport')
+                if virtualport is not None and virtualport.get('type') == 'openvswitch':
+                    networkType = 'ovs'
+                    try:
+                        intfs = OVSTable.objects.get(interface=bridge_inf)
+                        source_networkPool= intfs.name
+                        print(f'[Info] [queryVMNIC] select vm OVS Bridge table entries for vm {bridge_inf} success')
+                    except Exception as e:
+                        print(f'[Error] Querry OVSTable {interface} table failed: {e}')
+                else:
+                    try:
+                        intfs = BridgeTable.objects.get(interface=bridge_inf)
+                        source_networkPool= intfs.name
+                        print(f'[Info] [queryVMNIC] select vm Bridge Bridge table entries for vm {bridge_inf} success')
+                    except Exception as e:
+                        print(f'[Error] Querry OVSTable {interface} table failed: {e}')
+
+                nicList.append({'nicModel': model_type, 'createflag': createflag, 'mac': mac_addr, 'networkType': networkType, 'networkPool': source_networkPool})
+            elif type == 'direct': # macvtap
+                createflag = 'create'
+                networkType = 'macvtap'
+                model_elm = interface.find('model')
+                model_type = model_elm.get('type')
+                mac_elm = interface.find('mac')
+                mac_addr = mac_elm.get('address')
+                source_elm = interface.find('source')
+                source_networkPool = source_elm.get('dev')
+                nicList.append({'nicModel': model_type, 'createflag': createflag, 'mac': mac_addr, 'networkType': networkType, 'networkPool': source_networkPool})
         self.connect_close()
         # print(f'nicList: {nicList}')
         return True, nicList

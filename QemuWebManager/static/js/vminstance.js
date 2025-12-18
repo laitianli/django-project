@@ -1998,8 +1998,23 @@ function editSetMAC() {
     $('#editVmNICMACID').val(mac);
 }
 
-function addEditNICRow(nicModel, nicMAC, nicConnType, netPoolName) {
-    const newRow = `
+function addEditNICRow(nicModel, nicMAC, nicConnType, netPoolName, createflag) {
+    var newRow;
+    if (createflag === 'default') {
+        newRow = `
+                <tr>
+                    <td class="model-cell">${nicModel}</td>
+                    <td class="mac-cell">${nicMAC}</td>
+                    <td class="connType-cell">${nicConnType}</td>
+                    <td class="poolName-cell">${netPoolName}</td>
+                    <td>
+                         <button class="btn btn-sm btn-danger btn-delete disabled">删除</button>
+                    </td>
+                </tr>
+            `;
+    }
+    else {
+        newRow = `
                 <tr>
                     <td class="model-cell">${nicModel}</td>
                     <td class="mac-cell">${nicMAC}</td>
@@ -2010,13 +2025,14 @@ function addEditNICRow(nicModel, nicMAC, nicConnType, netPoolName) {
                     </td>
                 </tr>
             `;
+    }    
     $('#editVmNICTab tbody').append(newRow);
 }
 
 function editAddNIC2List() {
-    const nicModel = 'virtio';
+    const nicModel = $('#editNicNetModelSelect').find('option:selected').text().trim();
     const nicMAC = $('#editVmNICMACID').val();
-    const nicConnType = $('#editNicConnectTypeSelect').val();
+    const nicConnType = $('#editNicConnectTypeSelect').find('option:selected').val();
     const netPoolName = $('#editNicNetPoolSelect').find('option:selected').text().trim();
 
     addEditNICRow(nicModel, nicMAC, nicConnType, netPoolName);
@@ -2029,6 +2045,7 @@ function editGetNICTabData() {
         const row = $(this);
         const rowData = {
             // 获取单元格文本内容
+            netModel:row.find('td').eq(0).text().trim(),
             mac: row.find('td').eq(1).text().trim(),
             nicConnType: row.find('td').eq(2).text().trim(),
             netPoolName: row.find('td').eq(3).text().trim(),
@@ -2040,7 +2057,7 @@ function editGetNICTabData() {
 }
 function editShowNetPoolSelect() {
     var netPoolType = $('#editNicConnectTypeSelect').find('option:selected').val();
-    // console.log('--netPoolType: ' + netPoolType);
+    // console.log('--editShowNetPoolSelect netPoolType: ' + netPoolType);
     $('#editNicNetPoolSelect').empty();
     let res_json_data = JSON.parse(sessionStorage.getItem("network_json"));
     $.each(res_json_data[netPoolType], function (index) {
@@ -2048,10 +2065,6 @@ function editShowNetPoolSelect() {
             value: netPoolType,
             text: res_json_data[netPoolType][index].name
         }));
-
-        if (res_json_data[netPoolType][index].name === 'default') {
-            $('#editNicNetPoolSelect').val(res_json_data[netPoolType][index].name);
-        }
     });
 }
 
@@ -2068,19 +2081,20 @@ function getVMNICListInfo(vmName) {
         }
         $('#editVmNICTab tbody').empty();
         nicList.forEach(nic => {
-            console.log(nic);
+            console.log('getVMNICListInfo nic:' + JSON.stringify(nic));
             //editUpdateDeleteButtonsState();
-            var netType = 'unknown';
-            let res_json_data = JSON.parse(sessionStorage.getItem("network_json"));
-            $.each(res_json_data, function (key, value) {
-                $.each(value, function (index) {
-                    if (value[index]['name'] === nic['network']) {
-                        netType = key;
-                        return ; // 退出循环
-                    }
-                });
-            });
-            addEditNICRow(nic['model'], nic['mac'].toUpperCase(), netType, nic['network']);
+            // var netType = 'unknown';
+            // let res_json_data = JSON.parse(sessionStorage.getItem("network_json"));
+            // $.each(res_json_data, function (key, value) {
+            //     $.each(value, function (index) {
+            //         if (value[index]['name'] === nic['network']) {
+            //             netType = key;
+            //             return ; // 退出循环
+            //         }
+            //     });
+            // });
+            // {'nicModel':model_type, 'createflag': createflag,'type': type, 'mac': mac_addr, 'network': source_networkPool}
+            addEditNICRow(nic['nicModel'], nic['mac'].toUpperCase(), nic['networkType'], nic['networkPool'], nic['createflag']);
         });
     }, function () { alert('查询虚拟实例ISO详细信息失败！'); });
 }
