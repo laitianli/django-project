@@ -276,11 +276,11 @@ function renderNATPoolTable() {
                     <td class="" data-field="dhcp">${pool.dhcp ? '是' : '否'}</td>
                     <td class="" data-field="dhcp">${pool.dhcp ? pool.dhcpip : 'None'}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary me-1 edit-btn" disabled data-id=${pool.id}>编辑</button>
                         <button class="btn btn-sm btn-danger delete-btn" disabled data-id=${pool.id}>删除</button>
                     </td>
                 </tr>
             `;
+            // <button class="btn btn-sm btn-primary me-1 edit-btn" disabled data-id=${pool.id}>编辑</button>
         }
         else {
             row = `
@@ -293,11 +293,11 @@ function renderNATPoolTable() {
                     <td class="editable-cell" data-field="dhcp">${pool.dhcp ? '是' : '否'}</td>
                     <td class="editable-cell" data-field="dhcp">${pool.dhcp ? pool.dhcpip : 'None'}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
                         <button class="btn btn-sm btn-danger delete-btn" data-id=${pool.id}>删除</button>
                     </td>
                 </tr>
             `;
+            // <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
         }
 
         tableBody.append(row);
@@ -321,11 +321,11 @@ function renderBridgePoolTable() {
                     <td class="editable-cell" data-field="mac">${pool.mac}</td>
                     <td class="editable-cell" data-field="phyNic">${pool.phyNic}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
                         <button class="btn btn-sm btn-danger delete-btn" data-id=${pool.id}>删除</button>
                     </td>
                 </tr>
             `;
+            // <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
         tableBody.append(row);
         if (pool.phyNic !== 'ALL') {
             update_networkInterfaces_json(pool.phyNic);
@@ -344,11 +344,11 @@ function renderMacvtapPoolTable() {
                     <td class="id-cell">${pool.id}</td>
                     <td class="editable-cell" data-field="phyNic">${pool.phyNic}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
                         <button class="btn btn-sm btn-danger delete-btn" data-id=${pool.id}>删除</button>
                     </td>
                 </tr>
             `;
+            // <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
         tableBody.append(row);
         if (pool.phyNic !== 'ALL') {
             update_networkInterfaces_json(pool.phyNic);
@@ -421,17 +421,17 @@ function bindTableEvents(tableId, poolType) {
     });
 
     // 单元格点击事件（直接编辑）
-    $(document).on('click', `${tableId} .editable-cell`, function () {
-        const cell = $(this);
-        const field = cell.data('field');
-        const row = cell.closest('tr');
-        const id = row.data('id');
-        const pool = g_networkPools[poolType].find(p => p.id === id);
+    // $(document).on('click', `${tableId} .editable-cell`, function () {
+    //     const cell = $(this);
+    //     const field = cell.data('field');
+    //     const row = cell.closest('tr');
+    //     const id = row.data('id');
+    //     const pool = g_networkPools[poolType].find(p => p.id === id);
 
-        if (!row.hasClass('editing')) {
-            enterCellEditMode(cell, field, pool);
-        }
-    });
+    //     if (!row.hasClass('editing')) {
+    //         enterCellEditMode(cell, field, pool);
+    //     }
+    // });
 }
 
 // 进入行编辑模式
@@ -545,11 +545,11 @@ function renderOVSPoolTable() {
                     <td class="editable-cell" data-field="phyNic">${pool.phyNic}</td>
                     <td class="editable-cell" data-field="${pool.userdpdk}">${pool.userdpdk ? '是' : '否'}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
                         <button class="btn btn-sm btn-danger delete-btn" data-id=${pool.id}>删除</button>
                     </td>
                 </tr>
             `;
+            // <button class="btn btn-sm btn-primary me-1 edit-btn" data-id=${pool.id}>编辑</button>
         tableBody.append(row);
         if (pool.phyNic !== 'ALL') {
             update_networkInterfaces_json(pool.phyNic);
