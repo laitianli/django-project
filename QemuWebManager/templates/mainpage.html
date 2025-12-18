@@ -697,26 +697,10 @@
                                                     <div class="card-header bg-dark-subtle">
                                                         <i class="fas fa-exchange-alt me-2"></i>NAT网络池
                                                     </div>
-                                                    <div class="card-body">
-                                                        <div class="table-scroll">
-                                                            <table class="table table-sm">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>网卡名</th>
-                                                                        <th>子网信息</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td>virbr0</td>
-                                                                        <td>192.168.122.0/24</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>virbr1</td>
-                                                                        <td>172.16.123.0/24</td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
+                                                    <div class="card-body d-flex flex-column align-items-center justify-content-center" style="min-height: 120px;">
+                                                        <div class="d-flex align-items-center w-100" style="min-height: 100px;">
+                                                            <i class="fas fa-exchange-alt fa-3x text-primary me-4"></i>
+                                                            <p class="mb-0 flex-grow-1">NAT（网络地址转换）网络池通过将虚拟机的私有IP地址转换为主机的公网IP，实现虚拟机与外部网络的通信，常用于保护内部网络安全并简化IP管理。</p>
                                                         </div>
                                                     </div>
                                                     <!-- </div> -->
@@ -729,26 +713,10 @@
                                                     <div class="card-header bg-dark-subtle">
                                                         <i class="fas fa-network-wired me-2"></i>Bridge网络池
                                                     </div>
-                                                    <div class="card-body">
-                                                        <div class="table-scroll">
-                                                            <table class="table table-sm">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>网桥名</th>
-                                                                        <th>MAC地址</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td>bridge0</td>
-                                                                        <td>00:10.ab:12:a1:2c</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>bridge1</td>
-                                                                        <td>00:20.ab:12:a1:2c</td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
+                                                    <div class="card-body d-flex flex-column align-items-center justify-content-center" style="min-height: 120px;">
+                                                        <div class="d-flex align-items-center w-100" style="min-height: 100px;">
+                                                            <i class="fas fa-network-wired fa-3x text-success me-4"></i>
+                                                            <p class="mb-0 flex-grow-1">Bridge（桥接）网络池通过将虚拟机直接连接到物理网络，使其拥有独立的IP地址，适用于需要与物理网络设备直接通信的场景，网络性能高且灵活。</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -760,26 +728,10 @@
                                                     <div class="card-header bg-dark-subtle">
                                                         <i class="fas fa-server me-2"></i>Macvtap网络池
                                                     </div>
-                                                    <div class="card-body">
-                                                        <div class="table-scroll">
-                                                            <table class="table table-sm">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>网卡名</th>
-                                                                        <th>IP地址</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td>enp3s0</td>
-                                                                        <td>192.168.10.1</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>enp4s0</td>
-                                                                        <td>172.15.88.1</td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
+                                                    <div class="card-body d-flex flex-column align-items-center justify-content-center" style="min-height: 120px;">
+                                                        <div class="d-flex align-items-center w-100" style="min-height: 100px;">
+                                                            <i class="fas fa-server fa-3x text-warning me-4"></i>
+                                                            <p class="mb-0 flex-grow-1">Macvtap网络池为虚拟机提供高性能的网络连接，适合对网络吞吐量有较高要求的场景。它通过物理网卡直接分配虚拟接口，减少中间转发，提高效率。</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -789,28 +741,12 @@
                                             <div class="col-md-6 mb-4">
                                                 <div class="card storage-card" data-type="ovs">
                                                     <div class="card-header bg-dark-subtle">
-                                                        <i class="fas fa-network-wired me-2"></i>OpenVSwitch池
+                                                        <i class="fas fa-network-wired me-2"></i>OpenVSwitch网络池
                                                     </div>
-                                                    <div class="card-body">
-                                                        <div class="table-scroll">
-                                                            <table class="table table-sm">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>网桥名</th>
-                                                                        <th>MAC地址</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td>ovs0</td>
-                                                                        <td>10:10.ab:12:a1:2c</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>ovs1</td>
-                                                                        <td>10:20.ab:12:a1:2c</td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
+                                                    <div class="card-body d-flex flex-column align-items-center justify-content-center" style="min-height: 120px;">
+                                                        <div class="d-flex align-items-center w-100" style="min-height: 100px;">
+                                                            <i class="fas fa-network-wired fa-3x text-info me-4"></i>
+                                                            <p class="mb-0 flex-grow-1">OpenVSwitch（OVS）网络池支持高级网络功能，如DPDK、VLAN、隧道和SDN，适用于大规模虚拟化和云环境，能够灵活管理和转发虚拟机流量。</p>
                                                         </div>
                                                     </div>
                                                 </div>
