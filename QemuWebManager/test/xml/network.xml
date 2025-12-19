@@ -19,10 +19,32 @@
 <!-- ovs bridge -->
 <interface type='bridge'> 
   <mac address='52:54:00:4a:c3:3b'/>
-  <source bridge='br0'/> 
+  <source bridge='ovs0'/> 
   <virtualport type='openvswitch'/> <!-- 明确指定使用OVS -->
   <model type='virtio'/> 
 </interface>
+
+<!-- 
+apt install openvswitch-switch -y
+systemctl status openvswitch-switch
+systemctl enable openvswitch-switch
+
+ovs-vsctl add-br ovs0
+ovs-vsctl list-br
+ovs-vsctl br-exists ovs0
+ovs-vsctl show
+
+# 移除物理网卡的原有IP配置
+ip addr flush dev enp0s3
+
+# 将网卡添加到网桥
+ovs-vsctl add-port ovs0 enp0s3
+
+# 查看网桥上的端口
+ovs-vsctl list-ports ovs0
+
+ovs-vsctl del-br ovs0 
+-->
 
 <!-- Macvtap -->
 <interface type="direct">
