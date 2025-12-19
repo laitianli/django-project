@@ -834,7 +834,7 @@ class CLVVMInstance(ConnectLibvirtd):
         root = ElementTree.fromstring(xml)
         for interface in root.findall("devices/interface"):
             type = interface.get('type')
-            print(f'--queryVMNIC: {type}')
+            # print(f'--queryVMNIC: {type}')
             if type == 'network': #nat
                 source_elm = interface.find('source')
                 source_networkPool = source_elm.get('network')
@@ -889,5 +889,206 @@ class CLVVMInstance(ConnectLibvirtd):
         return True, nicList
     
     def editVMNic(self, vmName, nicList):
-        print(f'[Info] editVMNic TODO: {vmName}, {nicList}')
+        conn = self.get_conn()
+        dom = conn.lookupByName(vmName)
+        if dom is None:
+            self.connect_close()
+            return False
+
+        strXML = dom.XMLDesc(VIR_DOMAIN_XML_SECURE)
+        doc = libxml2.parseDoc(strXML)
+        context = doc.xpathNewContext()
+
+        # 获取或创建 /domain/devices
+        devices_nodes = context.xpathEval('/domain/devices')
+        if devices_nodes and len(devices_nodes) > 0:
+            devices = devices_nodes[0]
+        else:
+            root = doc.getRootElement()
+            devices = libxml2.newNode('devices')
+            root.addChild(devices)
+
+        # 1. 读取原有网卡信息，构建现有网卡列表
+        old_nics = []
+        interface_nodes = devices.xpathEval('interface')
+        for node in interface_nodes:
+            nic = {}
+            type = node.prop('type')
+            nic['type'] = type
+            mac_nodes = node.xpathEval('mac')
+            if mac_nodes and len(mac_nodes) > 0:
+                nic['mac'] = mac_nodes[0].prop('address')
+            else:
+                nic['mac'] = None
+            model_nodes = node.xpathEval('model')
+            if model_nodes and len(model_nodes) > 0:
+                nic['nicModel'] = model_nodes[0].prop('type')
+            else:
+                nic['nicModel'] = None
+            if type == 'network':
+                source_nodes = node.xpathEval('source')
+                if source_nodes and len(source_nodes) > 0:
+                    nic['netPoolName'] = source_nodes[0].prop('network')
+                else:
+                    nic['netPoolName'] = None
+                nic['nicConnType'] = 'nat'
+            elif type == 'bridge':
+                source_nodes = node.xpathEval('source')
+                bridge_inf = None
+                if source_nodes and len(source_nodes) > 0:
+                    bridge_inf = source_nodes[0].prop('bridge')
+                source_networkPool = 'unknow'
+                # 判断是否为ovs
+                virtualport_nodes = node.xpathEval('virtualport')
+                if virtualport_nodes and len(virtualport_nodes) > 0 and virtualport_nodes[0].prop('type') == 'openvswitch':
+                    nic['nicConnType'] = 'ovs'
+                    try:
+                        intfs = OVSTable.objects.get(interface=bridge_inf)
+                        source_networkPool= intfs.name
+                        print(f'[Info] [editVMNic] select vm OVS Bridge table entries for vm {bridge_inf} success')
+                    except Exception as e:
+                        print(f'[Error] Query OVSTable {bridge_inf} table failed: {e}')
+                        
+                    nic['netPoolName'] =source_networkPool
+                else:
+                    nic['nicConnType'] = 'bridge'
+                    try:
+                        intfs = BridgeTable.objects.get(interface=bridge_inf)
+                        source_networkPool= intfs.name
+                        print(f'[Info] [editVMNic] select vm Bridge table entries for vm {bridge_inf} success')
+                    except Exception as e:
+                        print(f'[Error] Query OVSTable {bridge_inf} table failed: {e}')
+                    nic['netPoolName'] = source_networkPool
+            elif type == 'direct':
+                source_nodes = node.xpathEval('source')
+                if source_nodes and len(source_nodes) > 0:
+                    nic['netPoolName'] = source_nodes[0].prop('dev')
+                else:
+                    nic['netPoolName'] = None
+                nic['nicConnType'] = 'macvtap'
+            else:
+                nic['netPoolName'] = None
+                nic['nicConnType'] = None
+            old_nics.append({'node': node, **nic})
+
+        # 2. 处理删除和修改（只保留nicList中存在的，且default网卡不能删改）
+        for old in old_nics:
+            mac = old['mac']
+            netPoolName = old['netPoolName']
+            # default网卡不能删改
+            if netPoolName == 'default':
+                continue
+            found = False
+            for newnic in nicList:
+                if newnic.get('mac') == mac:  ##以MAC地址是否一样确定是不是同一个网卡
+                    found = True
+                    break
+            if False == found:
+                # 删除该网卡
+                try:
+                    old['node'].unlinkNode()
+                    try:
+                        old['node'].freeNode()
+                    except Exception as e:
+                        print(f"[Exception] freeNode({old['netPoolName']}) failed: {e}")
+                except Exception:
+                    print(f"[Exception] unlinkNode({old['netPoolName']}) failed: {e}")
+
+        # 3. 处理新增和修改（default网卡不能修改）
+        # 先收集现有mac，避免重复添加
+        current_macs = set([nic['mac'] for nic in old_nics])
+        for newnic in nicList:
+            mac = newnic.get('mac')
+            netPoolName = newnic.get('netPoolName')
+            nicModel = newnic.get('nicModel')
+            nicConnType = newnic.get('nicConnType')
+            createflag = newnic.get('createflag', 'create')
+            # default网卡不能修改
+            if netPoolName == 'default':
+                continue
+            # 如果mac已存在，尝试更新参数
+            updated = False
+            for old in old_nics:
+                if old['mac'] == mac and old['netPoolName'] != 'default': ##以MAC地址是否一样确定是不是同一个网卡
+                    # 更新model等参数
+                    model_nodes = old['node'].xpathEval('model')
+                    if model_nodes and len(model_nodes) > 0:
+                        model_nodes[0].setProp('type', nicModel)
+                    # 其它参数可扩展
+                    updated = True
+                    break
+            if not updated and mac not in current_macs:
+                # 新增网卡
+                if nicConnType == 'nat':
+                    iface = libxml2.newNode('interface')
+                    iface.setProp('type', 'network')
+                    devices.addChild(iface)
+                    src = libxml2.newNode('source')
+                    src.setProp('network', netPoolName)
+                    iface.addChild(src)
+                elif nicConnType == 'bridge':
+                    iface = libxml2.newNode('interface')
+                    iface.setProp('type', 'bridge')
+                    devices.addChild(iface)
+                    try:
+                        intfs = BridgeTable.objects.get(name=netPoolName)
+                        interface= intfs.interface
+                        print(f'[Info] [editVMNic: add] select vm Bridge table entries for vm {netPoolName} success')
+                    except Exception as e:
+                        print(f'[Error] Query OVSTable {netPoolName} table failed: {e}')
+                    src = libxml2.newNode('source')
+                    src.setProp('bridge', interface)
+                    iface.addChild(src)
+                elif nicConnType == 'ovs':
+                    iface = libxml2.newNode('interface')
+                    iface.setProp('type', 'bridge')
+                    devices.addChild(iface)
+                    try:
+                        intfs = OVSTable.objects.get(name=netPoolName)
+                        interface= intfs.interface
+                        print(f'[Info] [editVMNic: add] select vm OVS Bridge table entries for vm {netPoolName} success')
+                    except Exception as e:
+                        print(f'[Error] Query OVSTable {netPoolName} table failed: {e}')
+                    src = libxml2.newNode('source')
+                    src.setProp('bridge', interface)
+                    iface.addChild(src)
+                    vport = libxml2.newNode('virtualport')
+                    vport.setProp('type', 'openvswitch')
+                    iface.addChild(vport)
+                elif nicConnType == 'macvtap':
+                    iface = libxml2.newNode('interface')
+                    iface.setProp('type', 'direct')
+                    devices.addChild(iface)
+                    src = libxml2.newNode('source')
+                    src.setProp('dev', netPoolName)
+                    src.setProp('mode', 'bridge')
+                    iface.addChild(src)
+                else:
+                    continue
+                macNode = libxml2.newNode('mac')
+                macNode.setProp('address', mac)
+                iface.addChild(macNode)
+                modelNode = libxml2.newNode('model')
+                modelNode.setProp('type', nicModel)
+                iface.addChild(modelNode)
+                current_macs.add(mac)
+
+        # 序列化并应用新的域 XML
+        try:
+            newxml_bytes = doc.serialize(encoding='UTF-8', format=1)
+            if isinstance(newxml_bytes, bytes):
+                newxml = newxml_bytes.decode('utf-8')
+            else:
+                newxml = str(newxml_bytes)
+            conn.defineXML(newxml)
+        finally:
+            try:
+                context.xpathFreeContext()
+            except Exception:
+                pass
+            try:
+                doc.freeDoc()
+            except Exception:
+                pass
+        self.connect_close()
         return True

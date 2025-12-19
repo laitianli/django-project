@@ -286,33 +286,16 @@ class createVMXML():
                 intfNode = libxml2.newNode('interface')
                 intfNode.setProp('type', type) # 1
                 devNode.addChild(intfNode)
-            
-                macNode = libxml2.newNode('mac')
-                macNode.setProp('address', mac) # 2
-                intfNode.addChild(macNode)
-            
                 srcNode = libxml2.newNode('source')
                 srcNode.setProp('network', network) # 3
-                intfNode.addChild(srcNode)            
-                modelNode = libxml2.newNode('model')
-                modelNode.setProp('type', model)
-                intfNode.addChild(modelNode)
+                intfNode.addChild(srcNode)
             elif type == 'bridge':
                 intfNode = libxml2.newNode('interface')
                 intfNode.setProp('type', type) # 1
-                devNode.addChild(intfNode)
-            
-                macNode = libxml2.newNode('mac')
-                macNode.setProp('address', mac) # 2
-                intfNode.addChild(macNode)
-            
+                devNode.addChild(intfNode)            
                 srcNode = libxml2.newNode('source')
                 srcNode.setProp('bridge', nic_name) # 3
                 intfNode.addChild(srcNode)
-            
-                modelNode = libxml2.newNode('model')
-                modelNode.setProp('type', model)
-                intfNode.addChild(modelNode)
             elif type == 'direct':
                 # <interface type="direct">
                 #   <mac address="52:54:00:c7:dc:18" />
@@ -322,39 +305,27 @@ class createVMXML():
                 intfNode = libxml2.newNode('interface')
                 intfNode.setProp('type', type) # 1
                 devNode.addChild(intfNode)
-                
-                macNode = libxml2.newNode('mac')
-                macNode.setProp('address', mac) # 2
-                intfNode.addChild(macNode)
-                
                 srcNode = libxml2.newNode('source')
                 srcNode.setProp('dev', nic_name) # 3
                 srcNode.setProp('mode', 'bridge') # 3
                 intfNode.addChild(srcNode)
-                
-                modelNode = libxml2.newNode('model')
-                modelNode.setProp('type', model)
-                intfNode.addChild(modelNode)
             elif type == 'ovs':
                 intfNode = libxml2.newNode('interface')
                 intfNode.setProp('type', 'bridge')
                 devNode.addChild(intfNode)
             
-                macNode = libxml2.newNode('mac')
-                macNode.setProp('address', mac) # 2
-                intfNode.addChild(macNode)
-            
                 srcNode = libxml2.newNode('source')
                 srcNode.setProp('bridge', nic_name) # 3
                 intfNode.addChild(srcNode)
-            
                 vsportNode = libxml2.newNode('virtualport ')
                 vsportNode.setProp('type', 'openvswitch')
                 intfNode.addChild(vsportNode)
-            
-                modelNode = libxml2.newNode('model')
-                modelNode.setProp('type', model)
-                intfNode.addChild(modelNode)
+            macNode = libxml2.newNode('mac')
+            macNode.setProp('address', mac) # 2
+            intfNode.addChild(macNode)
+            modelNode = libxml2.newNode('model')
+            modelNode.setProp('type', model)
+            intfNode.addChild(modelNode)
 
     def __addEHCI2Device(self, devNode):
         if devNode is not None:

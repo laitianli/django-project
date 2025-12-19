@@ -216,7 +216,9 @@ def delete_bridge(bridge_name):
         return False
     
 def check_ovs_bridge_exists(bridge_name):
-    cmd_list = ['ip', 'link', 'show', 'dev', bridge_name, 'type', 'bridge']
+    ## ovs-vsctl br-exists bridge_name
+    #  br-exists BRIDGE            exit 2 if BRIDGE does not exist
+    cmd_list = ['ovs-vsctl', 'br-exists', bridge_name]
     try:        
         result = subprocess.run(
             cmd_list,
@@ -224,13 +226,14 @@ def check_ovs_bridge_exists(bridge_name):
             text=True,
             check=True
         )
-        return bridge_name in result.stdout
+        print(f'[Info] run cmd: {cmd_list} result: {result.returncode}')
+        return result.returncode == 0
     except subprocess.CalledProcessError as e:
-        # logging.error(f"run cmd: {cmd_list}  error: {e}")
+        print(f"run cmd: {cmd_list}  error: {e}")
         ## bridge does not exist.
         return False
     except FileNotFoundError:
-        logging.error("OVS 'ip' command not found, please run command in Linux operation system!")
+        print(f"OVS 'ovs-vsctl' command not found, please run command in Linux operation system!")
         return False
 
 def create_ovs_bridge_safely(bridge_name="ovs0", mac_address="5e:b6:9b:5a:48:f1"):
@@ -241,8 +244,8 @@ def create_ovs_bridge_safely(bridge_name="ovs0", mac_address="5e:b6:9b:5a:48:f1"
 
     print(f"OVS bridge '{bridge_name}' does not exist, try to create it...")
     try:
-        # 2. 创建网桥
-        subprocess.run(['ip', 'link', 'add', 'dev', bridge_name, 'type', 'bridge'], check=True)
+        # 2. 创建网桥 ovs-vsctl add-br ovs0
+        subprocess.run(['ovs-vsctl', 'add-br', bridge_name], check=True)
         print(f"OVS bridge '{bridge_name}' create success.")
 
         # 3. 设置MAC地址
@@ -265,14 +268,18 @@ def add_nic2ovsbridge(bridge_name='ovs0', nic_name = ''):
         print(f"OVS bridge '{bridge_name}' does not exist, Please crate it before add nic!")
         return False
     try:
-        # 1. 物理网口down
+        # 1. 物理网口down        
+        subprocess.run(['ip', 'addr', 'flush', 'dev', nic_name], check=True)
+        print(f"set nic {nic_name} ip addr clean success.")
+        
+        # 2. 物理网口down        
         subprocess.run(['ip', 'link', 'set', 'dev', nic_name, 'down'], check=True)
         print(f"set nic {nic_name} down success.")
-        # 2. 启用网桥
-        subprocess.run(['ip', 'link', 'set', 'dev', nic_name, 'master', bridge_name], check=True)
-        print(f"add nic {nic_name} to bridge {bridge_name} success.")
+        # 3. 添加网桥 ovs-vsctl add-port ovs0 enp0s3
+        subprocess.run(['ovs-vsctl', 'add-port', bridge_name,  nic_name], check=True)
+        print(f"add nic {nic_name} to ovs bridge {bridge_name} success.")
         
-        # 3. 物理网口up
+        # 4. 物理网口up
         subprocess.run(['ip', 'link', 'set', 'dev', nic_name, 'up'], check=True)
         print(f"OVS set nic {nic_name} up success.")
         return True
@@ -288,9 +295,9 @@ def delete_ovs_bridge(bridge_name):
         return True
     
     try:
-         # 1. 物理网口删除
-        subprocess.run(['ip', 'link', 'del', 'dev', bridge_name], check=True)
-        print(f"set nic {bridge_name} down success.")
+         # 1. 物理网口删除 ovs-vsctl del-br ovs0
+        subprocess.run(['ovs-vsctl', 'del-br', bridge_name], check=True)
+        print(f"delete nic {bridge_name} down success.")
         return True
     except subprocess.CalledProcessError as e:
         print(f"OVS delete bridge {bridge_name} failed: {e}")

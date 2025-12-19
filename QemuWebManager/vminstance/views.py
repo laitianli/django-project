@@ -125,7 +125,14 @@ def doVMInstance(request):
                         VMDiskTableModel.objects.filter(vm_name=vmName).delete()
                         print(f'[Info] delete vm disk table entries for vm {vmName} success')
                     except Exception as e:
-                        print(f'[Error] drop vm table failed: {e}')
+                        print(f'[Error] drop vm disk table failed: {e}')
+                        
+                    try:
+                        from createvmwizard.models import VMNICTable as VMNICTableModel
+                        VMNICTableModel.objects.filter(vm_name=vmName).delete()
+                        print(f'[Info] delete vm nic table entries for vm {vmName} success')
+                    except Exception as e:
+                        print(f'[Error] drop vm nic table failed: {e}')
                         
                 data = {"result": "success", 
                     "message": "%s action success!" % json_data["action"], 
@@ -233,7 +240,7 @@ def doVMInstance(request):
                 ret = editVMDisk(vmName, diskList)
             elif subaction == 'editNic':
                 nicList = json_data['nicList']
-                print(f'nicList: {nicList}')
+                # print(f'nicList: {nicList}')
                 ret = editVMNic(vmName, nicList)
             if ret == True:
                 data = {"result": "success", 

@@ -21,7 +21,7 @@ function initVMInstance() {
 
     addButtonEventForEditISODisk();
 
-    // $(document).on('click', '#editXMLBtn', doEditXMLBtn);
+    $(document).on('click', '#xml-settings-tab', doShowXMLBtn);
     $(document).on('input', '#xmlContent', doXMLContentChange);
     $(document).on('dblclick', '#xmlContent', doXMLContentDBLClick);
     $(document).on('click', '#saveXMLBtn', doSaveXMLBtn);
@@ -452,11 +452,11 @@ function doCloneToDiskPartStoragePoolChange(e) {
 function dovmDetailLink(e) {
     e.preventDefault();
     const vmId = $(this).data('vm-id');
-    const vmName = $(this).text();
-    const vmStatus = $(this).closest('tr').find('td:eq(1)').text();
-    const vmVCPUs = $(this).closest('tr').find('td:eq(2)').text();
-    const vmMemory = $(this).closest('tr').find('td:eq(3)').text();
-    console.log('--vmId:' + vmId + ' vmName: ' + vmName + ' vmStatus:' + vmStatus);
+    const vmName = $(this).text().trim();
+    const vmStatus = $(this).closest('tr').find('td:eq(1)').text().trim();
+    const vmVCPUs = $(this).closest('tr').find('td:eq(2)').text().trim();
+    const vmMemory = $(this).closest('tr').find('td:eq(3)').text().trim();
+    // console.log('--vmId:' + vmId + ' vmName: ' + vmName + ' vmStatus:' + vmStatus);
     // 填充详情数据
     $('#vm-detail-title').text(vmName + ' 详情');
     $('#vm-detail-name').text(vmName);
@@ -478,8 +478,6 @@ function dovmDetailLink(e) {
 
     initVMClone(vmName);
     initForEditISODisk(vmName);
-
-    getVMXMLInfo(vmName);
 
     initForEditNICNetwork(vmName);
 }
@@ -1881,6 +1879,10 @@ function doEditDisk() {
     }, function () { alert('修改内存失败！'); });
 }
 
+function doShowXMLBtn() {
+    const vmName = $('#vm-detail-name').text().trim();
+    getVMXMLInfo(vmName);
+}
 // 获取虚拟机XML信息
 function getVMXMLInfo(vmName) {
     var jsonData = {
