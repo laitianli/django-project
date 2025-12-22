@@ -830,9 +830,6 @@ function getVMDiskInfo(vmName) {
         $('#editDiskTab tbody').empty();
         let localstorage_json_data = JSON.parse(sessionStorage.getItem("localstoragepool_json"));
         diskList.forEach(disk => {
-            // console.log('disk[file]: ' + disk['file']);
-            // console.log('disk[dev]: ' + disk['dev']);
-            // console.log('disk[bus]: ' + disk['bus']);
             const fullPath = disk['file'];
             var lastSlashIndex = fullPath.lastIndexOf('/');
             var directoryName = fullPath.substring(0, lastSlashIndex); // 获取目录部分
@@ -855,13 +852,12 @@ function getVMDiskInfo(vmName) {
                 }
             });
             $.each(localstorage_json_data.custom, function (key, value) {
-                if (directoryName === value.poolPath) {
+                if (directoryName === value.poolPath.replace(/\/$/, '')) { //将带结尾斜杠的路径视为与不带斜杠的路径相同
                     diskStoragePool = key;
                 }
             });
 
             var diskName = fileName;
-
             addDiskTabRow(diskPartionName, diskSize, diskBus, diskStoragePoolPath, diskStoragePool, diskBoot, diskName, createflag);
         });
 
@@ -1978,12 +1974,13 @@ function editRandomByte() {
 }
 // 生成随机MAC地址
 function editGenerateRandomMAC() {
-    let baseOUI = "60:1A:2B"; // 默认OUI   
+    let baseOUI = "60:1A"; // 默认OUI   
     const separator = ":";
-    // 生成后三个随机字节
+    // 生成后四个随机字节
     const randomPart1 = editRandomByte();
     const randomPart2 = editRandomByte();
     const randomPart3 = editRandomByte();
+    const randomPart4 = editRandomByte();
 
     // 组合MAC地址
     let macAddress = baseOUI;
@@ -1991,6 +1988,7 @@ function editGenerateRandomMAC() {
     macAddress += separator + randomPart1;
     macAddress += separator + randomPart2;
     macAddress += separator + randomPart3;
+    macAddress += separator + randomPart4;
 
     return macAddress.toUpperCase();
 }
@@ -2005,10 +2003,10 @@ function addEditNICRow(nicModel, nicMAC, nicConnType, netPoolName, createflag) {
     if (createflag === 'default') {
         newRow = `
                 <tr>
-                    <td class="model-cell" data-createflag='${createflag}'>${nicModel}</td>
-                    <td class="mac-cell">${nicMAC}</td>
-                    <td class="connType-cell">${nicConnType}</td>
-                    <td class="poolName-cell">${netPoolName}</td>
+                    <td class="editable" data-field="nicModel" data-value='nicModel' data-createflag='${createflag}'>${nicModel}</td>
+                    <td class="" data-field="nicMAC" data-value='nicMAC'>${nicMAC}</td>
+                    <td class="" data-field="nicConnType" data-value='nicConnType'>${nicConnType}</td>
+                    <td class="" data-field="netPoolName" data-value='netPoolName'>${netPoolName}</td>
                     <td>
                          <button class="btn btn-sm btn-danger btn-delete disabled">删除</button>
                     </td>
@@ -2018,10 +2016,10 @@ function addEditNICRow(nicModel, nicMAC, nicConnType, netPoolName, createflag) {
     else {
         newRow = `
                 <tr>
-                    <td class="model-cell" data-createflag='${createflag}'>${nicModel}</td>
-                    <td class="mac-cell">${nicMAC}</td>
-                    <td class="connType-cell">${nicConnType}</td>
-                    <td class="poolName-cell">${netPoolName}</td>
+                    <td class="editable" data-field="nicModel" data-value='nicModel' data-createflag='${createflag}'>${nicModel}</td>
+                    <td class="editable" data-field="nicMAC" data-value='nicMAC'>${nicMAC}</td>
+                    <td class="" data-field="nicConnType" data-value='nicConnType'>${nicConnType}</td>
+                    <td class="editable" data-field="netPoolName" data-value='netPoolName'>${netPoolName}</td>
                     <td>
                          <button class="btn btn-sm btn-danger btn-delete">删除</button>
                     </td>
@@ -2121,8 +2119,9 @@ $('#editNicGenerateMACBtn').click(function () {
 // 网卡添加按钮
 $('#editAddVMNICBtn').click(function () {
     editAddNIC2List();
+    $('#editNicGenerateMACBtn').trigger('click');
     $(this).addClass('disabled');
-    editUpdateSaveButtonsState();
+    editUpdateSaveButtonsState();    
 })
 
 // 检查并更新删除按钮状态

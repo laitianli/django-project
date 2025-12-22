@@ -12,8 +12,9 @@ import re
 import logging
 
 def randomMAC():
-    oui = [0x60, 0x1A, 0x2B]
+    oui = [0x60, 0x1A]
     mac = oui + [random.randint(0x00, 0xff),
+                 random.randint(0x00, 0xff),
                  random.randint(0x00, 0xff),
                  random.randint(0x00, 0xff)]
     return ':'.join(map(lambda x: "%02x" % x, mac))

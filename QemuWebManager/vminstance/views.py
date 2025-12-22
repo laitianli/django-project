@@ -3,6 +3,8 @@ from django.shortcuts import render
 import json
 from django.http import JsonResponse, HttpResponseNotFound
 from APILibvirt.LVVMInstance import CLVVMInstance
+from createvmwizard.models import VMDiskTable as VMDiskTableModel
+from createvmwizard.models import VMNICTable as VMNICTableModel
 # from APILibvirt.LVNetwork import CLVNetwork
 # Create your views here.
 
@@ -58,6 +60,41 @@ def queryVMSnapshot(vmName):
 def cloneVM(vmName, cloneName, diskPath):
     vmInst = CLVVMInstance()
     return vmInst.cloneVM(vmName, cloneName, diskPath)
+
+def doCloneVMSuccess(cloneName):
+    ret, dataDisk = queryVMDisk(cloneName)
+    for d in dataDisk:
+        try:
+            print(f'[Info][doCloneVMSuccess] insert vm disk table: {d}')
+            if d['size'] == None:
+                disk_size = 0
+            else:
+                disk_size = int(d['size'][:-1]) *1024*1024*1024
+            VMDiskTableModel.objects.create(vm_name=cloneName, 
+                                            create_flag=d['createflag'],
+                                            disk_file=d['file'], 
+                                            disk_size=disk_size, 
+                                            dev=d['dev'], 
+                                            bus=d['bus'], 
+                                            type=d['type'])
+        except Exception as e:
+            print(f'[Exception][doCloneVMSuccess] insert vm disk table failed: {e}')
+            return False
+                    
+    ret, dataNIC = queryVMNIC(cloneName)                
+    for n in dataNIC:
+        try:
+            print(f'[Info][doCloneVMSuccess] insert vm nic table: {n}')
+            VMNICTableModel.objects.create(vm_name=cloneName, 
+                                            nicModel=n['nicModel'],
+                                            create_flag=n['createflag'],
+                                            mac=n['mac'], 
+                                            nicConnType=n['networkType'], 
+                                            netPoolName=n['networkPool'])
+        except Exception as e:
+            print(f'[Exception][doCloneVMSuccess] insert vm nic table failed: {e}')
+            return False
+    return True
 
 def editVMVCPU(vmName, vcpus):
     vmInst = CLVVMInstance()
@@ -213,12 +250,18 @@ def doVMInstance(request):
             if subaction == 'clone_vm':
                 cloneName = json_data['value']
                 diskPath = json_data['diskPath']
-                cloneVM(vmName, cloneName, diskPath)
+                ret = cloneVM(vmName, cloneName, diskPath)
+                if ret == True:
+                    ret = doCloneVMSuccess(cloneName)
 
-            data = {"result": "success", 
-                    "message": "%s action success!" % json_data["action"], 
-                    "response_json": 'tmp',
+                if ret == True:
+                    data = {"result": "success", 
+                        "message": "%s action success!" % json_data["action"], 
+                        "response_json": 'tmp',
                     }
+                else:
+                    data = {"result": "failed", 
+                    "message": "%s action failed!" % json_data["action"]}
             return JsonResponse(data)
         elif json_data['action'] == 'edit':
             vmName = json_data["vmname"]

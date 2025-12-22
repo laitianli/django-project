@@ -409,10 +409,20 @@ class CLVVMInstance(ConnectLibvirtd):
                 
         newxml = ElementTree.tostring(root).decode()
         # print(newxml)
-        conn.defineXML(newxml)
+        try:
+            conn.defineXML(newxml)
+        except Exception as e:
+            print('[Exception] clone VM defineXML() failed: {e}')
+            self.connect_close()
+            return False
         vm = conn.lookupByName(cloneName)
         if vm:
-            vm.create()
+            try:
+                vm.create()
+            except Exception as e:
+                print('[Exception] clone VM create() failed: {e}')
+                self.connect_close()
+                return False
         self.connect_close()
         return True
     
@@ -845,6 +855,8 @@ class CLVVMInstance(ConnectLibvirtd):
                 networkType = 'nat'
                 if source_networkPool == 'default':
                     createflag = 'default'
+                else:
+                    createflag = 'create'     
                 nicList.append({'nicModel':model_type, 'createflag': createflag, 'networkType': networkType, 'mac': mac_addr, 'networkPool': source_networkPool})
             elif type == 'bridge': # bridge/ovs
                 model_elm = interface.find('model')
