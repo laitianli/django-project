@@ -157,25 +157,21 @@ function changeActionBtn(action, row) {
         case "start":
             btn_start.addClass('disabled').css('opacity', '0.3');
             btn_resume.addClass('disabled').css('opacity', '0.3');
-            // $("#vmDetailConsoleBtn").removeClass('disabled').css('opacity', '1');
             break;
         case "suspend":
             btn_suspend.addClass('disabled').css('opacity', '0.3');
             btn_start.addClass('disabled').css('opacity', '0.3');
             btn_console.addClass('disabled').css('opacity', '0.3');
-            // $("#vmDetailConsoleBtn").addClass('disabled').css('opacity', '0.3');
             break;
         case "resume":
             btn_resume.addClass('disabled').css('opacity', '0.3');
             btn_start.addClass('disabled').css('opacity', '0.3');
-            // $("#vmDetailConsoleBtn").removeClass('disabled').css('opacity', '1');
             break;
         case "stop":
             btn_stop.addClass('disabled').css('opacity', '0.3');
             btn_suspend.addClass('disabled').css('opacity', '0.3');
             btn_destroy.addClass('disabled').css('opacity', '0.3');
             btn_console.addClass('disabled').css('opacity', '0.3');
-            // $("#vmDetailConsoleBtn").addClass('disabled').css('opacity', '0.3');
             break;
         case "destroy":
             btn_stop.addClass('disabled').css('opacity', '0.3');
@@ -183,8 +179,6 @@ function changeActionBtn(action, row) {
             btn_resume.addClass('disabled').css('opacity', '0.3');
             btn_destroy.addClass('disabled').css('opacity', '0.3');
             btn_console.addClass('disabled').css('opacity', '0.3');
-            // $("#vmDetailConsoleBtn").addClass('disabled').css('opacity', '0.3');
-            // $("#vmDetailConsoleBtn").prop('disabled', true).css('opacity', '0.3');
             break;
         case "console":
             break;
