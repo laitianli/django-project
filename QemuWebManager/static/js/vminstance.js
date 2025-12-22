@@ -7,7 +7,6 @@ var g_nicNetworkOptions = [];
 function initVMInstance() {
     console.log('--initVMInstance---')
     showVMInstance();
-
     $(document).on('click', '#restoreSnapshotID', doRestoreSnapshotBtn);
     $(document).on('click', '#deleteSnapshotID', doDeleteSnapshotBtn);
     $(document).on('click', '#cloneVMBtn', doVMCloneBtn);
@@ -129,6 +128,12 @@ function initVMInstanceBtn() {
     });
 }
 
+function doVmConsoleBtn() {
+    const vmName = $('#vm-detail-name').text().trim();
+    console.log('--doVmConsoleBtn: vmName: ' + vmName);
+    doVMConsole(vmName);
+}
+
 // 新建虚拟实例
 function do_newVmBtn() {
     window.location.href = '/createvmwizard/createvm';
@@ -152,21 +157,25 @@ function changeActionBtn(action, row) {
         case "start":
             btn_start.addClass('disabled').css('opacity', '0.3');
             btn_resume.addClass('disabled').css('opacity', '0.3');
+            // $("#vmDetailConsoleBtn").removeClass('disabled').css('opacity', '1');
             break;
         case "suspend":
             btn_suspend.addClass('disabled').css('opacity', '0.3');
             btn_start.addClass('disabled').css('opacity', '0.3');
             btn_console.addClass('disabled').css('opacity', '0.3');
+            // $("#vmDetailConsoleBtn").addClass('disabled').css('opacity', '0.3');
             break;
         case "resume":
             btn_resume.addClass('disabled').css('opacity', '0.3');
             btn_start.addClass('disabled').css('opacity', '0.3');
+            // $("#vmDetailConsoleBtn").removeClass('disabled').css('opacity', '1');
             break;
         case "stop":
             btn_stop.addClass('disabled').css('opacity', '0.3');
             btn_suspend.addClass('disabled').css('opacity', '0.3');
             btn_destroy.addClass('disabled').css('opacity', '0.3');
             btn_console.addClass('disabled').css('opacity', '0.3');
+            // $("#vmDetailConsoleBtn").addClass('disabled').css('opacity', '0.3');
             break;
         case "destroy":
             btn_stop.addClass('disabled').css('opacity', '0.3');
@@ -174,10 +183,18 @@ function changeActionBtn(action, row) {
             btn_resume.addClass('disabled').css('opacity', '0.3');
             btn_destroy.addClass('disabled').css('opacity', '0.3');
             btn_console.addClass('disabled').css('opacity', '0.3');
+            // $("#vmDetailConsoleBtn").addClass('disabled').css('opacity', '0.3');
+            // $("#vmDetailConsoleBtn").prop('disabled', true).css('opacity', '0.3');
             break;
         case "console":
             break;
     }
+}
+
+function doVMConsole(vmName) {
+    url = `/vm/console?vm=${vmName}`
+    // window.open(url, '', 'width=850,height=485') //在新窗口显示
+    window.open(url)   //在新标签页面显示
 }
 
 // 虚拟机操作按钮
@@ -188,9 +205,7 @@ function dovmInstanceActionBtn() {
     const vmName = $(this).closest('tr').find('.vm-detail-link').text();
 
     if (operation == 'console') {
-        url = `/vm/console?vm=${vmName}`
-        // window.open(url, '', 'width=850,height=485') //在新窗口显示
-        window.open(url)   //在新标签页面显示
+        doVMConsole(vmName);
         return;
     }
     const row = $(this).closest('tr');
@@ -276,9 +291,11 @@ function initPowersubpage(vmStatus) {
 
     $('#vm-detail-status').text(vmStatus);
 
+    $("#vmDetailConsoleBtn").addClass('disabled').css('opacity', '0.3');
     switch (vmStatus) {
         case 'running':
             changePowersubpageBtnByAction('start');
+             $("#vmDetailConsoleBtn").removeClass('disabled').css('opacity', '1');
             break;
         case 'blocked':
             changePowersubpageBtnByAction('start');
@@ -466,7 +483,6 @@ function dovmDetailLink(e) {
     $('#vm-detail-memory').text(vmMemory);
 
     $('#setConsoleTypeNote').hide();
-
     // 显示详情面板
     $('.content-panel').addClass('d-none');
     $('#vm-detail-panel').removeClass('d-none');
@@ -2167,7 +2183,7 @@ function getVMNICListInfo(vmName) {
         }
         $('#editVmNICTab tbody').empty();
         nicList.forEach(nic => {
-            console.log('getVMNICListInfo nic:' + JSON.stringify(nic));
+            // console.log('getVMNICListInfo nic:' + JSON.stringify(nic));
             addEditNICRow(nic['nicModel'], nic['mac'].toUpperCase(), nic['networkType'], nic['networkPool'], nic['createflag']);
         });
     }, function () { alert('查询虚拟实例ISO详细信息失败！'); });

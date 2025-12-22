@@ -1255,11 +1255,18 @@
 
                         <!-- 虚拟机详情 -->
                         <div class="content-panel  d-none" id="vm-detail-panel">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h2 class="text-primary" id="vm-detail-title">虚拟机详情</h2>
-                                <button class="btn btn-primary" id="backToVmList">
-                                    <i class="fas fa-arrow-left me-2"></i>返回列表
-                                </button>
+                            <div class="row mb-3 align-items-center">
+                                <div class="col-6 col-md-6">
+                                    <h2 class="text-primary m-0" id="vm-detail-title">虚拟机详情</h2>
+                                </div>
+                                <div class="col-6 col-md-6 text-end">
+                                    <button class="btn btn-primary me-2" id="vmDetailConsoleBtn">
+                                        <i class="fas fa-terminal me-2"></i>控制台
+                                    </button>
+                                    <button class="btn btn-primary" id="backToVmList">
+                                        <i class="fas fa-arrow-left me-2"></i>返回列表
+                                    </button>
+                                </div>
                             </div>
                             <!-- 虚拟机基本信息 -->
                             <div class="row mb-4">

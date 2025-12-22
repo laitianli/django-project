@@ -32,6 +32,8 @@ $(document).ready(function () {
     // 返回虚拟机列表
     $('#backToVmList').click(doBackToVmList);
 
+    $('#vmDetailConsoleBtn').click(doVmConsoleBtn);
+
     // 虚拟机名称点击事件 - 显示详情
     $(document).on('click', '.vm-detail-link', dovmDetailLink);
 
