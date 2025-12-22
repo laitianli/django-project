@@ -295,7 +295,7 @@ function initPowersubpage(vmStatus) {
     switch (vmStatus) {
         case 'running':
             changePowersubpageBtnByAction('start');
-             $("#vmDetailConsoleBtn").removeClass('disabled').css('opacity', '1');
+            $("#vmDetailConsoleBtn").removeClass('disabled').css('opacity', '1');
             break;
         case 'blocked':
             changePowersubpageBtnByAction('start');
@@ -585,12 +585,19 @@ function doCreateSnapshotBtn(e) {
     }, function () { alert('查询虚拟实例详细信息失败！'); });
 }
 
+function checkedVMStatus(info) {
+    if ($('#vm-detail-status').text() != 'shutoff') {
+        alert($('#vm-detail-name').text() + info);
+        return false;
+    }
+    return true;
+}
+
 function doVMCloneBtn(e) {
     e.preventDefault();
-    if ($('#vm-detail-status').text() != 'shutoff') {
-        alert($('#vm-detail-name').text() + "正在运行，不能克隆！");
-        return;
-    }
+
+    if (checkedVMStatus("正在运行，不能克隆！") == false) return;
+
     var cloningText = $('<span>', {
         id: 'cloningStatusText',
         class: 'me-2',
@@ -692,7 +699,7 @@ function doEditMemory() {
         $('#memorySize').data('originalValue', $('#memorySize').val());
         $('#currMemorySize').data('originalValue', $('#currMemorySize').val());
         $('#editMemoryBtn').prop('disabled', true);
-        alert('修改内存成功！');
+        alert('修改内存成功,重启虚拟机生效！');
     }, function () { alert('修改内存失败！'); });
 }
 
@@ -1879,8 +1886,8 @@ function doEditISO() {
     var editISOBtn = $(this)
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
         editISOBtn.prop('disabled', true);
-        alert('修改内存成功！');
-    }, function () { alert('修改内存失败！'); });
+        alert('修改ISO列表成功！重启虚拟机生效。');
+    }, function () { alert('修改ISO列表失败！'); });
 }
 
 // 编辑ISO
@@ -1895,8 +1902,8 @@ function doEditDisk() {
     var editDiskBtn = $(this)
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
         editDiskBtn.prop('disabled', true);
-        alert('修改内存成功！');
-    }, function () { alert('修改内存失败！'); });
+        alert('修改硬盘列表成功！重启虚拟机生效。');
+    }, function () { alert('修改硬盘列表失败！'); });
 }
 
 function doShowXMLBtn() {
@@ -1974,7 +1981,7 @@ function doSaveXMLBtn() {
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
         saveXMLBtn.prop('disabled', true);
         $('#xmlContent').data('originalValue', xmlContent); // 更新原始值
-        alert('保存XML成功！');
+        alert('保存XML成功！重启虚拟机后生效。');
     }, function () { alert('保存XML失败！'); });
 }
 
@@ -2043,16 +2050,16 @@ function addEditNICRow(nicModel, nicMAC, nicConnType, netPoolName, createflag) {
                     </td>
                 </tr>
             `;
-    }    
+    }
     $('#editVmNICTab tbody').append(newRow);
 }
 
 function initNicNetwork() {
     g_nicNetworkOptions = [];
     let network_json_data = JSON.parse(sessionStorage.getItem("network_json"));
-    $.each(network_json_data, function(netPoolType, netPools){ 
+    $.each(network_json_data, function (netPoolType, netPools) {
         netPools.forEach(item => {
-            g_nicNetworkOptions.push({value: netPoolType, text: item.name});
+            g_nicNetworkOptions.push({ value: netPoolType, text: item.name });
         });
     });
 }
@@ -2073,9 +2080,9 @@ function doEditNicDblClick(e) {
     const currentText = $(this).text().trim();
     let options = [];
     const nicModel = [
-        { value: 'e1000', text: 'e1000'},
-        { value: 'virtio', text: 'virtio'},
-        { value: 'rtl8139', text: 'rtl8139'}
+        { value: 'e1000', text: 'e1000' },
+        { value: 'virtio', text: 'virtio' },
+        { value: 'rtl8139', text: 'rtl8139' }
     ];
 
     const diskPartBusOptions = [
@@ -2148,7 +2155,7 @@ function editGetNICTabData() {
         const row = $(this);
         const rowData = {
             // 获取单元格文本内容
-            netModel:row.find('td').eq(0).text().trim(),
+            netModel: row.find('td').eq(0).text().trim(),
             mac: row.find('td').eq(1).text().trim(),
             nicConnType: row.find('td').eq(2).text().trim(),
             netPoolName: row.find('td').eq(3).text().trim(),
@@ -2212,7 +2219,7 @@ $('#editAddVMNICBtn').click(function () {
     editAddNIC2List();
     $('#editNicGenerateMACBtn').trigger('click');
     $(this).addClass('disabled');
-    editUpdateSaveButtonsState();    
+    editUpdateSaveButtonsState();
 })
 
 // 检查并更新删除按钮状态
@@ -2240,21 +2247,21 @@ $('#editNicConnectTypeSelect').on('change', function () {
 });
 
 function editGetNICTabData() {
-        const tableData = [];
-        $('#editVmNICTab tbody tr').each(function () {
-            const row = $(this);
-            const rowData = {
-                // 获取单元格文本内容
-                nicModel: row.find('td').eq(0).text().trim(),
-                createflag: row.find('td').eq(0).data('createflag'),
-                mac: row.find('td').eq(1).text().trim(),
-                nicConnType: row.find('td').eq(2).text().trim(),
-                netPoolName: row.find('td').eq(3).text().trim(),
-            };
-            tableData.push(rowData);
-        });
-        return tableData;
-    }
+    const tableData = [];
+    $('#editVmNICTab tbody tr').each(function () {
+        const row = $(this);
+        const rowData = {
+            // 获取单元格文本内容
+            nicModel: row.find('td').eq(0).text().trim(),
+            createflag: row.find('td').eq(0).data('createflag'),
+            mac: row.find('td').eq(1).text().trim(),
+            nicConnType: row.find('td').eq(2).text().trim(),
+            netPoolName: row.find('td').eq(3).text().trim(),
+        };
+        tableData.push(rowData);
+    });
+    return tableData;
+}
 // 网卡保存设备
 $('#editNetBtn').click(function () {
     const vmName = $('#vm-detail-name').text().trim();
@@ -2267,7 +2274,6 @@ $('#editNetBtn').click(function () {
     var editNicBtn = $(this)
     editNicBtn.prop('disabled', true);
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
-        
-        alert('修改网卡配置成功！');
+        alert('修改网卡配置成功！重启虚拟机后生效。');
     }, function () { editNicBtn.prop('disabled', false); alert('修改网卡配置失败！'); });
 })
