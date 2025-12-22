@@ -1,9 +1,8 @@
-
-var orginConsoleType;
-var isoPoolOptions = [];
-var isoFileOptions = [];
-var diskPoolOptions = [];
-var diskFileOptions = [];
+var g_isoPoolOptions = [];
+var g_isoFileOptions = [];
+var g_diskPoolOptions = [];
+var g_diskFileOptions = [];
+var g_nicNetworkOptions = [];
 
 function initVMInstance() {
     console.log('--initVMInstance---')
@@ -20,6 +19,8 @@ function initVMInstance() {
     $(document).on('input', '#vcpuCount, #memorySize, #currMemorySize', doEditChange);
 
     addButtonEventForEditISODisk();
+
+    addButtonEventForEditNIC();
 
     $(document).on('click', '#xml-settings-tab', doShowXMLBtn);
     $(document).on('input', '#xmlContent', doXMLContentChange);
@@ -303,7 +304,7 @@ function initPowersubpage(vmStatus) {
 }
 
 function initConsolesubpage() {
-    orginConsoleType = $('#consoleType').val();
+    $('#consoleType').data('originalValue', $('#consoleType').val());
     $('#setConsoleTypeBtn').addClass('disabled');
 }
 
@@ -484,7 +485,7 @@ function dovmDetailLink(e) {
 
 function doConsoleTypeChange(e) {
     e.preventDefault();
-    if (orginConsoleType == $(this).val()) {
+    if ($(this).data('originalValue') == $(this).val()) {
         $('#setConsoleTypeBtn').addClass('disabled');
     }
     else {
@@ -502,7 +503,7 @@ function doSetConsoleTypeBtn(e) {
         value: $('#consoleType').val()
     }
     sendReqeust2vminstance(jsonData, function (jsonData, response) {
-        orginConsoleType = $('#consoleType').val();
+        $('#consoleType').data('originalValue', $('#consoleType').val());
         $('#setConsoleTypeBtn').addClass('disabled');
         $('#setConsoleTypeNote').show();
 
@@ -863,12 +864,13 @@ function getVMDiskInfo(vmName) {
 
         initEditISODisk();
 
+        initNicNetwork();
     }, function () { alert('查询虚拟实例硬盘详细信息失败！'); });
 }
 
 function initEditISODisk() {
-    isoPoolOptions = [];
-    diskPoolOptions = [];
+    g_isoPoolOptions = [];
+    g_diskPoolOptions = [];
     let iosstorage_json_data = JSON.parse(sessionStorage.getItem("isostoragepool_json"));
     let localstorage_json_data = JSON.parse(sessionStorage.getItem("localstoragepool_json"));
     var diskdefaultPoolPath;
@@ -880,7 +882,7 @@ function initEditISODisk() {
                 value: value,
                 text: 'default'
             }));
-            diskPoolOptions.push({ value: value, text: 'default' });
+            g_diskPoolOptions.push({ value: value, text: 'default' });
         }
     });
     $.each(localstorage_json_data.custom, function (key, value) {
@@ -888,10 +890,10 @@ function initEditISODisk() {
             value: value.poolPath,
             text: key
         }));
-        diskPoolOptions.push({ value: value.poolPath, text: key });
+        g_diskPoolOptions.push({ value: value.poolPath, text: key });
     });
 
-    diskFileOptions = [];
+    g_diskFileOptions = [];
     var tableData = editGetDiskTabData();
     $.each(localstorage_json_data.default, function (key, value) {
         if (key === 'fileList') {
@@ -911,7 +913,7 @@ function initEditISODisk() {
                         value: diskdefaultPoolPath,
                         text: value[index]["fileName"]
                     }));
-                    diskFileOptions.push({ value: diskdefaultPoolPath, text: value[index]["fileName"] })
+                    g_diskFileOptions.push({ value: diskdefaultPoolPath, text: value[index]["fileName"] })
                 }
             });
         }
@@ -926,7 +928,7 @@ function initEditISODisk() {
                 value: value,
                 text: 'isodefault'
             }));
-            isoPoolOptions.push({ value: value, text: 'isodefault' })
+            g_isoPoolOptions.push({ value: value, text: 'isodefault' })
         }
     });
     $.each(iosstorage_json_data.custom, function (key, value) {
@@ -934,10 +936,10 @@ function initEditISODisk() {
             value: value.poolPath,
             text: key
         }));
-        isoPoolOptions.push({ value: value.poolPath, text: key })
+        g_isoPoolOptions.push({ value: value.poolPath, text: key })
     });
 
-    isoFileOptions = [];
+    g_isoFileOptions = [];
     $.each(iosstorage_json_data.default, function (key, value) {
         if (key === 'fileList') {
             $('#editIsodiskPartStoragePoolFileSelect').empty();
@@ -947,7 +949,7 @@ function initEditISODisk() {
                     value: isodefaultPoolPath,
                     text: value[index]["fileName"]
                 }));
-                isoFileOptions.push({ value: isodefaultPoolPath, text: value[index]["fileName"] })
+                g_isoFileOptions.push({ value: isodefaultPoolPath, text: value[index]["fileName"] })
             });
         }
     });
@@ -1327,7 +1329,7 @@ function addISOFileToTableItem(text) {
         $.each(iosstorage_json_data.default, function (key, value) {
             if (key === 'fileList') {
                 $.each(value, function (index) {
-                    isoFileOptions.push({ value: poolPath, text: value[index]["fileName"] });
+                    g_isoFileOptions.push({ value: poolPath, text: value[index]["fileName"] });
                 });
             }
         });
@@ -1342,7 +1344,7 @@ function addISOFileToTableItem(text) {
         $.each(iosstorage_json_data.custom[text], function (subkey, subvalue) {
             if (subkey === 'fileList') {
                 $.each(subvalue, function (index) {
-                    isoFileOptions.push({ value: poolPath, text: subvalue[index]["fileName"] });
+                    g_isoFileOptions.push({ value: poolPath, text: subvalue[index]["fileName"] });
                 });
             }
         });
@@ -1375,7 +1377,7 @@ function addDiskFileToTableItem(text, currentText) {
 
                     if (!tableItemExists) {
                         // 保留当前选择的文件
-                        diskFileOptions.push({ value: poolPath, text: value[index]["fileName"] });
+                        g_diskFileOptions.push({ value: poolPath, text: value[index]["fileName"] });
                     }
                 });
             }
@@ -1401,7 +1403,7 @@ function addDiskFileToTableItem(text, currentText) {
                     });
                     if (!tableItemExists) {
                         // 保留当前选择的文件
-                        diskFileOptions.push({ value: poolPath, text: subvalue[index]["fileName"] });
+                        g_diskFileOptions.push({ value: poolPath, text: subvalue[index]["fileName"] });
                     }
                 });
             }
@@ -1409,7 +1411,7 @@ function addDiskFileToTableItem(text, currentText) {
     }
     if (currentText != '') {
         var found = false;
-        diskFileOptions.forEach(function (option) {
+        g_diskFileOptions.forEach(function (option) {
             if (option.text === currentText && option.value === poolPath) {
                 found = true;
                 return;
@@ -1417,7 +1419,7 @@ function addDiskFileToTableItem(text, currentText) {
         });
         if (!found) {
             // 保留当前选择的文件
-            diskFileOptions.push({ value: poolPath, text: currentText });
+            g_diskFileOptions.push({ value: poolPath, text: currentText });
         }
     }
     return poolPath;
@@ -1441,7 +1443,7 @@ function doISOStoragePoolDblClick(e) {
 
     switch (field) {
         case 'storagePool':
-            options = isoPoolOptions;
+            options = g_isoPoolOptions;
             break;
         case 'bootDisk':
             options = bootDiskOptions;
@@ -1450,7 +1452,7 @@ function doISOStoragePoolDblClick(e) {
             const pool = $(this).siblings('td[data-field="storagePool"]').text().trim();
             const row = $(this).closest('tr');
             isoStoragePoolDblClickToChange(row, pool);
-            options = isoFileOptions;
+            options = g_isoFileOptions;
             break;
     }
     $(this).html('');
@@ -1509,25 +1511,31 @@ function closeAllEditableEditors() {
             const newText = edit.val();
             $(this).data('value', newValue).text(newText + 'G');
         }
+        const eidtNicMac = $(this).find('.edit-nicMac-tableitem');
+        if (eidtNicMac.length > 0) {
+            const newValue = eidtNicMac.val();
+            const newText = eidtNicMac.val();
+            $(this).data('value', newValue).text(newText);
+        }
     });
 }
 
 // 新增函数：双击 storagePool 单元格时在 isoFile 单元格显示对应文件列表
 function isoStoragePoolDblClickToChange(row, poolPath) {
-    // 清空并填充 isoFileOptions
-    isoFileOptions = [];
+    // 清空并填充 g_isoFileOptions
+    g_isoFileOptions = [];
     addISOFileToTableItem(poolPath);
     var isoCell = row.find('td[data-field="isoFile"]');
     if (!isoCell.length) return;
 
-    if (!isoFileOptions || isoFileOptions.length === 0) {
+    if (!g_isoFileOptions || g_isoFileOptions.length === 0) {
         isoCell.text('无可用ISO');
         isoCell.removeAttr('data-value');
         return;
     }
 
     let selectHtml = `<select class="form-select form-select-sm edit-dropdown">`;
-    isoFileOptions.forEach(option => {
+    g_isoFileOptions.forEach(option => {
         selectHtml += `<option value="${option.value}">${option.text}</option>`;
     });
     selectHtml += `</select>`;
@@ -1651,7 +1659,7 @@ function doDiskStoragePoolDblClick(e) {
             options = diskPartBusOptions;
             break;
         case 'diskPartPool':
-            options = diskPoolOptions;
+            options = g_diskPoolOptions;
             break;
         case 'bootDisk':
             options = bootDiskOptions;
@@ -1661,7 +1669,7 @@ function doDiskStoragePoolDblClick(e) {
             const row = $(this).closest('tr');
             console.log('---doDiskStoragePoolDblClick currentText:' + currentText + ' pool:' + pool);
             diskStoragePoolDblClickToChange(row, pool, currentText);
-            options = diskFileOptions;
+            options = g_diskFileOptions;
             break;
     }
     $(this).html('');
@@ -1702,8 +1710,8 @@ function doDiskStoragePoolDblClickChange() {
 
 // 新增函数：双击 diskPool 单元格时在 diskFile 单元格显示对应文件列表
 function diskStoragePoolDblClickToChange(row, poolPath, currentText) {
-    // 清空并填充 diskFileOptions
-    diskFileOptions = [];
+    // 清空并填充 g_diskFileOptions
+    g_diskFileOptions = [];
     poolPath = addDiskFileToTableItem(poolPath, currentText);
     var diskFileCell = row.find('td[data-field="diskFile"]');
     if (!diskFileCell.length) {
@@ -1716,14 +1724,14 @@ function diskStoragePoolDblClickToChange(row, poolPath, currentText) {
         return;
     }
 
-    if (!diskFileOptions || diskFileOptions.length === 0) {
+    if (!g_diskFileOptions || g_diskFileOptions.length === 0) {
         diskFileCell.text('无镜像可用');
         diskFileCell.removeAttr('data-value');
         return;
     }
 
     let selectHtml = `<select class="form-select form-select-sm edit-dropdown">`;
-    diskFileOptions.forEach(option => {
+    g_diskFileOptions.forEach(option => {
         selectHtml += `<option value="${option.value}">${option.text}</option>`;
     });
     selectHtml += `</select>`;
@@ -1938,12 +1946,6 @@ function doXMLContentChange() {
     }
 }
 
-// // 初始化编辑XML模态框
-// function initEditXMLModal() {
-//     $('#xmlContent').val('');
-//     $('#editXMLBtn').prop('disabled', true);
-// }
-
 function doSaveXMLBtn() {
     const vmName = $('#vm-detail-name').text().trim();
     var xmlContent = $('#xmlContent').val();
@@ -2029,6 +2031,91 @@ function addEditNICRow(nicModel, nicMAC, nicConnType, netPoolName, createflag) {
     $('#editVmNICTab tbody').append(newRow);
 }
 
+function initNicNetwork() {
+    g_nicNetworkOptions = [];
+    let network_json_data = JSON.parse(sessionStorage.getItem("network_json"));
+    $.each(network_json_data, function(netPoolType, netPools){ 
+        netPools.forEach(item => {
+            g_nicNetworkOptions.push({value: netPoolType, text: item.name});
+        });
+    });
+}
+
+function addButtonEventForEditNIC() {
+    $(document).on('dblclick', '#editVmNICTab td.editable', doEditNicDblClick);
+    $(document).on('change', '#editVmNICTab td.editable select', doEditNicDblClickChange);
+}
+
+function doEditNicDblClick(e) {
+    e.preventDefault();
+    // 在创建新的编辑器前，先提交并关闭其它可编辑单元格的编辑器
+    closeAllEditableEditors();
+    if ($(this).find('select').length > 0) return;
+
+    const field = $(this).data('field');
+    const currentValue = $(this).data('value');
+    const currentText = $(this).text().trim();
+    let options = [];
+    const nicModel = [
+        { value: 'e1000', text: 'e1000'},
+        { value: 'virtio', text: 'virtio'},
+        { value: 'rtl8139', text: 'rtl8139'}
+    ];
+
+    const diskPartBusOptions = [
+        { value: 'virtio', text: 'virtio' },
+        { value: 'sata', text: 'sata' },
+        { value: 'scsi', text: 'scsi' }
+    ];
+
+    switch (field) {
+        case 'nicModel':
+            options = nicModel;
+            break;
+        case 'nicMAC':
+            break;
+        case 'nicConnType':
+            break;
+        case 'netPoolName':
+            options = g_nicNetworkOptions;
+            break;
+    }
+    $(this).html('');
+    let selectHtml = '';
+    if (field === 'nicMAC') {
+        selectHtml = `<input type="text" class="form-control form-control-sm edit-input edit-nicMac-tableitem" value="${currentText}">`;
+    }
+    else {
+        selectHtml = `<select class="form-select form-select-sm edit-dropdown">`;
+        options.forEach(op => {
+            const selected = op.text === currentText ? 'selected' : '';
+            selectHtml += `<option value="${op.value}" ${selected}>${op.text}</option>`;
+        });
+        selectHtml += `</select>`;
+    }
+    $(this).html(selectHtml);
+    $(this).find('select, input').focus();
+}
+
+// 网络下拉框改变事件
+function doEditNicDblClickChange() {
+    const newValue = $(this).val();
+    const newText = $(this).find('option:selected').text().trim();
+    // console.log('newValue: ' + newValue + ' netText: ' + newText);
+
+    const field = $(this).parent().data('field');
+
+    var row = $(this).parent().closest('tr');
+    var nicConnType = row.find('td[data-field="nicConnType"]');
+    if (field === 'netPoolName') {
+        nicConnType.text(newValue);
+    }
+    $(this).parent().data('value', newValue).text(newText);
+
+    editUpdateSaveButtonsState();
+}
+
+
 function editAddNIC2List() {
     const nicModel = $('#editNicNetModelSelect').find('option:selected').text().trim();
     const nicMAC = $('#editVmNICMACID').val();
@@ -2081,18 +2168,6 @@ function getVMNICListInfo(vmName) {
         $('#editVmNICTab tbody').empty();
         nicList.forEach(nic => {
             console.log('getVMNICListInfo nic:' + JSON.stringify(nic));
-            //editUpdateDeleteButtonsState();
-            // var netType = 'unknown';
-            // let res_json_data = JSON.parse(sessionStorage.getItem("network_json"));
-            // $.each(res_json_data, function (key, value) {
-            //     $.each(value, function (index) {
-            //         if (value[index]['name'] === nic['network']) {
-            //             netType = key;
-            //             return ; // 退出循环
-            //         }
-            //     });
-            // });
-            // {'nicModel':model_type, 'createflag': createflag,'type': type, 'mac': mac_addr, 'network': source_networkPool}
             addEditNICRow(nic['nicModel'], nic['mac'].toUpperCase(), nic['networkType'], nic['networkPool'], nic['createflag']);
         });
     }, function () { alert('查询虚拟实例ISO详细信息失败！'); });
@@ -2179,5 +2254,4 @@ $('#editNetBtn').click(function () {
         
         alert('修改网卡配置成功！');
     }, function () { editNicBtn.prop('disabled', false); alert('修改网卡配置失败！'); });
-    
 })
