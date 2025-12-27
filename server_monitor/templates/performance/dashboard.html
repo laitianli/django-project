@@ -1,0 +1,448 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服务器性能监控</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"> -->
+    <!-- Chart.js -->
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .progress {
+            height: 20px;
+        }
+
+        .network-interface {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .chart-container {
+            height: 200px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid mt-4">
+        <h1 class="mb-4">服务器性能监控面板</h1>
+
+        <div class="row">
+            <!-- CPU信息 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">CPU 使用率</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="metric-value" id="cpu-percent">0%</div>
+                        <div class="metric-label" id="cpu-freq">0 GHz</div>
+                        <div class="progress mt-2">
+                            <div id="cpu-progress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-6">
+                                <small>核心: <span id="cpu-cores">0</span></small>
+                            </div>
+                            <div class="col-6">
+                                <small>线程: <span id="cpu-threads">0</span></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 内存信息 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">内存使用</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="metric-value" id="memory-percent">0%</div>
+                        <div class="metric-label" id="memory-used">0 GB / 0 GB</div>
+                        <div class="progress mt-2">
+                            <div id="memory-progress" class="progress-bar bg-info" role="progressbar" style="width: 0%">
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-6">
+                                <small>可用: <span id="memory-available">0 GB</span></small>
+                            </div>
+                            <div class="col-6">
+                                <small>交换: <span id="swap-percent">0%</span></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 磁盘信息 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">磁盘使用</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="disk-list">
+                            <!-- 磁盘信息将通过JS动态添加 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 系统信息 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">系统信息</h5>
+                    </div>
+                    <div class="card-body">
+                        <small>系统: <span id="sys-os">-</span></small><br>
+                        <small>架构: <span id="sys-arch">-</span></small><br>
+                        <small>运行时间: <span id="sys-uptime">-</span></small><br>
+                        <small>启动时间: <span id="sys-boottime">-</span></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 网络接口 -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">网络接口</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="network-list">
+                            <!-- 网络接口信息将通过JS动态添加 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CPU使用率图表 -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">CPU使用率历史</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="cpuChart" class="chart-container"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery和Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script> -->
+     <script src="./static/bootstrap-5.3.0-alpha1/dist/css/bootstrap.min.css"></script>
+    <!-- ./bootstrap-5.3.0-alpha1/dist/css/bootstrap.min.css -->
+
+    <script>
+        // 性能数据存储
+        let performanceData = {};
+        let cpuHistory = [];
+        const MAX_HISTORY = 30;
+
+        // 字节转换函数
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        // 时间格式化
+        function formatUptime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // 更新CPU信息
+        function updateCPU(data) {
+            const cpu = data.cpu;
+            $('#cpu-percent').text(cpu.usage_percent.toFixed(1) + '%');
+            $('#cpu-freq').text(cpu.frequency_current ? (cpu.frequency_current / 1000).toFixed(2) + ' GHz' : 'N/A');
+            $('#cpu-cores').text(cpu.cores);
+            $('#cpu-threads').text(cpu.logical_cores);
+
+            const progressBar = $('#cpu-progress');
+            progressBar.css('width', cpu.usage_percent + '%');
+            progressBar.text(cpu.usage_percent.toFixed(1) + '%');
+
+            // 更新进度条颜色
+            if (cpu.usage_percent > 80) {
+                progressBar.removeClass('bg-warning bg-success').addClass('bg-danger');
+            } else if (cpu.usage_percent > 60) {
+                progressBar.removeClass('bg-success bg-danger').addClass('bg-warning');
+            } else {
+                progressBar.removeClass('bg-warning bg-danger').addClass('bg-success');
+            }
+
+            // 添加到历史记录
+            cpuHistory.push(cpu.usage_percent);
+            if (cpuHistory.length > MAX_HISTORY) {
+                cpuHistory.shift();
+            }
+            updateCpuChart();
+        }
+
+        // 更新内存信息
+        function updateMemory(data) {
+            const mem = data.memory;
+            const usedGB = (mem.used / (1024 ** 3)).toFixed(1);
+            const totalGB = (mem.total / (1024 ** 3)).toFixed(1);
+            const availableGB = (mem.available / (1024 ** 3)).toFixed(1);
+
+            $('#memory-percent').text(mem.percent.toFixed(1) + '%');
+            $('#memory-used').text(`${usedGB} GB / ${totalGB} GB`);
+            $('#memory-available').text(`${availableGB} GB`);
+            $('#swap-percent').text(mem.swap_percent.toFixed(1) + '%');
+
+            const progressBar = $('#memory-progress');
+            progressBar.css('width', mem.percent + '%');
+            progressBar.text(mem.percent.toFixed(1) + '%');
+
+            // 更新进度条颜色
+            if (mem.percent > 80) {
+                progressBar.removeClass('bg-warning bg-info').addClass('bg-danger');
+            } else if (mem.percent > 60) {
+                progressBar.removeClass('bg-info bg-danger').addClass('bg-warning');
+            } else {
+                progressBar.removeClass('bg-warning bg-danger').addClass('bg-info');
+            }
+        }
+
+        // 更新磁盘信息
+        function updateDisks(data) {
+            const disks = data.disks;
+            let diskHtml = '';
+
+            disks.forEach(disk => {
+                const usedGB = (disk.used / (1024 ** 3)).toFixed(1);
+                const totalGB = (disk.total / (1024 ** 3)).toFixed(1);
+                const readSpeed = formatBytes(disk.read_bytes);
+                const writeSpeed = formatBytes(disk.write_bytes);
+
+                diskHtml += `
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between">
+                            <small><strong>${disk.mountpoint}</strong></small>
+                            <small>${disk.percent.toFixed(1)}%</small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar ${disk.percent > 80 ? 'bg-danger' : disk.percent > 60 ? 'bg-warning' : 'bg-success'}" 
+                                 style="width: ${disk.percent}%"></div>
+                        </div>
+                        <small class="d-block">${usedGB} GB / ${totalGB} GB</small>
+                        <small class="text-muted">读: ${readSpeed}/s | 写: ${writeSpeed}/s</small>
+                    </div>
+                `;
+            });
+
+            $('#disk-list').html(diskHtml);
+        }
+
+        // 更新网络信息
+        function updateNetwork(data) {
+            const networks = data.network;
+            let networkHtml = '';
+
+            networks.forEach(net => {
+                const sentSpeed = formatBytes(net.bytes_sent);
+                const recvSpeed = formatBytes(net.bytes_recv);
+
+                networkHtml += `
+                    <div class="col-md-4 col-lg-3">
+                        <div class="network-interface">
+                            <h6>${net.interface}</h6>
+                            <small class="d-block">上传: ${sentSpeed}/s</small>
+                            <small class="d-block">下载: ${recvSpeed}/s</small>
+                            <small class="d-block text-muted">包发送: ${net.packets_sent}</small>
+                            <small class="d-block text-muted">包接收: ${net.packets_recv}</small>
+                        </div>
+                    </div>
+                `;
+            });
+
+            $('#network-list').html(networkHtml || '<div class="col-12"><p class="text-muted">无网络接口信息</p></div>');
+        }
+
+        // 更新系统信息
+        function updateSystem(data) {
+            const sys = data.system;
+            $('#sys-os').text(`${sys.system} ${sys.release}`);
+            $('#sys-arch').text(sys.machine);
+            $('#sys-uptime').text(formatUptime(data.uptime));
+            $('#sys-boottime').text(new Date(data.boot_time * 1000).toLocaleString());
+        }
+
+        // 初始化CPU图表
+        let cpuChart = null;
+        function initCpuChart() {
+            const ctx = document.getElementById('cpuChart').getContext('2d');
+            cpuChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'CPU使用率 (%)',
+                        data: [],
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1,
+                        fill: true,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: '使用率 (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '时间'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 更新CPU图表
+        function updateCpuChart() {
+            if (!cpuChart) return;
+
+            const labels = [];
+            for (let i = 0; i < cpuHistory.length; i++) {
+                labels.push(`${i * 2}s前`);
+            }
+
+            cpuChart.data.labels = labels;
+            cpuChart.data.datasets[0].data = cpuHistory;
+            cpuChart.update('none');
+        }
+
+        // WebSocket连接
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/performance/`;
+
+            const socket = new WebSocket(wsUrl);
+
+            socket.onopen = function (e) {
+                console.log('WebSocket连接已建立');
+            };
+
+            socket.onmessage = function (event) {
+                const data = JSON.parse(event.data);
+                if (data.type === 'performance_update') {
+                    performanceData = data.data;
+                    updateAllDisplays();
+                }
+            };
+
+            socket.onclose = function (event) {
+                console.log('WebSocket连接关闭，5秒后重连...');
+                setTimeout(connectWebSocket, 5000);
+            };
+
+            socket.onerror = function (error) {
+                console.error('WebSocket错误:', error);
+            };
+        }
+
+        // AJAX轮询（备用方案）
+        function pollPerformanceData() {
+            $.ajax({
+                url: '/api/performance/',
+                method: 'GET',
+                success: function (data) {
+                    performanceData = data;
+                    updateAllDisplays();
+                },
+                complete: function () {
+                    // 每2秒轮询一次
+                    setTimeout(pollPerformanceData, 2000);
+                },
+                error: function () {
+                    setTimeout(pollPerformanceData, 5000);
+                }
+            });
+        }
+
+        // 更新所有显示
+        function updateAllDisplays() {
+            updateCPU(performanceData);
+            updateMemory(performanceData);
+            updateDisks(performanceData);
+            updateNetwork(performanceData);
+            updateSystem(performanceData);
+        }
+
+        // 页面加载完成
+        $(document).ready(function () {
+            // 初始化图表
+            initCpuChart();
+
+            // 尝试WebSocket连接
+            try {
+                connectWebSocket();
+            } catch (error) {
+                console.log('WebSocket不可用，使用AJAX轮询');
+                // 如果WebSocket不可用，使用AJAX轮询
+                pollPerformanceData();
+            }
+
+            // 初始加载数据
+            $.get('/api/performance/', function (data) {
+                performanceData = data;
+                updateAllDisplays();
+            });
+        });
+    </script>
+</body>
+
+</html>

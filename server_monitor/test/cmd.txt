@@ -1,0 +1,18 @@
+pip install channels 
+pip install channels-redis
+pip install psutil
+pip install daphne
+
+Django-5.2.9 channels-4.3.2  async-timeout-5.0.1 channels-redis-4.3.0 msgpack-1.1.2 redis-7.1.0
+
+
+sudo apt-get install redis-server
+sudo systemctl enable redis-server
+sudo systemctl start redis-server
+
+
+
+daphne -b 0.0.0.0 -p 8000 monitor.asgi:application
+
+python manage.py migrate
+python manage.py runserver
