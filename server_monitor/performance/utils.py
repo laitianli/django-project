@@ -15,11 +15,19 @@ def get_system_info():
 
 def get_cpu_info():
     """获取CPU信息"""
-    cpu_percent = psutil.cpu_percent(interval=0.1)
+    # 获取每核和总体使用率。使用短阻塞 interval 可以获得更准确的瞬时值。
+    per_core = psutil.cpu_percent(interval=0.1, percpu=True)
+    # 计算总体使用率（每核平均），如果 percpu 返回空则回退到单次调用
+    if per_core:
+        cpu_percent = sum(per_core) / len(per_core)
+    else:
+        cpu_percent = psutil.cpu_percent(interval=0.1)
+
     cpu_freq = psutil.cpu_freq()
-    
+
     return {
         'usage_percent': cpu_percent,
+        'per_core': per_core,
         'cores': psutil.cpu_count(logical=False),
         'logical_cores': psutil.cpu_count(logical=True),
         'frequency_current': cpu_freq.current if cpu_freq else None,

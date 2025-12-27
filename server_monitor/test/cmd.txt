@@ -3,6 +3,8 @@ pip install channels-redis
 pip install psutil
 pip install daphne
 
+ apt install python3-psutil -y
+
 Django-5.2.9 channels-4.3.2  async-timeout-5.0.1 channels-redis-4.3.0 msgpack-1.1.2 redis-7.1.0
 
 

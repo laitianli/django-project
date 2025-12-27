@@ -1,4 +1,5 @@
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -9,9 +10,7 @@
 
     <!-- Bootstrap 5 CSS -->
     <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"> -->
-    <!-- Chart.js -->
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'bootstrap-5.3.0-alpha1/dist/js/bootstrap.bundle.min.js' %}"></script>
 
     <style>
         .card {
@@ -44,6 +43,114 @@
             height: 200px;
             margin-top: 20px;
         }
+
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+        }
+
+        .core-charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .core-chart-card {
+            height: 140px;
+            border: 1px solid #e9ecef;
+            padding: 8px;
+            border-radius: 6px;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .core-chart-card canvas {
+            flex: 1 1 auto;
+        }
+
+        .time-range-select {
+            min-width: 160px;
+        }
+
+        /* Ensure card header places title on the left and control on the right */
+        .card-header.d-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            white-space: nowrap;
+        }
+
+        .card-header.d-flex h5 {
+            margin: 0;
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .time-range-container {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Ensure the container is a positioned ancestor for absolute dropdown placement */
+        .time-range-container {
+            position: relative;
+        }
+
+        .time-range-select {
+            display: inline-block;
+            width: auto;
+        }
+
+        /* core filter styles */
+        #coreFilter {
+            min-width: 160px;
+            max-width: 340px;
+        }
+
+        .filter-dropdown {
+            position: absolute;
+            top: calc(100% + 6px);
+            right: 0;
+            z-index: 40;
+            background: #fff;
+            border: 1px solid #ddd;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+            padding: 8px;
+            width: 260px;
+        }
+
+        .filter-dropdown-inner {
+            max-height: 220px;
+            overflow: auto;
+        }
+
+        .filter-dropdown .form-check {
+            margin-bottom: 6px;
+        }
+
+        .net-chart {
+            height: 80px;
+            width: 100%;
+            display: block;
+        }
+
+        /* core label: hidden by default, shown on hover */
+        .core-label {
+            opacity: 0;
+            transition: opacity 0.15s ease-in-out;
+            text-align: center;
+            width: 100%;
+            margin: 0.25rem 0 0 0;
+        }
+
+        .core-chart-card:hover .core-label {
+            opacity: 1;
+        }
     </style>
 </head>
 
@@ -66,7 +173,7 @@
                         </div>
                         <div class="row mt-2">
                             <div class="col-6">
-                                <small>核心: <span id="cpu-cores">0</span></small>
+                                <small>CPU: <span id="cpu-cores">0</span></small>
                             </div>
                             <div class="col-6">
                                 <small>线程: <span id="cpu-threads">0</span></small>
@@ -151,11 +258,52 @@
         <div class="row mt-4">
             <div class="col-12">
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header d-flex align-items-center justify-content-between">
                         <h5 class="mb-0">CPU使用率历史</h5>
+                        <div class="time-range-container">
+                            <label for="timeRangeSelect" class="small mb-0">时间范围:</label>
+                            <select id="timeRangeSelect" class="time-range-select">
+                                <option value="60">60s</option>
+                                <option value="120">120s</option>
+                                <option value="300">5分钟</option>
+                                <option value="600">10分钟</option>
+                                <option value="1200">20分钟</option>
+                                <option value="1800">30分钟</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="card-body">
-                        <canvas id="cpuChart" class="chart-container"></canvas>
+                        <div class="chart-container">
+                            <canvas id="cpuChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 每个CPU核的使用率图表 -->
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">每核 CPU 使用率</h5>
+                        <div class="time-range-container ms-3 position-relative">
+                            <label class="small mb-0 me-2">过滤:</label>
+                            <div class="dropdown">
+                                <button id="coreFilterBtn" class="btn btn-sm btn-outline-secondary">选择核</button>
+                                <div id="coreFilterDropdown" class="filter-dropdown" style="display:none;">
+                                    <div class="filter-dropdown-inner" id="coreFilterInner">
+                                        <!-- checkboxes populated here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="cpu-core-charts" class="core-charts-grid">
+                            <!-- JS will create one chart per CPU core here -->
+                            <p>CPU test</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -163,16 +311,69 @@
     </div>
 
     <!-- jQuery和Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script> -->
-     <script src="./static/bootstrap-5.3.0-alpha1/dist/css/bootstrap.min.css"></script>
-    <!-- ./bootstrap-5.3.0-alpha1/dist/css/bootstrap.min.css -->
+    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+    <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'js/chart.js' %}"></script>
+    <!-- Small CSS fixes to ensure canvases get an explicit height and don't collapse -->
+    <style>
+        .chart-container {
+            height: 240px;
+        }
+
+        .chart-container canvas,
+        .net-chart,
+        .core-chart-card canvas {
+            width: 100% !important;
+            display: block;
+        }
+
+        .net-chart {
+            height: 120px;
+        }
+
+        .core-chart-card canvas {
+            height: 110px;
+        }
+
+        .core-charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        .core-chart-card {
+            padding: 8px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            background: #fff;
+        }
+
+        /* ensure network interface container has some min height so canvas is visible */
+        .network-interface {
+            min-height: 140px;
+        }
+
+        /* dropdown panel should be absolutely positioned relative to nearest positioned ancestor */
+        .time-range-container {
+            position: relative;
+        }
+
+        .filter-dropdown {
+            position: absolute;
+            z-index: 2000;
+        }
+    </style>
 
     <script>
         // 性能数据存储
         let performanceData = {};
         let cpuHistory = [];
-        const MAX_HISTORY = 30;
+        let MAX_HISTORY = 30;
+        const SAMPLE_INTERVAL = 2; // seconds between samples (matches polling interval)
+        // Network charts storage
+        const netCharts = {};
+        const netPrev = {}; // store previous bytes_sent/bytes_recv per interface
+        const netHistory = {}; // per-interface history arrays {sent:[], recv:[]}
 
         // 字节转换函数
         function formatBytes(bytes, decimals = 2) {
@@ -219,6 +420,76 @@
                 cpuHistory.shift();
             }
             updateCpuChart();
+
+            // 如果后端提供每核使用率数组（例如 cpu.per_core），则更新每核图表
+            if (cpu.per_core && Array.isArray(cpu.per_core)) {
+                updatePerCoreCharts(cpu.per_core);
+            }
+        }
+
+        // Populate the core filter dropdown with checkboxes: 'All' + per-core entries
+        function populateCoreFilter(count) {
+            const inner = document.getElementById('coreFilterInner');
+            if (!inner) return;
+            // remember previously checked
+            const prevChecked = new Set(Array.from(inner.querySelectorAll('input[type=checkbox]:checked')).map(i => i.value));
+            inner.innerHTML = '';
+
+            // Add 'All' checkbox
+            const allWrapper = document.createElement('div');
+            allWrapper.className = 'form-check';
+            allWrapper.innerHTML = `<input class="form-check-input" type="checkbox" id="core_check_all" value="all">
+                                         <label class="form-check-label" for="core_check_all">全部 (All)</label>`;
+            inner.appendChild(allWrapper);
+
+            for (let i = 0; i < count; i++) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'form-check';
+                const checked = prevChecked.size === 0 || prevChecked.has('all') || prevChecked.has(String(i));
+                wrapper.innerHTML = `<input class="form-check-input core-check" type="checkbox" id="core_check_${i}" value="${i}" ${checked ? 'checked' : ''}>
+                                         <label class="form-check-label" for="core_check_${i}">CPU ${i}</label>`;
+                inner.appendChild(wrapper);
+            }
+
+            // wire up all checkbox behavior and individual change handlers
+            const allBox = document.getElementById('core_check_all');
+            if (allBox) {
+                allBox.addEventListener('change', function () {
+                    const boxes = inner.querySelectorAll('input.core-check');
+                    boxes.forEach(b => b.checked = this.checked);
+                    applyCoreFilter();
+                });
+            }
+
+            inner.querySelectorAll('input.core-check').forEach(b => {
+                b.addEventListener('change', function () {
+                    // if any core is unchecked, uncheck 'all'
+                    const boxes = Array.from(inner.querySelectorAll('input.core-check'));
+                    const allCheckedNow = boxes.every(x => x.checked);
+                    const allBoxEl = document.getElementById('core_check_all');
+                    if (allBoxEl) allBoxEl.checked = allCheckedNow;
+                    applyCoreFilter();
+                });
+            });
+        }
+
+        // Apply core filter: show only checked cores (or all if 'all' checked)
+        function applyCoreFilter() {
+            const inner = document.getElementById('coreFilterInner');
+            if (!inner) return;
+            const checked = Array.from(inner.querySelectorAll('input.core-check:checked')).map(i => i.value);
+            const allChecked = Boolean(inner.querySelector('#core_check_all')?.checked);
+            const showAll = allChecked || checked.length === 0;
+
+            const cards = document.querySelectorAll('.core-chart-card');
+            cards.forEach(card => {
+                const coreIdx = card.dataset.core;
+                if (showAll || checked.includes(coreIdx)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
         }
 
         // 更新内存信息
@@ -245,6 +516,43 @@
             } else {
                 progressBar.removeClass('bg-warning bg-danger').addClass('bg-info');
             }
+        }
+
+        // Position the core filter panel relative to the button.
+        // If there isn't enough space on the left, flip it to the right of the button.
+        function positionCoreFilterPanel() {
+            const btn = document.getElementById('coreFilterBtn');
+            const panel = document.getElementById('coreFilterDropdown');
+            if (!btn || !panel) return;
+
+            const container = btn.closest('.time-range-container');
+            const containerRect = container ? container.getBoundingClientRect() : { left: 0, top: 0 };
+            const btnRect = btn.getBoundingClientRect();
+
+            // show temporarily to measure
+            panel.style.visibility = 'hidden';
+            panel.style.display = 'block';
+            const panelRect = panel.getBoundingClientRect();
+
+            const gap = 0; // flush against button
+
+            // Preferred: below the button, left aligned to the button's left edge
+            let leftRel = (btnRect.left - containerRect.left) + 0; // align left edges
+            let topRel = btnRect.bottom - containerRect.top + gap;
+
+            // If not enough space below, place above the button
+            const spaceBelow = window.innerHeight - btnRect.bottom;
+            if (spaceBelow < panelRect.height + 12) {
+                topRel = (btnRect.top - containerRect.top) - panelRect.height - gap;
+            }
+
+            // If panel would overflow right edge, shift left so it fits
+            const overflowRight = leftRel + panelRect.width - containerRect.width;
+            if (overflowRight > 0) leftRel = Math.max(0, leftRel - overflowRight - 4);
+
+            panel.style.left = Math.round(leftRel) + 'px';
+            panel.style.top = Math.round(topRel) + 'px';
+            panel.style.visibility = 'visible';
         }
 
         // 更新磁盘信息
@@ -282,24 +590,98 @@
             const networks = data.network;
             let networkHtml = '';
 
+            // Build HTML including a small canvas for each interface chart
             networks.forEach(net => {
                 const sentSpeed = formatBytes(net.bytes_sent);
                 const recvSpeed = formatBytes(net.bytes_recv);
+                const safeId = `net_${net.interface.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
 
                 networkHtml += `
                     <div class="col-md-4 col-lg-3">
-                        <div class="network-interface">
+                        <div class="network-interface" data-interface="${net.interface}">
                             <h6>${net.interface}</h6>
                             <small class="d-block">上传: ${sentSpeed}/s</small>
                             <small class="d-block">下载: ${recvSpeed}/s</small>
                             <small class="d-block text-muted">包发送: ${net.packets_sent}</small>
                             <small class="d-block text-muted">包接收: ${net.packets_recv}</small>
+                            <canvas id="${safeId}" class="net-chart"></canvas>
                         </div>
                     </div>
                 `;
             });
 
             $('#network-list').html(networkHtml || '<div class="col-12"><p class="text-muted">无网络接口信息</p></div>');
+
+            // After inserting HTML, update or create charts and compute rates
+            networks.forEach(net => {
+                const iface = net.interface;
+                const safeId = `net_${iface.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+
+                // compute rates from previous counters (bytes/sec)
+                if (!netPrev[iface]) {
+                    netPrev[iface] = { bytes_sent: net.bytes_sent, bytes_recv: net.bytes_recv };
+                    netHistory[iface] = { sent: [], recv: [] };
+                }
+
+                const prev = netPrev[iface];
+                const sentRate = Math.max(0, (net.bytes_sent - (prev.bytes_sent || 0)) / SAMPLE_INTERVAL);
+                const recvRate = Math.max(0, (net.bytes_recv - (prev.bytes_recv || 0)) / SAMPLE_INTERVAL);
+
+                // update prev
+                netPrev[iface].bytes_sent = net.bytes_sent;
+                netPrev[iface].bytes_recv = net.bytes_recv;
+
+                // push history (keep MAX_HISTORY)
+                netHistory[iface].sent.push(sentRate);
+                netHistory[iface].recv.push(recvRate);
+                if (netHistory[iface].sent.length > MAX_HISTORY) netHistory[iface].sent.shift();
+                if (netHistory[iface].recv.length > MAX_HISTORY) netHistory[iface].recv.shift();
+
+                // create chart if needed
+                if (!netCharts[iface]) {
+                    const el = document.getElementById(safeId);
+                    if (!el) {
+                        console.error('Network canvas element not found for', iface, 'id=', safeId);
+                    } else {
+                        const ctx = el.getContext && el.getContext('2d');
+                        if (!ctx) {
+                            console.error('Could not get 2d context for', safeId, el);
+                        } else {
+                            console.log('Creating net chart for', iface, 'canvasId=', safeId);
+                            netCharts[iface] = new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    datasets: [
+                                        { label: '上传 (B/s)', data: [], borderColor: 'rgb(255,99,132)', fill: true, backgroundColor: 'rgba(255,99,132,0.08)', parsing: false, tension: 0.2 },
+                                        { label: '下载 (B/s)', data: [], borderColor: 'rgb(54,162,235)', fill: true, backgroundColor: 'rgba(54,162,235,0.08)', parsing: false, tension: 0.2 }
+                                    ]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 8 } } },
+                                    scales: {
+                                        x: { type: 'linear', min: 0, max: MAX_HISTORY * SAMPLE_INTERVAL, reverse: true, display: false },
+                                        y: { beginAtZero: true, title: { display: false, text: 'B/s' } }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+
+                // prepare datapoints with x = seconds ago
+                const sentPoints = netHistory[iface].sent.map((v, idx) => ({ x: (netHistory[iface].sent.length - 1 - idx) * SAMPLE_INTERVAL, y: v }));
+                const recvPoints = netHistory[iface].recv.map((v, idx) => ({ x: (netHistory[iface].recv.length - 1 - idx) * SAMPLE_INTERVAL, y: v }));
+
+                const chart = netCharts[iface];
+                if (chart) {
+                    // console.log('-------------updateNetwork---sentPoints:' + sentPoints + ' recvPoints:' + recvPoints);
+                    chart.data.datasets[0].data = sentPoints;
+                    chart.data.datasets[1].data = recvPoints;
+                    try { chart.update('none'); } catch (e) { }
+                }
+            });
         }
 
         // 更新系统信息
@@ -314,18 +696,19 @@
         // 初始化CPU图表
         let cpuChart = null;
         function initCpuChart() {
+            if (cpuChart) return;
             const ctx = document.getElementById('cpuChart').getContext('2d');
             cpuChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: [],
                     datasets: [{
                         label: 'CPU使用率 (%)',
                         data: [],
                         borderColor: 'rgb(75, 192, 192)',
                         tension: 0.1,
                         fill: true,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)'
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        parsing: false
                     }]
                 },
                 options: {
@@ -341,9 +724,21 @@
                             }
                         },
                         x: {
+                            type: 'linear',
+                            min: 0,
+                            max: MAX_HISTORY * 2,
+                            reverse: true,
                             title: {
                                 display: true,
-                                text: '时间'
+                                text: '时间 (秒)'
+                            },
+                            ticks: {
+                                callback: function (value, index, values) {
+                                    const total = MAX_HISTORY * 2;
+                                    if (Math.round(value) === 0) return '0s';
+                                    if (Math.round(value) === total) return total + 's';
+                                    return '';
+                                }
                             }
                         }
                     }
@@ -351,18 +746,140 @@
             });
         }
 
+        // 每核图表集合和历史数据
+        let cpuCoreCharts = [];
+        let perCoreHistory = [];
+
+        // 初始化每核图表，count 为 CPU 核数
+        function initPerCoreCharts(count) {
+            const container = document.getElementById('cpu-core-charts');
+            if (!container) return;
+
+            // 如果核数未变化并且已有图表，则不重复初始化
+            if (cpuCoreCharts.length === count) return;
+
+            // 销毁已有图表以防重复创建
+            if (cpuCoreCharts && cpuCoreCharts.length) {
+                cpuCoreCharts.forEach(c => { try { c.destroy(); } catch (e) { } });
+            }
+            cpuCoreCharts = [];
+            perCoreHistory = Array.from({ length: count }, () => []);
+
+            // 清空容器并为每个核创建 canvas
+            container.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const card = document.createElement('div');
+                card.className = 'core-chart-card';
+                card.innerHTML = `<div class="text-center small mb-1 core-label">CPU ${i}</div><canvas id="cpuCoreChart-${i}"></canvas>`;
+                // tag the card with its core index for filtering
+                card.dataset.core = String(i);
+                container.appendChild(card);
+
+                const ctx = document.getElementById(`cpuCoreChart-${i}`).getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        datasets: [{
+                            label: `Core ${i} (%)`,
+                            data: [],
+                            borderColor: 'rgb(54, 162, 235)',
+                            tension: 0.2,
+                            fill: true,
+                            parsing: false,
+                            backgroundColor: 'rgba(54, 162, 235, 0.12)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, max: 100 },
+                            x: { type: 'linear', min: 0, max: MAX_HISTORY * 2, reverse: true, display: false }
+                        }
+                    }
+                });
+
+                cpuCoreCharts.push(chart);
+            }
+            // populate filter UI and apply current selection
+            populateCoreFilter(count);
+            applyCoreFilter();
+        }
+
         // 更新CPU图表
         function updateCpuChart() {
             if (!cpuChart) return;
 
-            const labels = [];
-            for (let i = 0; i < cpuHistory.length; i++) {
-                labels.push(`${i * 2}s前`);
+            // Build data points with x = seconds ago, y = usage
+            // cpuHistory: oldest -> newest, newest at end
+            const totalSeconds = MAX_HISTORY * 2;
+            const dataPoints = cpuHistory.map((val, idx) => {
+                // idx: 0..n-1 where 0 is oldest; compute secondsAgo
+                const secondsAgo = (cpuHistory.length - 1 - idx) * SAMPLE_INTERVAL;
+                return { x: secondsAgo, y: val };
+            });
+
+            cpuChart.data.datasets[0].data = dataPoints;
+            cpuChart.update('none');
+        }
+
+        // 更新每核图表数据（如果存在 per_core 数组）
+        function updatePerCoreCharts(coreUsages) {
+            if (!Array.isArray(coreUsages)) return;
+            const count = coreUsages.length;
+            initPerCoreCharts(count);
+
+            for (let i = 0; i < count; i++) {
+                const usage = coreUsages[i];
+                perCoreHistory[i].push(usage);
+                if (perCoreHistory[i].length > MAX_HISTORY) perCoreHistory[i].shift();
+
+                // map numeric history to {x, y} points where x = seconds ago
+                const dataPoints = perCoreHistory[i].map((val, idx) => {
+                    const secondsAgo = (perCoreHistory[i].length - 1 - idx) * SAMPLE_INTERVAL;
+                    return { x: secondsAgo, y: val };
+                });
+
+                const chart = cpuCoreCharts[i];
+                if (!chart) continue;
+                chart.data.datasets[0].data = dataPoints;
+                chart.update('none');
+            }
+        }
+
+        // 设置历史窗口（以秒为单位），调整 MAX_HISTORY 并更新所有图表范围
+        function setTimeRange(seconds) {
+            const newMax = Math.max(1, Math.floor(seconds / SAMPLE_INTERVAL));
+            MAX_HISTORY = newMax;
+
+            // 裁剪历史数据
+            if (cpuHistory.length > MAX_HISTORY) {
+                cpuHistory = cpuHistory.slice(cpuHistory.length - MAX_HISTORY);
+            }
+            if (perCoreHistory && perCoreHistory.length) {
+                perCoreHistory = perCoreHistory.map(arr => arr.length > MAX_HISTORY ? arr.slice(arr.length - MAX_HISTORY) : arr);
             }
 
-            cpuChart.data.labels = labels;
-            cpuChart.data.datasets[0].data = cpuHistory;
-            cpuChart.update('none');
+            // 更新主图范围与 ticks 回调
+            if (cpuChart) {
+                cpuChart.options.scales.x.max = MAX_HISTORY * SAMPLE_INTERVAL;
+                cpuChart.options.scales.x.ticks.callback = function (value) {
+                    const total = MAX_HISTORY * SAMPLE_INTERVAL;
+                    if (Math.round(value) === 0) return '0s';
+                    if (Math.round(value) === total) return total + 's';
+                    return '';
+                };
+                cpuChart.update();
+            }
+
+            // 更新每核图范围
+            cpuCoreCharts.forEach(chart => {
+                if (chart.options && chart.options.scales && chart.options.scales.x) {
+                    chart.options.scales.x.max = MAX_HISTORY * SAMPLE_INTERVAL;
+                }
+                try { chart.update(); } catch (e) { }
+            });
         }
 
         // WebSocket连接
@@ -427,20 +944,61 @@
             // 初始化图表
             initCpuChart();
 
+            // 初始化下拉选择并绑定事件
+            $('#timeRangeSelect').on('change', function () {
+                const seconds = parseInt($(this).val(), 10);
+                setTimeRange(seconds);
+            });
+            // 使用下拉的初始值设置窗口
+            const initialSeconds = parseInt($('#timeRangeSelect').val() || '60', 10);
+            setTimeRange(initialSeconds);
+            // core filter panel handlers
+            $('#coreFilterBtn').on('click', function (e) {
+                e.stopPropagation();
+                const dropdown = document.getElementById('coreFilterDropdown');
+                if (!dropdown) return;
+                if (dropdown.style.display === 'block') {
+                    dropdown.style.display = 'none';
+                } else {
+                    positionCoreFilterPanel();
+                    dropdown.style.display = 'block';
+                }
+            });
+
+            // hide dropdown when clicking outside
+            $(document).on('click', function (e) {
+                const dropdown = document.getElementById('coreFilterDropdown');
+                const btn = document.getElementById('coreFilterBtn');
+                if (!dropdown || !btn) return;
+                if (dropdown.style.display === 'block') {
+                    if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+                        dropdown.style.display = 'none';
+                    }
+                }
+            });
+
+            // Reposition the panel on window resize if it's open
+            window.addEventListener('resize', function () {
+                const panel = document.getElementById('coreFilterPanel');
+                if (panel && panel.style.display === 'block') {
+                    positionCoreFilterPanel();
+                }
+            });
+
             // 尝试WebSocket连接
-            try {
-                connectWebSocket();
-            } catch (error) {
-                console.log('WebSocket不可用，使用AJAX轮询');
-                // 如果WebSocket不可用，使用AJAX轮询
-                pollPerformanceData();
-            }
+            // try {
+            //     connectWebSocket();
+            // } catch (error) {
+            //     console.log('WebSocket不可用，使用AJAX轮询');
+            // 如果WebSocket不可用，使用AJAX轮询
+            pollPerformanceData();
+            // }
 
             // 初始加载数据
-            $.get('/api/performance/', function (data) {
-                performanceData = data;
-                updateAllDisplays();
-            });
+            // $.get('/api/performance/', function (data) {
+            //     performanceData = data;
+            //     updateAllDisplays();
+            // });
         });
     </script>
 </body>
