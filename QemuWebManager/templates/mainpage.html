@@ -16,7 +16,11 @@
 <div class="container-fluid mt-1">
     <ul class="nav nav-tabs" id="mainTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="vm-tab" data-bs-toggle="tab" data-bs-target="#vm-pane" type="button"
+            <button class="nav-link active" id="host-tab" data-bs-toggle="tab" data-bs-target="#host-pane" type="button"
+                role="tab" aria-controls="host-pane" aria-selected="true">物理主机</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="vm-tab" data-bs-toggle="tab" data-bs-target="#vm-pane" type="button"
                 role="tab" aria-controls="vm-pane" aria-selected="true">虚拟机</button>
         </li>
         <li class="nav-item" role="presentation">
@@ -30,8 +34,176 @@
     </ul>
 
     <div class="tab-content" id="mainTabContent">
+        <!-- 物理主机标签页内容 -->
+         <div class="tab-pane fade show active" id="host-pane" role="tabpanel" aria-labelledby="host-tab">
+            <div class="row mt-4">
+                <!-- 左侧导航，与 vm-pane 样式保持一致 -->
+                <div class="col-md-3 col-lg-2 sidebar">
+                    <div class="list-group" id="host-sidebar">
+                        <a href="#" class="list-group-item list-group-item-action active" data-content="overview-host">
+                            <i class="fas fa-server me-2"></i> 概览
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" data-content="cpu-host">
+                            <i class="fas fa-microchip me-2"></i> CPU 信息
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" data-content="memory-host">
+                            <i class="fas fa-memory me-2"></i> 内存 信息
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" data-content="disks-host">
+                            <i class="fas fa-hdd me-2"></i> 硬盘 信息
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" data-content="network-host">
+                            <i class="fas fa-network-wired me-2"></i> 网卡 信息
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 右侧主内容区域 -->
+                <div class="col-md-9 col-lg-10 main-content">
+                    <div id="host-content">
+                        <!-- 概览：保留原表格，但将部分字段设为可点击（会切换到子页面） -->
+                        <div class="content-panel" id="overview-host" >
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="text-primary mb-4">物理主机信息</h4>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <tbody>
+                                                <tr>
+                                                    <th>主机名</th>
+                                                    <td id="hostName">加载中...</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>操作系统</th>
+                                                    <td id="osInfo">加载中...</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>CPU型号</th>
+                                                    <td id="cpuInfo" class="clickable-info" data-target="cpu-host">加载中...</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>总内存</th>
+                                                    <td id="totalMemory" class="clickable-info" data-target="memory-host">加载中...</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>可用内存</th>
+                                                    <td id="availableMemory">加载中...</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>磁盘总容量</th>
+                                                    <td id="diskTotal" class="clickable-info" data-target="disks-host">加载中...</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>可用磁盘容量</th>
+                                                    <td id="diskAvailable">加载中...</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>网络接口</th>
+                                                    <td id="networkInterfaces" class="clickable-info" data-target="network-host">加载中...</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CPU 子页面：每个核心小图网格显示 -->
+                        <div class="content-panel d-none" id="cpu-host">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h4 class="text-primary mb-0">每核 CPU 使用率</h4>
+                                            <small class="text-muted">按每核显示小图（实时更新）</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2">时间范围：</div>
+                                            <select id="cpuTimeRange" class="form-select form-select-sm me-2" style="width:110px;">
+                                                <option value="60">60s</option>
+                                                <option value="120">120s</option>
+                                                <option value="300">5分钟</option>
+                                                <option value="600">10分钟</option>
+                                                <option value="1200">20分钟</option>
+                                                <option value="1800">30分钟</option>
+                                            </select>
+                                            <div class="me-2">过滤：</div>
+                                            <div class="dropdown me-2">
+                                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="cpuFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">显示全部核心</button>
+                                                <div class="dropdown-menu p-2" aria-labelledby="cpuFilterDropdown" id="cpuFilter" style="min-width:200px; max-height:260px; overflow:auto;">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input cpu-filter-checkbox" type="checkbox" value="all" id="cpuFilter_all" checked>
+                                                        <label class="form-check-label" for="cpuFilter_all">显示全部核心</label>
+                                                    </div>
+                                                    <div class="dropdown-divider"></div>
+                                                    <!-- per-core checkboxes will be inserted here -->
+                                                </div>
+                                            </div>
+                                            <button class="btn btn-primary back-to-overview">返回</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- overall time-series CPU chart -->
+                                    <div class="mb-3" style="height:220px;">
+                                        <canvas id="cpuChart" style="width:100%;height:100%;"></canvas>
+                                    </div>
+
+                                    <!-- per-core charts container -->
+                                    <div id="cpu-core-charts" class="row g-3">
+                                        <!-- cards with small canvases will be inserted here dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Memory 子页面：内存使用率图 -->
+                        <div class="content-panel d-none" id="memory-host">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="text-primary">内存 使用率</h4>
+                                        <button class="btn btn-primary back-to-overview">返回</button>
+                                    </div>
+                                    <canvas id="memoryChart" height="120"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Disks 子页面：每块盘使用率 -->
+                        <div class="content-panel d-none" id="disks-host">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="text-primary">硬盘 使用率（每盘）</h4>
+                                        <button class="btn btn-primary back-to-overview">返回</button>
+                                    </div>
+                                    <canvas id="disksChart" height="120"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Network 子页面：网卡发送/接收速率 -->
+                        <div class="content-panel d-none" id="network-host">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="text-primary">网卡 发送/接收速率</h4>
+                                        <button class="btn btn-primary back-to-overview">返回</button>
+                                    </div>
+                                    <canvas id="netChart" height="120"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <script src="{% static 'js/host-dashboard.js' %}"></script>
+
+        </div>
         <!-- 虚拟机标签页内容 -->
-        <div class="tab-pane fade show active" id="vm-pane" role="tabpanel" aria-labelledby="vm-tab">
+        <div class="tab-pane fade show" id="vm-pane" role="tabpanel" aria-labelledby="vm-tab">
             <div class="row mt-0">
                 <!-- 左侧边栏 -->
                 <div class="col-md-3 col-lg-2 sidebar">
