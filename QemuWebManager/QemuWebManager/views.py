@@ -5,6 +5,7 @@ import platform
 import socket
 import shutil
 import time
+import APILibvirt.util as util
 
 # Optional psutil for real metrics; fallback to sample data when not available
 try:
@@ -46,6 +47,11 @@ def host_info(request):
     diskTotal, diskAvailable, networkInterfaces
     """
     host = {}
+    phyintf_list = []
+    phyintf_stats = util.get_physical_interface_stats()
+    for intf, stats in phyintf_stats.items():
+        phyintf_list.append(intf)
+    
     try:
         host['hostName'] = socket.gethostname()
         host['osInfo'] = platform.platform()
@@ -63,6 +69,8 @@ def host_info(request):
             netifs = []
             for name, addrs in psutil.net_if_addrs().items():
                 # pick first inet addr if present
+                if name not in phyintf_list:
+                    continue
                 ip = None
                 for a in addrs:
                     if a.family.name in ('AF_INET','AddressFamily.AF_INET') if hasattr(a.family,'name') else True:
@@ -134,13 +142,20 @@ def host_metrics(request):
             return JsonResponse({'result': 'success', 'type': 'disks', 'data': disks})
 
         if t == 'network':
+            phyintf_list = []
+            phyintf_stats = util.get_physical_interface_stats()
+            for intf, stats in phyintf_stats.items():
+                phyintf_list.append(intf)
             nets = {}
             if _HAS_PSUTIL:
                 # return current counters per nic
                 for name, stats in psutil.net_io_counters(pernic=True).items():
-                    nets[name] = {'bytes_sent': stats.bytes_sent, 'bytes_recv': stats.bytes_recv, 'packets_sent': stats.packets_sent, 'packets_recv': stats.packets_recv}
+                    if name not in phyintf_list:
+                        continue
+                    # print(f'-- net {name} stats: {stats}') # net enp27s0f1np1 stats: snetio(bytes_sent=789428078, bytes_recv=815342332, packets_sent=1225119, packets_recv=1095600, errin=0, errout=0, dropin=0, dropout=0)
+                    nets[name] = {'bytes_sent': stats.bytes_sent, 'bytes_recv': stats.bytes_recv, 'packets_sent': stats.packets_sent, 'packets_recv': stats.packets_recv, 'attrs': phyintf_stats.get(name, {})}
             else:
-                nets = {'eth0': {'bytes_sent': 0, 'bytes_recv': 0}}
+                nets = {'eth0': {'bytes_sent': 0, 'bytes_recv': 0, 'attrs': {}}}
             return JsonResponse({'result': 'success', 'type': 'network', 'timestamp': int(time.time()), 'data': nets})
 
         return JsonResponse({'result': 'failed', 'message': 'unknown type'})

@@ -9,6 +9,7 @@ function updateServerTime() {
         String(now.getSeconds()).padStart(2, '0');
     $('#serverTime').text(formatted);
 }
+
 $(document).ready(function () {
     initStroagepool();
     initNetpool();
@@ -71,4 +72,7 @@ $(document).ready(function () {
     //     alert('操作请求已发送（模拟）');
     // });
 
+    // $(document).on('blur', '#overview-host,#cpu-host,#memory-host,#disks-host,#network-host', function (){
+    //     console.log('host-pane lost focus');
+    // });
 });

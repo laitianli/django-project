@@ -1,6 +1,6 @@
 (function () {
     // let MAX_HISTORY = 30;
-    const SAMPLE_INTERVAL = 2; 
+    const SAMPLE_INTERVAL = 2;
     function qs(sel, root) { return (root || document).querySelector(sel); }
     function qsa(sel, root) { return Array.from((root || document).querySelectorAll(sel)); }
 
@@ -34,27 +34,27 @@
             var ctx = canvas.getContext('2d');
             var ch = new Chart(ctx, {
                 type: 'line',
-                data: { datasets: [{label: `Core ${i+1} (%)`, data: [], borderColor: 'rgba(54,162,235,0.9)', backgroundColor: 'rgba(54,162,235,0.15)', pointRadius: 0, fill: true }] },
-                    options: {
-                        animation: false,
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        parsing: false,
-                        layout: { padding: { top: 8, bottom: 4 } },
-                        scales: {
-                            x: { type: 'linear', display: false, reverse: true, min: 0, max: TIME_RANGE },
-                            y: {
-                                min: 0,
-                                max: 100,
-                                ticks: {
-                                    stepSize: 20,
-                                    autoSkip: false,
-                                    callback: function (value) { return value; }
-                                }
+                data: { datasets: [{ label: `Core ${i + 1} (%)`, data: [], borderColor: 'rgba(54,162,235,0.9)', backgroundColor: 'rgba(54,162,235,0.15)', pointRadius: 0, fill: true }] },
+                options: {
+                    animation: false,
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    parsing: false,
+                    layout: { padding: { top: 8, bottom: 4 } },
+                    scales: {
+                        x: { type: 'linear', display: false, reverse: true, min: 0, max: TIME_RANGE },
+                        y: {
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20,
+                                autoSkip: false,
+                                callback: function (value) { return value; }
                             }
                         }
                     }
+                }
             });
             cpuCoreCharts.push(ch);
             // after appending, ensure canvas matches the computed width
@@ -101,6 +101,8 @@
             this.classList.add('active');
             var target = this.getAttribute('data-content');
             showPanel(target);
+
+            cleanAllInterval();
             // 初始化对应 chart
             if (target === 'cpu-host') initCPUChart();
             if (target === 'memory-host') initMemoryChart();
@@ -113,6 +115,7 @@
     qsa('.clickable-info').forEach(function (td) {
         td.style.cursor = 'pointer';
         td.addEventListener('click', function () {
+            cleanAllInterval();
             var target = this.getAttribute('data-target');
             // 激活侧边栏对应项
             var link = qsa('#host-sidebar .list-group-item').find(function (x) { return x.getAttribute('data-content') === target; });
@@ -125,15 +128,62 @@
         });
     });
 
+    function do_upPanel(e) {
+        e.preventDefault();
+        const contentId = $(this).data('content');
+        if (contentId !== 'host' ){
+            console.log('host panel clicked');
+            cleanAllInterval()
+        }
+        else {
+            qsa('#host-sidebar .list-group-item').forEach(function (x) { 
+                x.classList.remove('active');
+                if (x.getAttribute('data-content') === 'overview-host') { 
+                    x.classList.add('active'); 
+                    showPanel('overview-host');
+                }            
+            });
+        }
+    }
+
+    // 上侧边栏菜单切换
+    qsa('#mainTabs .nav-link').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+            do_upPanel.call(this, e);
+        });
+    });
+
+    // 清理所有定时器
+    function cleanAllInterval() {
+        // if (charts.cpuGrid && charts.cpuGrid.intervalId) { 
+        //     clearInterval(charts.cpuGrid.intervalId); 
+        //     charts.cpuGrid.intervalId = null; 
+        // }
+        if (cpuPollingInterval) {
+            clearInterval(cpuPollingInterval);
+            cpuPollingInterval = null;
+            charts.cpuPerCoreInitialized = false;
+        }
+        if (memInterval) {
+            clearInterval(memInterval);
+            memInterval = null;
+        }
+        if (netPrev) {
+            $.each(netPrev.chartIntervals || {}, function (key, intervalId) {
+                // console.log('--Clearing net chart interval for', key);
+                clearInterval(intervalId);
+                delete netPrev.chartIntervals[key];
+            });
+            netPrev = { counters: null, ts: null, intervalId: null };
+        }
+    }
     // 返回按钮
     qsa('#host-content .back-to-overview').forEach(function (btn) {
         btn.addEventListener('click', function () {
             qsa('#host-sidebar .list-group-item').forEach(function (x) { x.classList.remove('active'); });
             var first = qs('#host-sidebar .list-group-item[data-content="overview-host"]'); if (first) first.classList.add('active');
             // stop cpu and memory polling if running
-            if (charts.cpuGrid && charts.cpuGrid.intervalId) { clearInterval(charts.cpuGrid.intervalId); charts.cpuGrid.intervalId = null; }
-            if (cpuPollingInterval) { clearInterval(cpuPollingInterval); cpuPollingInterval = null; }
-            if (memInterval) { clearInterval(memInterval); memInterval = null; }
+            cleanAllInterval()
             showPanel('overview-host');
         });
     });
@@ -172,9 +222,15 @@
 
     // 初始化每核小图网格，并启动短时序 polling 更新
     function initCPUChart() {
-        var container = qs('#cpu-core-charts'); if (!container) return;
+        var container = qs('#cpu-core-charts');
+        if (!container) {
+            return;
+
+        }
         // if already initialized, just return
-        if (charts.cpuPerCoreInitialized) return;
+        if (charts.cpuPerCoreInitialized) {
+            return;
+        }
         var historyLen = 30;
 
         function createCoreCard(coreIndex, value) {
@@ -188,7 +244,6 @@
             body.appendChild(title); body.appendChild(canvas); card.appendChild(body); col.appendChild(card);
             return { col: col, canvas: canvas };
         }
-
         // populate filter (dropdown with checkboxes)
         var filter = qs('#cpuFilter');
         var coreFilterContainer = null;
@@ -204,34 +259,32 @@
                 coreFilterContainer.innerHTML = '';
             }
         }
-
         // initialize main CPU time-series chart
         // read time range select if present
         var timeSel = qs('#cpuTimeRange');
         if (timeSel) {
             TIME_RANGE = parseInt(timeSel.value, 10) || TIME_RANGE;
-                // change handler
-                timeSel.addEventListener('change', function () {
-                    var v = parseInt(this.value, 10) || TIME_RANGE;
-                    TIME_RANGE = v;
-                    // update CPU time chart x-axis max
-                    if (charts.cpuTime && charts.cpuTime.options && charts.cpuTime.options.scales && charts.cpuTime.options.scales.x) {
-                        charts.cpuTime.options.scales.x.max = TIME_RANGE;
-                        charts.cpuTime.update();
-                    }
-                    // update per-core charts x-axis max as well
-                    cpuCoreCharts.forEach(function (c) {
-                        try {
-                            if (c && c.options && c.options.scales && c.options.scales.x) {
-                                c.options.scales.x.max = TIME_RANGE;
-                            }
-                            if (c) c.update();
-                        } catch (e) { }
-                    });
+            // change handler
+            timeSel.addEventListener('change', function () {
+                var v = parseInt(this.value, 10) || TIME_RANGE;
+                TIME_RANGE = v;
+                // update CPU time chart x-axis max
+                if (charts.cpuTime && charts.cpuTime.options && charts.cpuTime.options.scales && charts.cpuTime.options.scales.x) {
+                    charts.cpuTime.options.scales.x.max = TIME_RANGE;
+                    charts.cpuTime.update();
+                }
+                // update per-core charts x-axis max as well
+                cpuCoreCharts.forEach(function (c) {
+                    try {
+                        if (c && c.options && c.options.scales && c.options.scales.x) {
+                            c.options.scales.x.max = TIME_RANGE;
+                        }
+                        if (c) c.update();
+                    } catch (e) { }
                 });
+            });
         }
         initCPUTimeChart();
-
         // fetch initial data
         fetch('/api/host_metrics/?type=cpu').then(function (r) { return r.json(); }).then(function (j) {
             if (j.result !== 'success') return; var data = j.data || [];
@@ -291,6 +344,7 @@
                 updateCoreVisibility();
             }
 
+            // console.log('--Initialized CPU per-core charts for', data.length, 'cores');
             // start polling every 1s to update histories and charts
             if (cpuPollingInterval) { clearInterval(cpuPollingInterval); }
             cpuPollingInterval = setInterval(function () {
@@ -454,36 +508,264 @@
         });
     }
 
+    // function initNetChart() {
+    //     var ctx = qs('#netChart'); if (!ctx) return;
+    //     // clear previous interval
+    //     if (netPrev.intervalId) { clearInterval(netPrev.intervalId); netPrev.intervalId = null; }
+    //     // fetch initial counters
+    //     fetch('/api/host_metrics/?type=network').then(function (r) { return r.json(); }).then(function (j) {
+    //         if (j.result !== 'success') return;
+    //         var counters = j.data || {};
+    //         netPrev.counters = counters; netPrev.ts = j.timestamp || Date.now() / 1000;
+    //         var labels = Object.keys(counters);
+    //         var tx = labels.map(function (n) { return 0; });
+    //         var rx = labels.map(function (n) { return 0; });
+    //         if (charts.net) { charts.net.data.labels = labels; charts.net.data.datasets[0].data = tx; charts.net.data.datasets[1].data = rx; charts.net.update(); }
+    //         else {
+    //             charts.net = new Chart(ctx.getContext('2d'), { type: 'line', data: { labels: labels, datasets: [{ label: '发送 KB/s', data: tx, backgroundColor: 'rgba(75,192,192,0.7)' }, { label: '接收 KB/s', data: rx, backgroundColor: 'rgba(153,102,255,0.7)' }] }, options: { scales: { y: { beginAtZero: true } }, responsive: true } });
+    //         }
+    //         // start polling every 1s to compute rates
+    //         netPrev.intervalId = setInterval(function () {
+    //             fetch('/api/host_metrics/?type=network').then(function (r) { return r.json(); }).then(function (nj) {
+    //                 if (nj.result !== 'success') return;
+    //                 var newCounters = nj.data || {}; var newTs = nj.timestamp || Date.now() / 1000;
+    //                 var dt = Math.max(1, (newTs - netPrev.ts));
+    //                 var labels = Object.keys(newCounters);
+    //                 var txs = labels.map(function (n, i) { var prev = netPrev.counters && netPrev.counters[n] ? netPrev.counters[n].bytes_sent : 0; var cur = newCounters[n].bytes_sent || 0; return Math.round((cur - prev) / dt / 1024); });
+    //                 var rxs = labels.map(function (n, i) { var prev = netPrev.counters && netPrev.counters[n] ? netPrev.counters[n].bytes_recv : 0; var cur = newCounters[n].bytes_recv || 0; return Math.round((cur - prev) / dt / 1024); });
+    //                 if (charts.net) { charts.net.data.labels = labels; charts.net.data.datasets[0].data = txs; charts.net.data.datasets[1].data = rxs; charts.net.update(); }
+    //                 netPrev.counters = newCounters; netPrev.ts = newTs;
+    //             }).catch(function () { });
+    //         }, 1000);
+    //     }).catch(function () { });
+    // }
     function initNetChart() {
-        var ctx = qs('#netChart'); if (!ctx) return;
-        // clear previous interval
-        if (netPrev.intervalId) { clearInterval(netPrev.intervalId); netPrev.intervalId = null; }
-        // fetch initial counters
+        // Clear previous intervals
+        if (netPrev.intervalId) {
+            clearInterval(netPrev.intervalId);
+            netPrev.intervalId = null;
+        }
+
+        // Object to store individual chart intervals and data
+        if (!netPrev.chartIntervals) netPrev.chartIntervals = {};
+        if (!netPrev.chartData) netPrev.chartData = {};
+
+        // Fetch initial counters
         fetch('/api/host_metrics/?type=network').then(function (r) { return r.json(); }).then(function (j) {
             if (j.result !== 'success') return;
+
             var counters = j.data || {};
-            netPrev.counters = counters; netPrev.ts = j.timestamp || Date.now() / 1000;
+            netPrev.counters = counters;
+            netPrev.ts = j.timestamp || Date.now() / 1000;
+
             var labels = Object.keys(counters);
-            var tx = labels.map(function (n) { return 0; });
-            var rx = labels.map(function (n) { return 0; });
-            if (charts.net) { charts.net.data.labels = labels; charts.net.data.datasets[0].data = tx; charts.net.data.datasets[1].data = rx; charts.net.update(); }
-            else {
-                charts.net = new Chart(ctx.getContext('2d'), { type: 'line', data: { labels: labels, datasets: [{ label: '发送 KB/s', data: tx, backgroundColor: 'rgba(75,192,192,0.7)' }, { label: '接收 KB/s', data: rx, backgroundColor: 'rgba(153,102,255,0.7)' }] }, options: { scales: { y: { beginAtZero: true } }, responsive: true } });
+
+            // Create container for all charts
+            var container = qs('#netChartsContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'netChartsContainer';
+                container.className = 'net-charts-container';
+                container.style.display = 'flex';
+                container.style.flexWrap = 'wrap';
+                container.style.gap = '20px';
+                qs('#netChart').parentNode.appendChild(container);
             }
-            // start polling every 1s to compute rates
-            netPrev.intervalId = setInterval(function () {
-                fetch('/api/host_metrics/?type=network').then(function (r) { return r.json(); }).then(function (nj) {
-                    if (nj.result !== 'success') return;
-                    var newCounters = nj.data || {}; var newTs = nj.timestamp || Date.now() / 1000;
-                    var dt = Math.max(1, (newTs - netPrev.ts));
-                    var labels = Object.keys(newCounters);
-                    var txs = labels.map(function (n, i) { var prev = netPrev.counters && netPrev.counters[n] ? netPrev.counters[n].bytes_sent : 0; var cur = newCounters[n].bytes_sent || 0; return Math.round((cur - prev) / dt / 1024); });
-                    var rxs = labels.map(function (n, i) { var prev = netPrev.counters && netPrev.counters[n] ? netPrev.counters[n].bytes_recv : 0; var cur = newCounters[n].bytes_recv || 0; return Math.round((cur - prev) / dt / 1024); });
-                    if (charts.net) { charts.net.data.labels = labels; charts.net.data.datasets[0].data = txs; charts.net.data.datasets[1].data = rxs; charts.net.update(); }
-                    netPrev.counters = newCounters; netPrev.ts = newTs;
-                }).catch(function () { });
-            }, 1000);
-        }).catch(function () { });
+
+            // Clear existing charts for removed interfaces
+            Object.keys(charts).forEach(function (chartKey) {
+                if (chartKey.startsWith('net_') && !labels.includes(chartKey.replace('net_', ''))) {
+                    charts[chartKey].destroy();
+                    delete charts[chartKey];
+
+                    // Clear interval for removed chart
+                    if (netPrev.chartIntervals[chartKey]) {
+                        clearInterval(netPrev.chartIntervals[chartKey]);
+                        delete netPrev.chartIntervals[chartKey];
+                    }
+                }
+            });
+
+            // Create or update individual charts for each network interface
+            labels.forEach(function (interfaceName, index) {
+                var chartId = 'netChart_' + interfaceName.replace(/[^a-zA-Z0-9]/g, '_');
+                var chartKey = 'net_' + interfaceName;
+
+                // Create chart container if not exists
+                var chartContainer = qs('#' + chartId);
+                if (!chartContainer) {
+                    chartContainer = document.createElement('div');
+                    chartContainer.id = chartId;
+                    chartContainer.className = 'net-chart-item';
+                    chartContainer.style.width = '400px';
+                    chartContainer.style.height = '300px';
+                    chartContainer.style.border = '1px solid #ddd';
+                    chartContainer.style.padding = '10px';
+                    chartContainer.style.borderRadius = '5px';
+                    container.appendChild(chartContainer);
+
+                    // Create canvas for chart
+                    var canvas = document.createElement('canvas');
+                    chartContainer.appendChild(canvas);
+
+                    // Initialize chart data structure
+                    netPrev.chartData[chartKey] = {
+                        prevCounters: null,
+                        prevTs: netPrev.ts
+                    };
+                }
+
+                var canvas = qs('#' + chartId + ' canvas');
+                if (!canvas) return;
+
+                // Initialize or update the chart
+                if (!charts[chartKey]) {
+                    charts[chartKey] = new Chart(canvas.getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: [], // Time labels will be added dynamically
+                            datasets: [
+                                {
+                                    label: '发送速率 MB/s',
+                                    data: [],
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                    tension: 0.4,
+                                    fill: true
+                                },
+                                {
+                                    label: '接收速率 MB/s',
+                                    data: [],
+                                    borderColor: 'rgba(153, 102, 255, 1)',
+                                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                                    tension: 0.4,
+                                    fill: true
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: '网卡: ' + interfaceName
+                                },
+                                legend: {
+                                    display: true,
+                                    position: 'top'
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: '时间'
+                                    },
+                                    grid: {
+                                        color: 'rgba(0, 0, 0, 0.1)'
+                                    }
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: '速率 (MB/s)'
+                                    },
+                                    beginAtZero: true,
+                                    // max:100,
+                                    grid: {
+                                        color: 'rgba(0, 0, 0, 0.1)'
+                                    }
+                                }
+                            },
+                            interaction: {
+                                intersect: false,
+                                mode: 'index'
+                            }
+                        }
+                    });
+                }
+
+                // Initialize data for this interface
+                if (!netPrev.chartData[chartKey]) {
+                    netPrev.chartData[chartKey] = {
+                        prevCounters: counters[interfaceName],
+                        prevTs: netPrev.ts
+                    };
+                }
+
+                // Set up individual polling for each chart
+                if (netPrev.chartIntervals[chartKey]) {
+                    clearInterval(netPrev.chartIntervals[chartKey]);
+                }
+
+                netPrev.chartIntervals[chartKey] = setInterval(function () {
+                    fetch('/api/host_metrics/?type=network').then(function (r) { return r.json(); }).then(function (nj) {
+                        if (nj.result !== 'success') return;
+
+                        var newCounters = nj.data || {};
+                        var newTs = nj.timestamp || Date.now() / 1000;
+
+                        if (!newCounters[interfaceName]) return;
+
+                        var chartData = netPrev.chartData[chartKey];
+                        var dt = Math.max(1, (newTs - chartData.prevTs));
+
+                        // Calculate current rates
+                        var prevTx = chartData.prevCounters ? chartData.prevCounters.bytes_sent : 0;
+                        var currentTx = newCounters[interfaceName].bytes_sent || 0;
+                        var txRate = Math.round((currentTx - prevTx) / dt / 1024);
+
+                        var prevRx = chartData.prevCounters ? chartData.prevCounters.bytes_recv : 0;
+                        var currentRx = newCounters[interfaceName].bytes_recv || 0;
+                        var rxRate = Math.round((currentRx - prevRx) / dt / 1024);
+                        console.log('Interface:', interfaceName, 'TX Rate (MB/s):', txRate, 'RX Rate (MB/s):', rxRate);
+
+                        // if (txRate > 1024 || rxRate > 1024) {
+                        
+                        // }
+                        // Update chart data (keep last 60 data points)
+                        var chart = charts[chartKey];
+                        if (chart) {
+                            var now = new Date();
+                            var timeLabel = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+                            
+                            // Add new data point
+                            chart.data.labels.push(timeLabel);
+                            chart.data.datasets[0].data.push(txRate); // TX data
+                            chart.data.datasets[1].data.push(rxRate); // RX data
+                            MaxRx = Math.max(...chart.data.datasets[1].data.flat());
+                            MaxTx = Math.max(...chart.data.datasets[0].data.flat());
+                            // console.log('length:' + chart.data.datasets[0].data.length ,' chart.data.datasets[1].data: ', chart.data.datasets[1].data.flat())
+                            // console.log('MaxTx:', MaxTx, 'MaxRx:', MaxRx);
+                            maxTxRx = Math.max(MaxTx, MaxRx);
+                            if (maxTxRx < newCounters[interfaceName]['attrs'].speed) {
+                                chart.options.scales.y.max = maxTxRx;
+                            }
+  
+                            // Keep only last 60 data points for performance
+                            if (chart.data.labels.length > 60) {
+                                chart.data.labels.shift();
+                                chart.data.datasets[0].data.shift();
+                                chart.data.datasets[1].data.shift();
+                            }
+
+                            chart.update('none');
+                        }
+
+                        // Update previous data
+                        chartData.prevCounters = newCounters[interfaceName];
+                        chartData.prevTs = newTs;
+
+                    }).catch(function (error) {
+                        // console.error('Error fetching data for', interfaceName, error);
+                    });
+                }, 1000);
+            });
+
+        }).catch(function (error) {
+            console.error('Error initializing network charts:', error);
+        });
     }
 
     // 如果 Chart 未加载，延迟尝试（页面可能在 base 模板后加载静态库）

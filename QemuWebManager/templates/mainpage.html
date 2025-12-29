@@ -17,26 +17,26 @@
     <ul class="nav nav-tabs" id="mainTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="host-tab" data-bs-toggle="tab" data-bs-target="#host-pane" type="button"
-                role="tab" aria-controls="host-pane" aria-selected="true">物理主机</button>
+                role="tab" data-content="host">物理主机</button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="vm-tab" data-bs-toggle="tab" data-bs-target="#vm-pane" type="button"
-                role="tab" aria-controls="vm-pane" aria-selected="true">虚拟机</button>
+                role="tab" data-content="vm">虚拟机</button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="version-tab" data-bs-toggle="tab" data-bs-target="#version-pane" type="button"
-                role="tab" aria-controls="version-pane" aria-selected="false">版本信息</button>
+                role="tab" data-content="version">版本信息</button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="licence-tab" data-bs-toggle="tab" data-bs-target="#licence-pane" type="button"
-                role="tab" aria-controls="licence-pane" aria-selected="false">Licence管理</button>
+                role="tab" data-content="licence">Licence管理</button>
         </li>
     </ul>
 
     <div class="tab-content" id="mainTabContent">
         <!-- 物理主机标签页内容 -->
-         <div class="tab-pane fade show active" id="host-pane" role="tabpanel" aria-labelledby="host-tab">
-            <div class="row mt-4">
+         <div class="tab-pane fade show active" id="host-pane" role="tabpanel">
+            <div class="row mt-0">
                 <!-- 左侧导航，与 vm-pane 样式保持一致 -->
                 <div class="col-md-3 col-lg-2 sidebar">
                     <div class="list-group" id="host-sidebar">
@@ -203,7 +203,7 @@
 
         </div>
         <!-- 虚拟机标签页内容 -->
-        <div class="tab-pane fade show" id="vm-pane" role="tabpanel" aria-labelledby="vm-tab">
+        <div class="tab-pane fade show" id="vm-pane" role="tabpanel" >
             <div class="row mt-0">
                 <!-- 左侧边栏 -->
                 <div class="col-md-3 col-lg-2 sidebar">
@@ -2215,7 +2215,7 @@
         </div>
 
         <!-- 版本信息标签页内容 -->
-        <div class="tab-pane fade" id="version-pane" role="tabpanel" aria-labelledby="version-tab">
+        <div class="tab-pane fade" id="version-pane" role="tabpanel">
             <div class="card mt-0">
                 <div class="card-header">
                     <h5 class="card-title">系统版本信息</h5>
@@ -2381,7 +2381,7 @@
         </div>
 
         <!-- Licence管理标签页内容 -->
-        <div class="tab-pane fade" id="licence-pane" role="tabpanel" aria-labelledby="licence-tab">
+        <div class="tab-pane fade" id="licence-pane" role="tabpanel">
             <div class="card mt-0">
                 <div class="card-header">
                     <h5 class="card-title">Licence管理</h5>
