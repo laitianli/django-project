@@ -121,22 +121,6 @@
         justify-content: center;
     }
 
-    /* Vertically center charts inside the host memory card only (scoped)
-       so we don't affect other card layouts. */
-    #memory-host .card-body {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
-
-    /* Ensure the canvas scales nicely within its container */
-    #memory-host .card-body canvas#memoryChart {
-        width: 100%;
-        max-width: 420px;
-        height: auto;
-    }
-
     /* Prevent the memory card from changing height when the chart updates */
     #memory-host .card-body {
         min-height: 220px;
