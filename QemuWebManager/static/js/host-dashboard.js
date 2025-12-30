@@ -131,17 +131,17 @@
     function do_upPanel(e) {
         e.preventDefault();
         const contentId = $(this).data('content');
-        if (contentId !== 'host' ){
+        if (contentId !== 'host') {
             console.log('host panel clicked');
             cleanAllInterval()
         }
         else {
-            qsa('#host-sidebar .list-group-item').forEach(function (x) { 
+            qsa('#host-sidebar .list-group-item').forEach(function (x) {
                 x.classList.remove('active');
-                if (x.getAttribute('data-content') === 'overview-host') { 
-                    x.classList.add('active'); 
+                if (x.getAttribute('data-content') === 'overview-host') {
+                    x.classList.add('active');
                     showPanel('overview-host');
-                }            
+                }
             });
         }
     }
@@ -169,11 +169,9 @@
             memInterval = null;
         }
         if (netPrev) {
-            $.each(netPrev.chartIntervals || {}, function (key, intervalId) {
-                // console.log('--Clearing net chart interval for', key);
-                clearInterval(intervalId);
-                delete netPrev.chartIntervals[key];
-            });
+            if (netPrev.chartInterval) {
+                clearInterval(netPrev.chartInterval);
+            }
             netPrev = { counters: null, ts: null, intervalId: null };
         }
     }
@@ -508,37 +506,6 @@
         });
     }
 
-    // function initNetChart() {
-    //     var ctx = qs('#netChart'); if (!ctx) return;
-    //     // clear previous interval
-    //     if (netPrev.intervalId) { clearInterval(netPrev.intervalId); netPrev.intervalId = null; }
-    //     // fetch initial counters
-    //     fetch('/api/host_metrics/?type=network').then(function (r) { return r.json(); }).then(function (j) {
-    //         if (j.result !== 'success') return;
-    //         var counters = j.data || {};
-    //         netPrev.counters = counters; netPrev.ts = j.timestamp || Date.now() / 1000;
-    //         var labels = Object.keys(counters);
-    //         var tx = labels.map(function (n) { return 0; });
-    //         var rx = labels.map(function (n) { return 0; });
-    //         if (charts.net) { charts.net.data.labels = labels; charts.net.data.datasets[0].data = tx; charts.net.data.datasets[1].data = rx; charts.net.update(); }
-    //         else {
-    //             charts.net = new Chart(ctx.getContext('2d'), { type: 'line', data: { labels: labels, datasets: [{ label: '发送 KB/s', data: tx, backgroundColor: 'rgba(75,192,192,0.7)' }, { label: '接收 KB/s', data: rx, backgroundColor: 'rgba(153,102,255,0.7)' }] }, options: { scales: { y: { beginAtZero: true } }, responsive: true } });
-    //         }
-    //         // start polling every 1s to compute rates
-    //         netPrev.intervalId = setInterval(function () {
-    //             fetch('/api/host_metrics/?type=network').then(function (r) { return r.json(); }).then(function (nj) {
-    //                 if (nj.result !== 'success') return;
-    //                 var newCounters = nj.data || {}; var newTs = nj.timestamp || Date.now() / 1000;
-    //                 var dt = Math.max(1, (newTs - netPrev.ts));
-    //                 var labels = Object.keys(newCounters);
-    //                 var txs = labels.map(function (n, i) { var prev = netPrev.counters && netPrev.counters[n] ? netPrev.counters[n].bytes_sent : 0; var cur = newCounters[n].bytes_sent || 0; return Math.round((cur - prev) / dt / 1024); });
-    //                 var rxs = labels.map(function (n, i) { var prev = netPrev.counters && netPrev.counters[n] ? netPrev.counters[n].bytes_recv : 0; var cur = newCounters[n].bytes_recv || 0; return Math.round((cur - prev) / dt / 1024); });
-    //                 if (charts.net) { charts.net.data.labels = labels; charts.net.data.datasets[0].data = txs; charts.net.data.datasets[1].data = rxs; charts.net.update(); }
-    //                 netPrev.counters = newCounters; netPrev.ts = newTs;
-    //             }).catch(function () { });
-    //         }, 1000);
-    //     }).catch(function () { });
-    // }
     function initNetChart() {
         // Clear previous intervals
         if (netPrev.intervalId) {
@@ -547,9 +514,9 @@
         }
 
         // Object to store individual chart intervals and data
-        if (!netPrev.chartIntervals) netPrev.chartIntervals = {};
         if (!netPrev.chartData) netPrev.chartData = {};
-
+        if (!netPrev.interfaceInfo) netPrev.interfaceInfo = {};
+        var labels;
         // Fetch initial counters
         fetch('/api/host_metrics/?type=network').then(function (r) { return r.json(); }).then(function (j) {
             if (j.result !== 'success') return;
@@ -558,7 +525,7 @@
             netPrev.counters = counters;
             netPrev.ts = j.timestamp || Date.now() / 1000;
 
-            var labels = Object.keys(counters);
+            labels = Object.keys(counters);
 
             // Create container for all charts
             var container = qs('#netChartsContainer');
@@ -566,9 +533,18 @@
                 container = document.createElement('div');
                 container.id = 'netChartsContainer';
                 container.className = 'net-charts-container';
-                container.style.display = 'flex';
-                container.style.flexWrap = 'wrap';
-                container.style.gap = '20px';
+                // container.style.display = 'flex';
+                // container.style.flexWrap = 'wrap';
+                // container.style.gap = '10px';
+                // container.style.backgroundColor = '#fcf7f7ff';
+                container.style.cssText = `
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    position: relative;  /* 添加定位 */
+                    top: -60px;           /* 向上移动20px */
+                    margin-top: -60px;    /* 负外边距实现上移 */
+                `;
                 qs('#netChart').parentNode.appendChild(container);
             }
 
@@ -577,12 +553,6 @@
                 if (chartKey.startsWith('net_') && !labels.includes(chartKey.replace('net_', ''))) {
                     charts[chartKey].destroy();
                     delete charts[chartKey];
-
-                    // Clear interval for removed chart
-                    if (netPrev.chartIntervals[chartKey]) {
-                        clearInterval(netPrev.chartIntervals[chartKey]);
-                        delete netPrev.chartIntervals[chartKey];
-                    }
                 }
             });
 
@@ -590,6 +560,7 @@
             labels.forEach(function (interfaceName, index) {
                 var chartId = 'netChart_' + interfaceName.replace(/[^a-zA-Z0-9]/g, '_');
                 var chartKey = 'net_' + interfaceName;
+                netPrev.interfaceInfo[interfaceName] = { chartId: chartId, chartKey: chartKey };
 
                 // Create chart container if not exists
                 var chartContainer = qs('#' + chartId);
@@ -597,11 +568,12 @@
                     chartContainer = document.createElement('div');
                     chartContainer.id = chartId;
                     chartContainer.className = 'net-chart-item';
-                    chartContainer.style.width = '400px';
+                    chartContainer.style.width = '100%';
                     chartContainer.style.height = '300px';
                     chartContainer.style.border = '1px solid #ddd';
                     chartContainer.style.padding = '10px';
                     chartContainer.style.borderRadius = '5px';
+
                     container.appendChild(chartContainer);
 
                     // Create canvas for chart
@@ -626,7 +598,7 @@
                             labels: [], // Time labels will be added dynamically
                             datasets: [
                                 {
-                                    label: '发送速率 MB/s',
+                                    label: '发送速率 KB/s',
                                     data: [],
                                     borderColor: 'rgba(75, 192, 192, 1)',
                                     backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -634,7 +606,7 @@
                                     fill: true
                                 },
                                 {
-                                    label: '接收速率 MB/s',
+                                    label: '接收速率 KB/s',
                                     data: [],
                                     borderColor: 'rgba(153, 102, 255, 1)',
                                     backgroundColor: 'rgba(153, 102, 255, 0.2)',
@@ -669,10 +641,9 @@
                                 y: {
                                     title: {
                                         display: true,
-                                        text: '速率 (MB/s)'
+                                        text: '速率 (KB/s)'
                                     },
                                     beginAtZero: true,
-                                    // max:100,
                                     grid: {
                                         color: 'rgba(0, 0, 0, 0.1)'
                                     }
@@ -693,75 +664,80 @@
                         prevTs: netPrev.ts
                     };
                 }
+            });
 
-                // Set up individual polling for each chart
-                if (netPrev.chartIntervals[chartKey]) {
-                    clearInterval(netPrev.chartIntervals[chartKey]);
-                }
 
-                netPrev.chartIntervals[chartKey] = setInterval(function () {
-                    fetch('/api/host_metrics/?type=network').then(function (r) { return r.json(); }).then(function (nj) {
-                        if (nj.result !== 'success') return;
+            // Set up individual polling for each chart
+            if (netPrev.chartInterval) {
+                clearInterval(netPrev.chartInterval);
+            }
 
-                        var newCounters = nj.data || {};
-                        var newTs = nj.timestamp || Date.now() / 1000;
-
-                        if (!newCounters[interfaceName]) return;
+            var firstRun = true;
+            netPrev.chartInterval = setInterval(function () {
+                fetch('/api/host_metrics/?type=network').then(function (r) { return r.json(); }).then(function (nj) {
+                    if (nj.result !== 'success') return;
+                    var newCounters = nj.data || {};
+                    var newTs = nj.timestamp || Date.now() / 1000;
+                    var interfaceList = Object.keys(newCounters);
+                    for (let ii = 0; ii < interfaceList.length; ii++) {
+                        var intfName = interfaceList[ii];
+                        var chartKey = 'net_' + intfName;
+                        if (firstRun) {
+                            // On first run, just update previous data without calculating rates
+                            netPrev.chartData[chartKey].prevCounters = newCounters[intfName];
+                            netPrev.chartData[chartKey].prevTs = newTs;
+                            if (ii === interfaceList.length - 1)
+                                firstRun = false;
+                            console.log('---First run setup done for interface:', intfName);
+                            continue;
+                        }
 
                         var chartData = netPrev.chartData[chartKey];
                         var dt = Math.max(1, (newTs - chartData.prevTs));
 
                         // Calculate current rates
                         var prevTx = chartData.prevCounters ? chartData.prevCounters.bytes_sent : 0;
-                        var currentTx = newCounters[interfaceName].bytes_sent || 0;
+                        var currentTx = newCounters[intfName].bytes_sent || 0;
                         var txRate = Math.round((currentTx - prevTx) / dt / 1024);
 
                         var prevRx = chartData.prevCounters ? chartData.prevCounters.bytes_recv : 0;
-                        var currentRx = newCounters[interfaceName].bytes_recv || 0;
+                        var currentRx = newCounters[intfName].bytes_recv || 0;
                         var rxRate = Math.round((currentRx - prevRx) / dt / 1024);
-                        console.log('Interface:', interfaceName, 'TX Rate (MB/s):', txRate, 'RX Rate (MB/s):', rxRate);
-
-                        // if (txRate > 1024 || rxRate > 1024) {
-                        
-                        // }
                         // Update chart data (keep last 60 data points)
                         var chart = charts[chartKey];
                         if (chart) {
                             var now = new Date();
                             var timeLabel = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
-                            
                             // Add new data point
                             chart.data.labels.push(timeLabel);
                             chart.data.datasets[0].data.push(txRate); // TX data
                             chart.data.datasets[1].data.push(rxRate); // RX data
                             MaxRx = Math.max(...chart.data.datasets[1].data.flat());
                             MaxTx = Math.max(...chart.data.datasets[0].data.flat());
-                            // console.log('length:' + chart.data.datasets[0].data.length ,' chart.data.datasets[1].data: ', chart.data.datasets[1].data.flat())
-                            // console.log('MaxTx:', MaxTx, 'MaxRx:', MaxRx);
                             maxTxRx = Math.max(MaxTx, MaxRx);
-                            if (maxTxRx < newCounters[interfaceName]['attrs'].speed) {
-                                chart.options.scales.y.max = maxTxRx;
+                            if (maxTxRx < newCounters[intfName]['attrs'].speed - 20) {
+                                chart.options.scales.y.max = maxTxRx + 20;
                             }
-  
+                            else {
+                                chart.options.scales.y.max = newCounters[intfName]['attrs'].speed;
+                            }
                             // Keep only last 60 data points for performance
                             if (chart.data.labels.length > 60) {
                                 chart.data.labels.shift();
                                 chart.data.datasets[0].data.shift();
                                 chart.data.datasets[1].data.shift();
                             }
-
                             chart.update('none');
                         }
 
                         // Update previous data
-                        chartData.prevCounters = newCounters[interfaceName];
+                        chartData.prevCounters = newCounters[intfName];
                         chartData.prevTs = newTs;
-
-                    }).catch(function (error) {
-                        // console.error('Error fetching data for', interfaceName, error);
-                    });
-                }, 1000);
-            });
+                    }
+                }).catch(function (error) {
+                    // console.error('Error fetching data for', intfName, error);
+                });
+            }, 1000);
 
         }).catch(function (error) {
             console.error('Error initializing network charts:', error);
