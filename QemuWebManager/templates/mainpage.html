@@ -198,9 +198,6 @@
                     </div>
                 </div>
             </div>
-
-            <script src="{% static 'js/host-dashboard.js' %}"></script>
-
         </div>
         <!-- 虚拟机标签页内容 -->
         <div class="tab-pane fade show" id="vm-pane" role="tabpanel" >
@@ -2227,11 +2224,11 @@
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     Django版本
-                                    <span class="text-muted">4.1.5</span>
+                                    <span class="text-muted" id="djangoVer">4.1.5</span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     Python版本
-                                    <span class="text-muted">3.10.6</span>
+                                    <span class="text-muted" id="pythonVer">3.10.6</span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     服务器时间
@@ -2244,15 +2241,15 @@
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     Qemu版本
-                                    <span class="text-muted">7.2.0</span>
+                                    <span class="text-muted" id="qemuVer">7.2.0</span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     KVM版本
-                                    <span class="text-muted">6.2.0</span>
+                                    <span class="text-muted" id="kvmVer">6.2.0</span>
                                 </li>
-                                <li class="极list-group-item d-flex justify-content-between align-items-center">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
                                     虚拟化支持
-                                    <span class="badge bg-success">已启用</span>
+                                    <span class="badge bg-success" id="kvmSupport">已启用</span>
                                 </li>
                             </ul>
                         </div>
@@ -2267,7 +2264,7 @@
                 </div>
                 <div class="card-body">
                     <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i> 当前版本：Qemu虚拟机管理系统 v2.1.0
+                        <i class="fas fa-info-circle me-2"></i> 当前版本：Qemu虚拟机管理系统: <span class="badge bg-success" id="qemuVmManagerVer">v2.1.0</span>
                     </div>
 
                     <div class="row mb-4">
@@ -2571,8 +2568,10 @@
 {% endblock %}
 
 {% block javascript %}
+<script src="{% static 'js/host-dashboard.js' %}"></script>
 <script src="{% static './js/upgrade.js' %}"></script>
 <script src="{% static './js/licence.js' %}"></script>
+<script src="{% static './js/version.js' %}"></script>
 <script src="{% static './js/leftpanel.js' %}"></script>
 <script src="{% static './js/storagepool.js' %}"></script>
 <script src="{% static './js/interface.js' %}"></script>

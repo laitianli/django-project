@@ -31,5 +31,6 @@ urlpatterns = [
     path('iface/', include('ifacepool.urls')),
     path('net/', include('netpool.urls')),
     path('vm/', include('vminstance.urls')),
+    path('ver/', include('softVersion.urls')),
 ]
 # + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -130,12 +130,17 @@
 
     function do_upPanel(e) {
         e.preventDefault();
+        cleanAllInterval()
         const contentId = $(this).data('content');
-        if (contentId !== 'host') {
-            console.log('host panel clicked');
-            cleanAllInterval()
+        if (contentId === 'host') {
+
+        }
+        else if (contentId === 'version') {
+                initVersion();
         }
         else {
+            uninitVersion();
+
             qsa('#host-sidebar .list-group-item').forEach(function (x) {
                 x.classList.remove('active');
                 if (x.getAttribute('data-content') === 'overview-host') {
@@ -171,6 +176,7 @@
         if (netPrev) {
             if (netPrev.chartInterval) {
                 clearInterval(netPrev.chartInterval);
+                netPrev.chartInterval = null;
             }
             // netPrev = { counters: null, ts: null, intervalId: null };
         }
@@ -851,7 +857,7 @@
                             netPrev.chartData[chartKey].prevTs = newTs;
                             if (ii === interfaceList.length - 1)
                                 firstRun = false;
-                            console.log('---First run setup done for interface:', intfName);
+                            // console.log('---First run setup done for interface:', intfName);
                             continue;
                         }
 
@@ -866,7 +872,7 @@
                         var prevRx = chartData.prevCounters ? chartData.prevCounters.bytes_recv : 0;
                         var currentRx = newCounters[intfName].bytes_recv || 0;
                         var rxRate = Math.round((currentRx - prevRx)*8 / dt / (1024 * 1024));
-                        console.log('---Interface:', intfName, 'TX Rate (Mbit/s):', txRate, 'RX Rate (Mbit/s):', rxRate);
+                        // console.log('---Interface:', intfName, 'TX Rate (Mbit/s):', txRate, 'RX Rate (Mbit/s):', rxRate);
                         // Update chart data (keep last 60 data points)
                         var chart = charts[chartKey];
                         if (chart) {

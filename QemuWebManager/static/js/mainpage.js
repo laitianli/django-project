@@ -1,23 +1,10 @@
-// 更新服务器时间
-function updateServerTime() {
-    const now = new Date();
-    const formatted = now.getFullYear() + '-' +
-        String(now.getMonth() + 1).padStart(2, '0') + '-' +
-        String(now.getDate()).padStart(2, '0') + ' ' +
-        String(now.getHours()).padStart(2, '0') + ':' +
-        String(now.getMinutes()).padStart(2, '0') + ':' +
-        String(now.getSeconds()).padStart(2, '0');
-    $('#serverTime').text(formatted);
-}
-
 $(document).ready(function () {
     initStroagepool();
     initNetpool();
     initVMInstance();
     initInterface();
 
-    setInterval(updateServerTime, 1000);
-
+    // initVersion();
     // 左侧边栏菜单切换
     $(document).on('click', '#vm-sidebar a', do_leftPanel);
 

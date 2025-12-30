@@ -71,3 +71,10 @@ sudo apt install spice-vdagent
  snapshot-CentOS84-20251027155352   2025-10-27 15:54:01 +0800   disk-snapshot
  snapshot-CentOS84-20251027185229   2025-10-27 18:53:13 +0800   shutoff
  snapshot-CentOS84-20251027185313   2025-10-27 18:53:20 +0800   shutoff
+
+
+ # 在签发许可证的服务器上执行
+openssl genpkey -algorithm RSA -out private_key.pem -pkeyopt rsa_keygen_bits:2048
+openssl rsa -pubout -in private_key.pem -out public_key.pem
+
+lsblk -o NAME,MODEL,SERIAL
