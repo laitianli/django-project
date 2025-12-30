@@ -128,15 +128,21 @@ def host_metrics(request):
             disks = []
             if _HAS_PSUTIL:
                 for part in psutil.disk_partitions(all=False):
+                    # print(f'-- disk part: {part}')  # part: sdiskpart(device='/dev/sda1', mountpoint='/boot/efi', fstype='vfat', opts='rw,relatime,fmask=0077,dmask=0077,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro')
+                    if part.device.startswith('/dev/loop') or part.fstype == '':
+                        continue
                     try:
                         us = psutil.disk_usage(part.mountpoint)
-                        disks.append({'device': part.device, 'mountpoint': part.mountpoint, 'total': us.total, 'free': us.free, 'percent': us.percent})
+                        # print(f'part: {part}, usage: {us}')
+                        # sdiskpart(device='/dev/sda1', mountpoint='/boot/efi', fstype='vfat', opts='rw,relatime,fmask=0077,dmask=0077,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro'),
+                        # usage: sdiskusage(total=535801856, used=6389760, free=529412096, percent=1.2)
+                        disks.append({'device': part.device, 'mountpoint': part.mountpoint, 'total': us.total, 'used': us.used, 'free': us.free, 'percent': us.percent})
                     except Exception:
                         continue
             else:
                 try:
                     du = shutil.disk_usage('/')
-                    disks.append({'device': '/', 'mountpoint': '/', 'total': du.total, 'free': du.free, 'percent': None})
+                    disks.append({'device': '/', 'mountpoint': '/', 'total': du.total, 'used': du.used, 'free': du.free, 'percent': None})
                 except Exception:
                     pass
             return JsonResponse({'result': 'success', 'type': 'disks', 'data': disks})

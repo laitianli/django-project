@@ -172,7 +172,11 @@
             if (netPrev.chartInterval) {
                 clearInterval(netPrev.chartInterval);
             }
-            netPrev = { counters: null, ts: null, intervalId: null };
+            // netPrev = { counters: null, ts: null, intervalId: null };
+        }
+        if (diskInterval) {
+            clearInterval(diskInterval);
+            diskInterval = null;
         }
     }
     // 返回按钮
@@ -188,10 +192,13 @@
 
     // Chart 初始化和后端 AJAX
     var charts = {};
+    var diskCharts = {};
+    var diskInterval = null;
     // CPU time-series display range in seconds (adjustable via UI)
     var MAX_HISTORY = 30; // legacy, keep for now
     var TIME_RANGE = 60; // default 60s
     var netPrev = { counters: null, ts: null, intervalId: null };
+    var diskPrev = { counters: null, ts: null, intervalId: null };
     // per-core chart storage and histories
     var cpuCoreCharts = [];
     var perCoreHistory = [];
@@ -458,20 +465,54 @@
                 return;
             }
             // create chart with responsive and maintainAspectRatio false so we can control height
-            charts.mem = new Chart(canvas.getContext('2d'), { type: 'doughnut', data: { labels: labels, datasets: [{ data: data, backgroundColor: ['#ff6384', '#36a2eb'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
+            charts.mem = new Chart(canvas.getContext('2d'),
+                {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: ['#ff6384', '#36a2eb']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
             // size it to fit viewport
-            try { resizeMemoryChart(); } catch (e) { }
+            // try {
+            //     resizeMemoryChart();
+            // } catch (e) { }
             // start polling
-            try { startMemInterval(); } catch (e) { }
+            try {
+                startMemInterval();
+            } catch (e) { }
         }).catch(function () { /* ignore */ });
     }
 
     function startMemInterval() {
-        if (memInterval) { clearInterval(memInterval); memInterval = null; }
+        if (memInterval) {
+            clearInterval(memInterval);
+            memInterval = null;
+        }
         memInterval = setInterval(function () {
             fetch('/api/host_metrics/?type=memory').then(function (r) { return r.json(); }).then(function (j) {
-                if (j.result !== 'success') return; var d = j.data || {}; var used = d.used || 0; var avail = d.available || 0;
-                if (charts.mem) { charts.mem.data.datasets[0].data = [used, avail]; try { charts.mem.update(); } catch (e) { } }
+                if (j.result !== 'success') return;
+                var d = j.data || {};
+                var used = d.used || 0;
+                var avail = d.available || 0;
+                if (charts.mem) {
+                    charts.mem.data.datasets[0].data = [used, avail];
+                    try {
+                        charts.mem.update();
+                    } catch (e) { }
+                }
             }).catch(function () { });
         }, 1000);
     }
@@ -487,35 +528,157 @@
         } else {
             canvas.style.width = Math.floor(window.innerWidth * 0.5) + 'px';
         }
-        console.log('--Resizing memory chart to height:', h);
+        // console.log('--Resizing memory chart to height:', h);
         canvas.style.height = h + 'px';
         // Remove explicit pixel attributes so the browser/CSS control layout
-        try { canvas.removeAttribute('width'); canvas.removeAttribute('height'); } catch (e) { }
-        try { if (charts.mem) charts.mem.resize(); } catch (e) { }
+        try {
+            canvas.removeAttribute('width');
+            canvas.removeAttribute('height');
+        } catch (e) { }
+        try {
+            if (charts.mem)
+                charts.mem.resize();
+        } catch (e) { }
+    }
+
+    function startDiskInterval(chartKey) {
+        if (diskInterval) {
+            clearInterval(diskInterval);
+            diskInterval = null;
+        }
+        diskInterval = setInterval(function () {
+            fetch('/api/host_metrics/?type=disks').then(function (r) { return r.json(); }).then(function (j) {
+                if (j.result !== 'success') return;
+                var arr = j.data || {};
+                for (var index = 0; index < arr.length; index++) {
+                    var d = arr[index];
+                    var used = Math.round(d.used / (1024 * 1024)) || 0;
+                    var avail = Math.round(d.free / (1024 * 1024)) || 0;
+                    if (diskCharts[chartKey]) {
+                        diskCharts[chartKey].data.datasets[0].data = [used, avail];
+                        try {
+                            diskCharts[chartKey].update();
+                        } catch (e) { }
+                    }
+                }
+            }).catch(function () { });
+        }, 5000);
     }
 
     function initDisksChart() {
-        var ctx = qs('#disksChart'); if (!ctx) return;
+        // Object to store individual chart intervals and data
+        if (!diskPrev.chartData)
+            diskPrev.chartData = {};
+
+        var ctx = qs('#disksChart');
+        if (!ctx)
+            return;
         fetch('/api/host_metrics/?type=disks').then(function (r) { return r.json(); }).then(function (j) {
             if (j.result !== 'success') return;
             var arr = j.data || [];
-            var labels = arr.map(function (x) { return x.device || x.mountpoint || 'disk'; });
-            var data = arr.map(function (x) { return x.percent === null || x.percent === undefined ? 0 : x.percent; });
-            if (charts.disks) { charts.disks.data.labels = labels; charts.disks.data.datasets[0].data = data; charts.disks.update(); return; }
-            charts.disks = new Chart(ctx.getContext('2d'), { type: 'line', data: { labels: labels, datasets: [{ label: '使用率 %', data: data, backgroundColor: 'rgba(255,159,64,0.7)' }] }, options: { scales: { y: { beginAtZero: true, max: 100 } }, responsive: true } });
-        });
+            // Create container for all charts
+            var container = qs('#diskChartsContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'diskChartsContainer';
+                container.className = 'disk-charts-container';
+                container.style.cssText = `
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    position: relative;  /* 添加定位 */
+                    top: -60px;           /* 向上移动20px */
+                    margin-top: -60px;    /* 负外边距实现上移 */
+                `;
+                qs('#disksChart').parentNode.appendChild(container);
+            }
+            console.log('--Disk metrics data:', arr);
+
+            // var labels = arr.map(function (x) { return x.device || x.mountpoint || 'disk'; });
+            // var data = arr.map(function (x) { return x.percent === null || x.percent === undefined ? 0 : x.percent; });
+            for (var index = 0; index < arr.length; index++) {
+                var d = arr[index];
+                // console.log('------Processing disk data:', d);
+                var diskName = d.device || d.mountpoint || 'disk';
+                // console.log('--Initializing disk chart for', diskName);
+                var chartId = 'diskChart_' + diskName.replace(/[^a-zA-Z0-9]/g, '_');
+                var chartKey = 'disk_' + diskName;
+                var used = Math.round(d.used / (1024 * 1024)) || 0;
+                var avail = Math.round(d.free / (1024 * 1024)) || 0;
+                var labels = ['已用(MB)', '可用(MB)'];
+                var data = [used, avail];
+
+                console.log('--Disk chartId:', chartId, 'chartKey:', chartKey, 'data:', data);
+                if (diskCharts[chartId]) {
+                    diskCharts[chartId].data.datasets[0].data = data;
+                    diskCharts[chartId].update();
+                    // ensure polling is active
+                    if (!diskInterval)
+                        startDiskInterval(chartId);
+                    console.log('--Updated existing disk chart for', diskName);
+                    return;
+                }
+                // Create chart container if not exists
+                var chartContainer = qs('#' + chartId);
+                if (!chartContainer) {
+                    chartContainer = document.createElement('div');
+                    chartContainer.id = chartId;
+                    chartContainer.className = 'disk-chart-item';
+                    chartContainer.style.width = '45%';
+                    chartContainer.style.height = '300px';
+                    chartContainer.style.border = '1px solid #ddd';
+                    chartContainer.style.padding = '10px';
+                    chartContainer.style.borderRadius = '5px';
+
+                    container.appendChild(chartContainer);
+
+                    // Create canvas for chart
+                    var canvas = document.createElement('canvas');
+                    chartContainer.appendChild(canvas);
+                }
+
+                var canvas = qs('#' + chartId + ' canvas');
+                if (!canvas)
+                    return;
+
+                // create chart with responsive and maintainAspectRatio false so we can control height
+                diskCharts[chartId] = new Chart(canvas.getContext('2d'),
+                    {
+                        type: 'doughnut',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: data,
+                                backgroundColor: ['#ff6384', '#36a2eb']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: '硬盘: ' + diskName
+                                },
+                                legend: {
+                                    display: true,
+                                    position: 'top'
+                                }
+                            },
+                        }
+                    });
+                diskCharts[chartId].update();
+                // start polling
+                try {
+                    startDiskInterval(chartId);
+                } catch (e) { }
+            }
+        }).catch(function () { /* ignore */ });
     }
 
     function initNetChart() {
-        // Clear previous intervals
-        if (netPrev.intervalId) {
-            clearInterval(netPrev.intervalId);
-            netPrev.intervalId = null;
-        }
-
         // Object to store individual chart intervals and data
         if (!netPrev.chartData) netPrev.chartData = {};
-        if (!netPrev.interfaceInfo) netPrev.interfaceInfo = {};
         var labels;
         // Fetch initial counters
         fetch('/api/host_metrics/?type=network').then(function (r) { return r.json(); }).then(function (j) {
@@ -560,7 +723,7 @@
             labels.forEach(function (interfaceName, index) {
                 var chartId = 'netChart_' + interfaceName.replace(/[^a-zA-Z0-9]/g, '_');
                 var chartKey = 'net_' + interfaceName;
-                netPrev.interfaceInfo[interfaceName] = { chartId: chartId, chartKey: chartKey };
+                // netPrev.interfaceInfo[interfaceName] = { chartId: chartId, chartKey: chartKey };
 
                 // Create chart container if not exists
                 var chartContainer = qs('#' + chartId);
@@ -598,7 +761,7 @@
                             labels: [], // Time labels will be added dynamically
                             datasets: [
                                 {
-                                    label: '发送速率 KB/s',
+                                    label: '发送速率 Mbit/s',
                                     data: [],
                                     borderColor: 'rgba(75, 192, 192, 1)',
                                     backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -606,7 +769,7 @@
                                     fill: true
                                 },
                                 {
-                                    label: '接收速率 KB/s',
+                                    label: '接收速率 Mbit/s',
                                     data: [],
                                     borderColor: 'rgba(153, 102, 255, 1)',
                                     backgroundColor: 'rgba(153, 102, 255, 0.2)',
@@ -641,7 +804,7 @@
                                 y: {
                                     title: {
                                         display: true,
-                                        text: '速率 (KB/s)'
+                                        text: '速率 (Mbit/s)'
                                     },
                                     beginAtZero: true,
                                     grid: {
@@ -698,11 +861,12 @@
                         // Calculate current rates
                         var prevTx = chartData.prevCounters ? chartData.prevCounters.bytes_sent : 0;
                         var currentTx = newCounters[intfName].bytes_sent || 0;
-                        var txRate = Math.round((currentTx - prevTx) / dt / 1024);
+                        var txRate = Math.round((currentTx - prevTx)*8 / dt / (1024 * 1024));
 
                         var prevRx = chartData.prevCounters ? chartData.prevCounters.bytes_recv : 0;
                         var currentRx = newCounters[intfName].bytes_recv || 0;
-                        var rxRate = Math.round((currentRx - prevRx) / dt / 1024);
+                        var rxRate = Math.round((currentRx - prevRx)*8 / dt / (1024 * 1024));
+                        console.log('---Interface:', intfName, 'TX Rate (Mbit/s):', txRate, 'RX Rate (Mbit/s):', rxRate);
                         // Update chart data (keep last 60 data points)
                         var chart = charts[chartKey];
                         if (chart) {
@@ -712,15 +876,8 @@
                             chart.data.labels.push(timeLabel);
                             chart.data.datasets[0].data.push(txRate); // TX data
                             chart.data.datasets[1].data.push(rxRate); // RX data
-                            MaxRx = Math.max(...chart.data.datasets[1].data.flat());
-                            MaxTx = Math.max(...chart.data.datasets[0].data.flat());
-                            maxTxRx = Math.max(MaxTx, MaxRx);
-                            if (maxTxRx < newCounters[intfName]['attrs'].speed - 20) {
-                                chart.options.scales.y.max = maxTxRx + 20;
-                            }
-                            else {
-                                chart.options.scales.y.max = newCounters[intfName]['attrs'].speed;
-                            }
+    
+                            chart.options.scales.y.max = newCounters[intfName]['attrs'].speed;
                             // Keep only last 60 data points for performance
                             if (chart.data.labels.length > 60) {
                                 chart.data.labels.shift();
