@@ -332,7 +332,7 @@ function handleFormSubmit() {
         };
         sessionStorage.setItem("localstoragepool_json", JSON.stringify(res_json_data));
     }, function (response) {
-        alert('添加本地存储池失败！' + response.message);
+        alert('添加硬盘镜像池失败！' + response.message);
     });
 
     // 关闭模态框并清空输入
@@ -405,7 +405,7 @@ function queryLocalStoragePool() {
         doCustomData(customData);
 
     }, function (response) {
-        alert('查询本地存储池失败！' + response.message);
+        alert('查询硬盘镜像池失败！' + response.message);
     });
 }
 
@@ -536,7 +536,7 @@ function handleISOFormSubmit() {
         // console.log(res_json_data);
         sessionStorage.setItem("isostoragepool_json", JSON.stringify(res_json_data));
     }, function (response) {
-        alert('添加本地存储池失败！' + response.message);
+        alert('添加硬盘镜像池失败！' + response.message);
     });
 
     // 关闭模态框并清空输入
@@ -606,7 +606,7 @@ function queryISOStoragePool() {
         var customData = res_json_data.custom;
         doISOCustomData(customData);
     }, function (response) {
-        alert('查询ISO本地存储池失败！' + response.message);
+        alert('查询ISO硬盘镜像池失败！' + response.message);
     });
 }
 
@@ -695,7 +695,7 @@ function doLocalStoragepollRemove(button) {
                     $('#imageTabs li.nav-item:first button').tab('show');
                 }
             }, function (response) {
-                alert('删除本地存储池失败！' + response.message);
+                alert('删除硬盘镜像池失败！' + response.message);
             });
 
         } else {
@@ -787,7 +787,7 @@ function doISOStoragepollRemove(button) {
                     $('#isoImageTabs li.nav-item:first button').tab('show');
                 }
             }, function (response) {
-                alert('删除本地存储池失败！' + response.message);
+                alert('删除硬盘镜像池失败！' + response.message);
             });
 
         } else {
