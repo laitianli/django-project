@@ -271,7 +271,8 @@ def get_iso_files_info(directory_path, file_type):
                     "fileName": filename,
                     "size": file_size_str,
                     "format": "%s" % file_type,
-                    "filesizebytes": file_size_bytes
+                    "filesizebytes": file_size_bytes,
+                    "used": False,
                 })
                 id = id + 1
     

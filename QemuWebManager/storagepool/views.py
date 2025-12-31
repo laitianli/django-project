@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 import os
 from . import models
 from . import toolset
-
+from createvmwizard.models import VMDiskTable as VMDiskTableModel
 from APILibvirt.LVconnect import ConnectLibvirtd
 
 def _get_local_default_from_libvirt():
@@ -196,8 +196,8 @@ def _get_iso_local_default_from_libvirt():
         },
     }
     return res_json_data
-    
-def _addLocalStorageCustom(custom):
+
+def _addLocalStorageCustom(custom, dbDisk):
     try:
         items = models.localCustompool.objects.all()
     except Exception as e:
@@ -222,16 +222,29 @@ def _addLocalStorageCustom(custom):
             "fileList": [],
         }
         toolset.travel_directory(path, custom[name]["fileList"], 'all')
-    pass
+
+        for file_entry in custom[name]["fileList"]:
+                file_entry['used'] = False
+                # 检查该文件是否被虚拟机使用
+                for disk in dbDisk:
+                    if disk.disk_file == os.path.join(path, file_entry['fileName']):
+                        file_entry['used'] = True
+                        break
+    
 # Create your views here.
 def doLocalstroagepool(request):
     if request.method == "POST":
         raw_data = request.body  # 获取原始字节流
         json_data = json.loads(raw_data.decode("utf-8"))  # 解码并解析JSON
-        print(json_data)
+        # print(json_data)
         if json_data["action"] == "query":
-            diskTotal = 500
-            diskUsed = 123
+            # 查询数据库，获取当前虚拟机的硬盘分区列表
+            try:
+                dbDisk = VMDiskTableModel.objects.all()
+                print(f'[Info] [editVMDisk] select vm disk db table entries for success')
+            except Exception as e:
+                print(f'[Error] drop vm table failed: {e}')
+
             #default: /var/lib/libvirt/images
             target_dir = '/var/lib/libvirt/images'
             try:
@@ -252,7 +265,16 @@ def doLocalstroagepool(request):
                 "custom": {},
             }
             toolset.travel_directory(target_dir, res_json_data["default"]["fileList"], 'all')
-            _addLocalStorageCustom(res_json_data["custom"])
+            
+            for file_entry in res_json_data["default"]["fileList"]:
+                file_entry['used'] = False
+                # 检查该文件是否被虚拟机使用
+                for disk in dbDisk:
+                    if disk.disk_file == os.path.join(target_dir, file_entry['fileName']):
+                        file_entry['used'] = True
+                        break
+                    
+            _addLocalStorageCustom(res_json_data["custom"], dbDisk)
 
             data = {
                 "result": "success",

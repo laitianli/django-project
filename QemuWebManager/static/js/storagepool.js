@@ -189,19 +189,34 @@ function addNewDiv(poolName, file) {
     }
     // 3. 为新面板的表格动态添加行
     var tbody = $('#' + newTabId).find('tbody');
-    //$.each(tableData, function (index, item) {
-    var newRow = `
-        <tr>
-            <td class="id-cell">${file.id}</td>
-            <td class="fileName-cell">${file.fileName}</td>
-            <td class="size-cell">${file.size}</td>
-            <td class="format-cell">${file.format}</td>
-            <td>
-                <button class="btn btn-sm btn-primary me-1">克隆</button>
-                <button class="btn btn-sm btn-danger" id="deleteCustomImageBtn">删除</button>
-            </td>
-        </tr>
+    var newRow;
+    if (file.used) {
+         newRow = `
+            <tr>
+                <td class="id-cell">${file.id}</td>
+                <td class="fileName-cell">${file.fileName}</td>
+                <td class="size-cell">${file.size}</td>
+                <td class="format-cell">${file.format}</td>
+                <td>
+                    <button class="btn btn-sm btn-danger" id="deleteCustomImageBtn" disabled>删除</button>
+                </td>
+            </tr>
         `
+
+    } else {
+        //<button class="btn btn-sm btn-primary me-1">克隆</button>
+        newRow = `
+            <tr>
+                <td class="id-cell">${file.id}</td>
+                <td class="fileName-cell">${file.fileName}</td>
+                <td class="size-cell">${file.size}</td>
+                <td class="format-cell">${file.format}</td>
+                <td>
+                    <button class="btn btn-sm btn-danger" id="deleteCustomImageBtn">删除</button>
+                </td>
+            </tr>
+        `
+    }
     tbody.append(newRow); // 将新行添加到表格中
     //});
 
@@ -460,7 +475,6 @@ function addISONewDiv(poolName, file) {
             <td class="size-cell">${file.size}</td>
             <td class="format-cell">${file.format}</td>
             <td>
-                <button class="btn btn-sm btn-primary me-1">克隆</button>
                 <button class="btn btn-sm btn-danger" id="deleteISOCustomImageBtn">删除</button>
             </td>
         </tr>
