@@ -69,6 +69,9 @@ function sendReqeust2vminstance(jsonData, successFunc, failFunc) {
 function doQueryVMInstanceSuccess(jsonData, response) {
     vminstance = response.response_json;
     if (vminstance.length === 0) {
+        $('#vmTableBody').empty();
+        const novm = `<tr><td colspan="5"><p class="text-center">无虚拟机</p></td></tr>`;
+        $('#vmTableBody').append(novm);
         console.log('vminstance is null');
         return;
     }

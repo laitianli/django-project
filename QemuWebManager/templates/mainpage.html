@@ -20,8 +20,8 @@
                 role="tab" data-content="host">物理主机</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="vm-tab" data-bs-toggle="tab" data-bs-target="#vm-pane" type="button"
-                role="tab" data-content="vm">虚拟机</button>
+            <button class="nav-link" id="vm-tab" data-bs-toggle="tab" data-bs-target="#vm-pane" type="button" role="tab"
+                data-content="vm">虚拟机</button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="version-tab" data-bs-toggle="tab" data-bs-target="#version-pane" type="button"
@@ -35,7 +35,7 @@
 
     <div class="tab-content" id="mainTabContent">
         <!-- 物理主机标签页内容 -->
-         <div class="tab-pane fade show active" id="host-pane" role="tabpanel">
+        <div class="tab-pane fade show active" id="host-pane" role="tabpanel">
             <div class="row mt-0">
                 <!-- 左侧导航，与 vm-pane 样式保持一致 -->
                 <div class="col-md-3 col-lg-2 sidebar">
@@ -62,7 +62,7 @@
                 <div class="col-md-9 col-lg-10 main-content">
                     <div id="host-content">
                         <!-- 概览：保留原表格，但将部分字段设为可点击（会切换到子页面） -->
-                        <div class="content-panel" id="overview-host" >
+                        <div class="content-panel" id="overview-host">
                             <div class="card">
                                 <div class="card-body">
                                     <h4 class="text-primary mb-4">物理主机信息</h4>
@@ -131,7 +131,8 @@
                                         </div>
                                         <div class="d-flex align-items-center">
                                             <div class="me-2">时间范围：</div>
-                                            <select id="cpuTimeRange" class="form-select form-select-sm me-2" style="width:110px;">
+                                            <select id="cpuTimeRange" class="form-select form-select-sm me-2"
+                                                style="width:110px;">
                                                 <option value="60">60s</option>
                                                 <option value="120">120s</option>
                                                 <option value="300">5分钟</option>
@@ -141,11 +142,17 @@
                                             </select>
                                             <div class="me-2">过滤：</div>
                                             <div class="dropdown me-2">
-                                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="cpuFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">显示全部核心</button>
-                                                <div class="dropdown-menu p-2" aria-labelledby="cpuFilterDropdown" id="cpuFilter" style="min-width:200px; max-height:260px; overflow:auto;">
+                                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                                                    type="button" id="cpuFilterDropdown" data-bs-toggle="dropdown"
+                                                    aria-expanded="false">显示全部核心</button>
+                                                <div class="dropdown-menu p-2" aria-labelledby="cpuFilterDropdown"
+                                                    id="cpuFilter"
+                                                    style="min-width:200px; max-height:260px; overflow:auto;">
                                                     <div class="form-check">
-                                                        <input class="form-check-input cpu-filter-checkbox" type="checkbox" value="all" id="cpuFilter_all" checked>
-                                                        <label class="form-check-label" for="cpuFilter_all">显示全部核心</label>
+                                                        <input class="form-check-input cpu-filter-checkbox"
+                                                            type="checkbox" value="all" id="cpuFilter_all" checked>
+                                                        <label class="form-check-label"
+                                                            for="cpuFilter_all">显示全部核心</label>
                                                     </div>
                                                     <div class="dropdown-divider"></div>
                                                     <!-- per-core checkboxes will be inserted here -->
@@ -212,7 +219,7 @@
             </div>
         </div>
         <!-- 虚拟机标签页内容 -->
-        <div class="tab-pane fade show" id="vm-pane" role="tabpanel" >
+        <div class="tab-pane fade show" id="vm-pane" role="tabpanel">
             <div class="row mt-0">
                 <!-- 左侧边栏 -->
                 <div class="col-md-3 col-lg-2 sidebar">
@@ -264,6 +271,11 @@
                                                 </tr>
                                             </thead>
                                             <tbody id="vmTableBody">
+                                                <tr>
+                                                    <td colspan="5">
+                                                        <p class="text-center">无虚拟机</p>
+                                                    </td>
+                                                </tr>
                                             </tbody>
                                         </table>
                                     </div>
@@ -279,9 +291,9 @@
                                     <div class="content-section" id="storage-main">
                                         <div class="d-flex justify-content-between align-items-center mb-4">
                                             <h4 class="text-primary">存储池管理</h4>
-                                            <button class="btn btn-primary" id="createStoragePoolBtn">
+                                            <!-- <button class="btn btn-primary" id="createStoragePoolBtn">
                                                 <i class="fas fa-plus me-2"></i>新建存储池
-                                            </button>
+                                            </button> -->
                                         </div>
 
                                         <div class="row">
@@ -2276,7 +2288,8 @@
                 </div>
                 <div class="card-body">
                     <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i> 当前版本：Qemu虚拟机管理系统: <span class="badge bg-success" id="qemuVmManagerVer">v2.1.0</span>
+                        <i class="fas fa-info-circle me-2"></i> 当前版本：Qemu虚拟机管理系统: <span class="badge bg-success"
+                            id="qemuVmManagerVer">v2.1.0</span>
                     </div>
 
                     <div class="row mb-4">
