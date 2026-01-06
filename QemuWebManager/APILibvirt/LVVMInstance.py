@@ -12,6 +12,7 @@ from pathlib import Path
 from netpool.models import VMBridgePoolTable as BridgeTable
 from netpool.models import VMMacvtapPoolTable as MacvtapTable
 from netpool.models import VMOVSPoolTable as OVSTable
+from createvmwizard.models import VMNICTable as VMNICTableModel
 
 try:
     from libvirt import libvirtError, VIR_DOMAIN_XML_SECURE, VIR_MIGRATE_LIVE, \
@@ -855,6 +856,17 @@ class CLVVMInstance(ConnectLibvirtd):
                 networkType = 'nat'
                 if source_networkPool == 'default':
                     createflag = 'default'
+                    try:
+                        recodes = VMNICTableModel.objects.filter(netPoolName=source_networkPool, vm_name=vmName, mac=mac_addr.upper())
+                        if len(recodes): 
+                            for rec in recodes:
+                                createflag = rec.create_flag
+                                print(f'[Info] [queryVMNIC] select vm NIC table entries for vm {vmName} success, mac: {mac_addr}, createflag: {createflag}')
+                        else:
+                            print(f'[Info] [queryVMNIC] no vm NIC table entries for vm {vmName}, mac: {mac_addr}')
+                    except Exception as e:
+                        print(f"[Exception] queryVMNIC Query VMNICTableModel failed: {e}")
+                        return False        
                 else:
                     createflag = 'create'     
                 nicList.append({'nicModel':model_type, 'createflag': createflag, 'networkType': networkType, 'mac': mac_addr, 'networkPool': source_networkPool})

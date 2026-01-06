@@ -2020,7 +2020,7 @@ function editSetMAC() {
     $('#editVmNICMACID').val(mac);
 }
 
-function addEditNICRow(nicModel, nicMAC, nicConnType, netPoolName, createflag) {
+function addEditNICRow(nicModel, nicMAC, nicConnType, netPoolName, createflag = 'create') {
     var newRow;
     if (createflag === 'default') {
         newRow = `
@@ -2142,7 +2142,7 @@ function editAddNIC2List() {
     const nicConnType = $('#editNicConnectTypeSelect').find('option:selected').val();
     const netPoolName = $('#editNicNetPoolSelect').find('option:selected').text().trim();
 
-    addEditNICRow(nicModel, nicMAC, nicConnType, netPoolName);
+    addEditNICRow(nicModel, nicMAC, nicConnType, netPoolName, 'create');
 }
 
 function editGetNICTabData() {
@@ -2214,8 +2214,8 @@ $('#editNicGenerateMACBtn').click(function () {
 // 网卡添加按钮
 $('#editAddVMNICBtn').click(function () {
     editAddNIC2List();
-    $('#editNicGenerateMACBtn').trigger('click');
     $(this).addClass('disabled');
+    $('#editNicGenerateMACBtn').trigger('click');
     editUpdateSaveButtonsState();
 })
 
