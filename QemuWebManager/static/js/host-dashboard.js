@@ -129,7 +129,6 @@
      qsa('#reflushOSLogBtn').forEach(function (a) {
         a.addEventListener('click', function (e) {
             e.preventDefault();
-            console.log('---------reflushOSLogBtn---');
             getOSLog();
         });
     });
@@ -284,7 +283,6 @@
         if (charts.cpuPerCoreInitialized) {
             return;
         }
-        var historyLen = 0;
 
         function createCoreCard(coreIndex, value) {
             var col = document.createElement('div');
@@ -345,14 +343,6 @@
             initPerCoreCharts(data.length);
             // seed histories and populate charts
             data.forEach(function (v, i) {
-                // create initial history of points (older -> newer)
-                var hist = [];
-                for (var k = historyLen; k > 0; k--) { hist.push({ x: k, y: v }); }
-                perCoreHistory[i] = hist;
-                if (cpuCoreCharts[i]) {
-                    cpuCoreCharts[i].data.datasets[0].data = hist.slice();
-                    try { cpuCoreCharts[i].update(); } catch (e) { }
-                }
                 // add checkbox to filter dropdown
                 if (coreFilterContainer) {
                     var cbId = 'cpuFilter_core_' + i;
