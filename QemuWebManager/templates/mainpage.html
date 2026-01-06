@@ -2071,6 +2071,9 @@
                         <a href="#" class="list-group-item list-group-item-action" data-content="network-host">
                             <i class="fas fa-network-wired me-2"></i> 网卡 信息
                         </a>
+                        <a href="#" class="list-group-item list-group-item-action" data-content="osLog-host">
+                            <i class="fas fa-chart-bar me-2"></i> 系统 日志
+                        </a>
                     </div>
                 </div>
 
@@ -2229,7 +2232,23 @@
                                 </div>
                             </div>
                         </div>
-
+                        <!-- 系统日志子页面 -->
+                        <div class="content-panel d-none" id="osLog-host">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="text-primary">系统 日志</h4>
+                                        <div class="d-flex align-items-center">
+                                        <button class="btn btn-outline-primary me-2">刷新</button>
+                                        <button class="btn btn-primary back-to-overview">返回</button>
+                                        </div>
+                                    </div>
+                                    <pre class="bg-light p-3 rounded"
+                                        style="max-height: 500px; overflow: auto;" id="osLogContent"> 加载中...
+                                    </pre>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
