@@ -115,6 +115,25 @@
     // attach resize handler to window
     window.addEventListener('resize', debounce(function () { resizeAllCoreCanvases(); try { resizeMemoryChart(); } catch (e) { } }, 150));
 
+    function getOSLog() {
+        var container = qs('#osLogContent');
+        if (!container) { return; }
+        container.innerHTML = '<p class="text-center text-muted py-5">正获取系统日志中</p>';
+        fetch('/api/host/?type=oslog').then(function (r) { return r.json(); }).then(function (j) {
+            if (j && j.logs) {
+                container.innerHTML = '<p>' + j.logs + '</p>';
+            }
+        });
+    }
+    
+     qsa('#reflushOSLogBtn').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+            e.preventDefault();
+            console.log('---------reflushOSLogBtn---');
+            getOSLog();
+        });
+    });
+
     // 侧边栏点击
     qsa('#host-sidebar .list-group-item').forEach(function (a) {
         a.addEventListener('click', function (e) {
@@ -130,6 +149,7 @@
             if (target === 'memory-host') initMemoryChart();
             if (target === 'disks-host') initDisksChart();
             if (target === 'network-host') initNetChart();
+            if (target === 'osLog-host') getOSLog();
         });
     });
 

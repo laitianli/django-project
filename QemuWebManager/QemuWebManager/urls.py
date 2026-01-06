@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from .views import mainPage, host_info, host_metrics
+from .views import mainPage, host_info, host_metrics, dohost
 from django.conf.urls.static import static
 from django.conf import settings
 
@@ -25,6 +25,7 @@ urlpatterns = [
     path('index', mainPage, name='home'),
     path('api/host_info/', host_info, name='host_info'),
     path('api/host_metrics/', host_metrics, name='host_metrics'),
+    path('api/host/', dohost, name='host'),
     path('accounts/', include('accounts.urls')),
     path('createvmwizard/', include('createvmwizard.urls')),
     path('storagepool/', include('storagepool.urls')),

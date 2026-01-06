@@ -167,3 +167,87 @@ def host_metrics(request):
         return JsonResponse({'result': 'failed', 'message': 'unknown type'})
     except Exception as e:
         return JsonResponse({'result': 'failed', 'message': str(e)})
+
+
+import subprocess
+
+def get_dmesg_with_timestamp():
+    """
+    执行 dmesg -T 命令并返回结果。
+    返回一个包含成功状态、输出内容及错误信息的字典。
+    """
+    try:
+        # 使用subprocess.run执行命令
+        result = subprocess.run(
+            ['dmesg', '-T'],           # 命令及参数列表形式，更安全
+            capture_output=True,       # 捕获标准输出和标准错误
+            text=True,                 # 以文本形式返回结果，避免处理字节流
+            timeout=30,                # 设置超时时间，防止命令无限挂起
+            check=True                # 如果命令返回非零状态码则抛出异常
+        )
+        # 命令成功执行
+        return {
+            "success": True,
+            "stdout": result.stdout,
+            "stderr": result.stderr
+        }
+    except subprocess.CalledProcessError as e:
+        # 命令执行失败（例如，返回非零退出码）
+        return {
+            "success": False,
+            "stdout": e.stdout,
+            "stderr": e.stderr,
+            "error": f"命令执行失败，退出码: {e.returncode}"
+        }
+    except subprocess.TimeoutExpired as e:
+        # 命令执行超时
+        return {
+            "success": False,
+            "stdout": "",
+            "stderr": "",
+            "error": "命令执行超时"
+        }
+    except FileNotFoundError as e:
+        # 命令不存在（极少数情况）
+        return {
+            "success": False,
+            "stdout": "",
+            "stderr": "",
+            "error": "未找到 'dmesg' 命令，请确认系统环境"
+        }
+    except Exception as e:
+        # 其他未知异常
+        return {
+            "success": False,
+            "stdout": "",
+            "stderr": "",
+            "error": f"发生未知错误: {str(e)}"
+        }
+    
+def dohost(request):
+    """Return host log entries as JSON.
+
+    Fields: timestamp, level, message
+    """
+    t = request.GET.get('type', 'oslog')
+    if t == 'oslog':
+        logs = ''
+        try:
+            # For demonstration, generate sample log entries
+            # current_time = int(time.time())
+            # for i in range(10):
+            #     log_entry = {
+            #         'timestamp': current_time - i * 60,
+            #         'level': 'INFO' if i % 2 == 0 else 'WARNING',
+            #         'message': f'Sample log message {i + 1}'
+            #     }
+            #     logs.append(log_entry)
+            dmesg_result = get_dmesg_with_timestamp()
+            if dmesg_result["success"]:
+                logs = dmesg_result["stdout"]
+            else:
+                logs = "Failed to retrieve dmesg output."
+
+            return JsonResponse({'result': 'success', 'logs': logs})
+        except Exception as e:
+            return JsonResponse({'result': 'failed', 'message': str(e)})
