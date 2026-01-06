@@ -29,24 +29,46 @@
             var title = document.createElement('div'); title.className = 'small mb-1 text-center'; title.textContent = 'Core ' + i;
             var canvas = document.createElement('canvas'); canvas.id = 'cpuCoreChart-' + i;
             // set canvas element height attribute and constrain via style; width will be set to match card width
-            canvas.height = 80; canvas.style.height = '80px'; canvas.style.maxHeight = '80px'; canvas.style.display = 'block'; canvas.style.width = '100%';
+            canvas.height = 200; canvas.style.height = '200px'; canvas.style.maxHeight = '200px'; canvas.style.display = 'block'; canvas.style.width = '100%';
             card.appendChild(title); card.appendChild(canvas); col.appendChild(card); container.appendChild(col);
             var ctx = canvas.getContext('2d');
             var ch = new Chart(ctx, {
                 type: 'line',
-                data: { datasets: [{ label: `Core ${i + 1} (%)`, data: [], borderColor: 'rgba(54,162,235,0.9)', backgroundColor: 'rgba(54,162,235,0.15)', pointRadius: 0, fill: true }] },
+                data: { datasets: [{ 
+                    label: `Core ${i + 1} (%)`,
+                     data: [], 
+                     borderColor: 'rgba(54,162,235,0.9)', 
+                     backgroundColor: 'rgba(54,162,235,0.15)', 
+                    //  pointRadius: 1, 
+                     tension: 0.1,
+                     fill: true }] },
                 options: {
-                    animation: false,
+                    // animation: true,
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     parsing: false,
                     layout: { padding: { top: 8, bottom: 4 } },
                     scales: {
-                        x: { type: 'linear', display: false, reverse: true, min: 0, max: TIME_RANGE },
+                        x: { type: 'linear', 
+                            display: true, 
+                            reverse: true, 
+                            title: { display: true, text: 'time (s)' },
+                            min: 0, 
+                            max: TIME_RANGE,
+                            ticks: {
+                                callback: function (value, index, values) {
+                                    const total = TIME_RANGE;
+                                    if (Math.round(value) === 0) return '0s';
+                                    if (Math.round(value) === total) return total + 's';
+                                    return '';
+                                }
+                            }
+                        },
                         y: {
                             min: 0,
                             max: 100,
+                            title: { display: true, text: 'cpu rate (%)' },
                             ticks: {
                                 stepSize: 20,
                                 autoSkip: false,
@@ -242,7 +264,7 @@
         if (charts.cpuPerCoreInitialized) {
             return;
         }
-        var historyLen = 30;
+        var historyLen = 0;
 
         function createCoreCard(coreIndex, value) {
             var col = document.createElement('div');
