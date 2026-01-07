@@ -649,6 +649,9 @@ function do_deleteButton() {
     if (confirm('确定要永久删除此虚拟机及其所有硬盘镜像吗？此操作不可撤销！')) {
         // alert('虚拟机删除请求已发送（模拟）');
 
+        $(this).prop('disabled', true);
+        $('#confirmDelete').prop('checked', false);
+
         const vmName = $('#vm-detail-name').text().trim();
 
         var jsonData = {
