@@ -648,8 +648,9 @@ $(document).ready(function () {
     })
     // 网卡添加按钮
     $('#addVMNICBtn').click(function () {
-        addNIC2List('create');
         $(this).addClass('disabled');
+        addNIC2List('create');
+        $('#nicGenerateMACBtn').trigger('click');
     })
 
     /* 删除网卡 */

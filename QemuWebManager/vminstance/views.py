@@ -331,6 +331,7 @@ def doVMInstance(request):
                     "message": "ping action success!", 
                     "response_json": dataNIC,
                     }
+            # print(data)
             return JsonResponse(data)
             
             

@@ -855,7 +855,7 @@ class CLVVMInstance(ConnectLibvirtd):
                 model_type = model_elm.get('type')
                 networkType = 'nat'
                 if source_networkPool == 'default':
-                    createflag = 'default'
+                    createflag = 'create'
                     try:
                         recodes = VMNICTableModel.objects.filter(netPoolName=source_networkPool, vm_name=vmName, mac=mac_addr.upper())
                         if len(recodes): 
@@ -993,6 +993,17 @@ class CLVVMInstance(ConnectLibvirtd):
             else:
                 nic['netPoolName'] = None
                 nic['nicConnType'] = None
+            nic['createflag'] = 'create'
+            try:
+                recods = VMNICTableModel.objects.filter(netPoolName=nic['netPoolName'], vm_name=vmName, mac=nic['mac'].upper())
+                if len(recods): 
+                    for rec in recods:
+                        nic['createflag'] = rec.create_flag
+                        print(f'[Info] [editVMNic] select vm NIC table entries for vm {vmName} success, mac: {nic["mac"]}, createflag: {nic["createflag"]}')
+                else:
+                    print(f'[Info] [editVMNic] no vm NIC table entries for vm {vmName}, mac: {nic["mac"]}')
+            except Exception as e:
+                print(f"[Exception] editVMNic Query VMNICTableModel failed: {e}")
             old_nics.append({'node': node, **nic})
 
         # 2. 处理删除和修改（只保留nicList中存在的，且default网卡不能删改）
@@ -1000,16 +1011,17 @@ class CLVVMInstance(ConnectLibvirtd):
             mac = old['mac']
             netPoolName = old['netPoolName']
             # default网卡不能删改
-            if netPoolName == 'default':
+            if netPoolName == 'default' and old['createflag'] == 'default':
                 continue
             found = False
             for newnic in nicList:
-                if newnic.get('mac') == mac:  ##以MAC地址是否一样确定是不是同一个网卡
+                if newnic.get('mac').upper() == mac.upper():  ##以MAC地址是否一样确定是不是同一个网卡
                     found = True
                     break
             if False == found:
                 # 删除该网卡
                 try:
+                    print(f'[Info][editVMNic] remove nic: {old["netPoolName"]}, mac: {old["mac"]}')
                     old['node'].unlinkNode()
                     try:
                         old['node'].freeNode()
@@ -1028,12 +1040,12 @@ class CLVVMInstance(ConnectLibvirtd):
             nicConnType = newnic.get('nicConnType')
             createflag = newnic.get('createflag', 'create')
             # default网卡不能修改
-            if netPoolName == 'default':
+            if netPoolName == 'default' and createflag == 'default':
                 continue
             # 如果mac已存在，尝试更新参数
             updated = False
             for old in old_nics:
-                if old['mac'] == mac and old['netPoolName'] != 'default': ##以MAC地址是否一样确定是不是同一个网卡
+                if old['mac'].upper() == mac.upper() and old['netPoolName'] != 'default': ##以MAC地址是否一样确定是不是同一个网卡
                     # 更新model等参数
                     model_nodes = old['node'].xpathEval('model')
                     if model_nodes and len(model_nodes) > 0:
