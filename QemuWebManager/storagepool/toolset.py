@@ -120,8 +120,9 @@ def clone_disk_image(type, src_file, dst_file):
         
         # 从命令输出中提取文件格式
         output = result.stdout
+        print(f'clone_disk_image stdout: {result.stdout} stderr: {result.stderr}')
 
-        if result.stdout is None and result.stderr is None:
+        if not result.stdout.strip() and not result.stderr.strip():
             return True
         else:
             print("无法从 qemu-img convert 输出中解析文件格式")

@@ -389,12 +389,27 @@ class CLVVMInstance(ConnectLibvirtd):
         
         uuid = root.find("uuid")
         uuid.text = util.randomUUID()
-        
+
+        try:
+            dbDisk = VMDiskTableModel.objects.filter(vm_name=vmName)
+            print(f'[Info] [cloneVM] select vm disk table entries for vm {vmName} success')
+        except Exception as e:
+            print(f'[Error] drop vm table failed: {e}')
+
+        try:
+            dbNIC = VMNICTableModel.objects.filter(vm_name=vmName)
+            print(f'[Info] [cloneVM] select vm nic table entries for vm {vmName} success')
+        except Exception as e:
+            print(f'[Error] drop vm table failed: {e}')
+
         for disk in root.findall("devices/disk[@device='disk']"):
             elm = disk.find('driver')
             type = elm.get('type')
             source_elm = disk.find('source')
             source_file = source_elm.get('file')
+            target_elm = disk.find('target')
+            target_dev = target_elm.get('dev')
+            target_bus = target_elm.get('bus')
             # print(f'--source_file: {source_file}')
             if source_file:
                 newCloneDiskFile = cloneName + '_' + util.randomUUID() + '.' + type
@@ -402,12 +417,47 @@ class CLVVMInstance(ConnectLibvirtd):
                 disk_path = diskPath
                 newCloneDiskFullPath=os.path.join(disk_path, newCloneDiskFile)
                 source_elm.set('file', newCloneDiskFullPath)
-                toolset.clone_disk_image(type, source_file, newCloneDiskFullPath)
-        
+                ret = toolset.clone_disk_image(type, source_file, newCloneDiskFullPath)
+                if ret != True:
+                    print(f'[Error][cloneVM] clone disk image failed: {source_file} to {newCloneDiskFullPath}')
+                    self.connect_close()
+                    return False
+                print(f'[Info][cloneVM] clone disk image success: {source_file} to {newCloneDiskFullPath}')
+                for d in dbDisk:
+                    if d.dev == target_dev and d.bus == target_bus and d.disk_file == source_file:
+                        try:
+                            VMDiskTableModel.objects.create(vm_name=cloneName,
+                                                        create_flag=d.create_flag,
+                                                        disk_file=newCloneDiskFullPath,
+                                                        disk_size=d.disk_size,
+                                                        dev=target_dev,
+                                                        bus=target_bus,
+                                                        type=type)
+                            print(f'[Info][cloneVM] insert vm disk table: {cloneName}:{newCloneDiskFullPath}')
+                        except Exception as e:
+                            print(f'[Error][cloneVM] insert vm disk table failed: {e}')
+                            self.connect_close()
+                            return False
+
         for interface in root.findall('devices/interface'):
             elm = interface.find('mac')
+            origin_mac = elm.get('address')
             elm.set('address', util.randomMAC())
-                
+            for nic in dbNIC:
+                if nic.mac.upper() == origin_mac.upper():
+                    try:
+                        VMNICTableModel.objects.create(vm_name=cloneName,
+                                                    nicModel=nic.nicModel,
+                                                    create_flag=nic.create_flag,
+                                                    mac=elm.get('address'),
+                                                    nicConnType=nic.nicConnType,
+                                                    netPoolName=nic.netPoolName)
+                        print(f'[Info][cloneVM] insert vm nic table: {cloneName}:{elm.get("address")}')
+                    except Exception as e:
+                        print(f'[Error][cloneVM] insert vm nic table failed: {e}')
+                        self.connect_close()
+                        return False
+
         newxml = ElementTree.tostring(root).decode()
         # print(newxml)
         try:
@@ -866,7 +916,7 @@ class CLVVMInstance(ConnectLibvirtd):
                             print(f'[Info] [queryVMNIC] no vm NIC table entries for vm {vmName}, mac: {mac_addr}')
                     except Exception as e:
                         print(f"[Exception] queryVMNIC Query VMNICTableModel failed: {e}")
-                        return False        
+                        return False
                 else:
                     createflag = 'create'     
                 nicList.append({'nicModel':model_type, 'createflag': createflag, 'networkType': networkType, 'mac': mac_addr, 'networkPool': source_networkPool})

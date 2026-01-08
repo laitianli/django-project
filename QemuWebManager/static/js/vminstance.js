@@ -456,6 +456,9 @@ function initVMClone(vmName) {
             text: key
         }));
     });
+
+    var val = $('#cloneToDiskPartStoragePool').find('option:selected').val();
+    $("#cloneToDiskPath").val(val);
 }
 
 function doCloneToDiskPartStoragePoolChange(e) {
