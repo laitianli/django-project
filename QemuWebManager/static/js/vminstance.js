@@ -279,14 +279,12 @@ function changePowersubpageBtnByAction(action) {
 }
 
 function initPowersubpage(vmStatus) {
-    var span = $('#power p span');
+    var span = $('#vm-detail-status span');
     span.text(vmStatus);
     span.removeClass('bg-success');
     span.removeClass('bg-secondary');
     const statusClass = vmStatus === 'running' ? 'bg-success' : 'bg-secondary';
     span.addClass(statusClass);
-
-    $('#vm-detail-status').text(vmStatus);
 
     $("#vmDetailConsoleBtn").addClass('disabled').css('opacity', '0.3');
     switch (vmStatus) {
@@ -478,7 +476,7 @@ function dovmDetailLink(e) {
     // 填充详情数据
     $('#vm-detail-title').text(vmName + ' 详情');
     $('#vm-detail-name').text(vmName);
-    $('#vm-detail-status').text(vmStatus);
+    $('#vm-detail-status span').text(vmStatus);
     $('#vm-detail-vcpus').text(vmVCPUs);
     $('#vm-detail-memory').text(vmMemory);
 
@@ -586,7 +584,7 @@ function doCreateSnapshotBtn(e) {
 }
 
 function checkedVMStatus(info) {
-    if ($('#vm-detail-status').text() != 'shutoff') {
+    if ($('#vm-detail-status span').text() != 'shutoff') {
         alert($('#vm-detail-name').text() + info);
         return false;
     }

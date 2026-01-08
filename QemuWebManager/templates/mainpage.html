@@ -1266,7 +1266,7 @@
                         <div class="content-panel  d-none" id="vm-detail-panel">
                             <div class="row mb-3 align-items-center">
                                 <div class="col-6 col-md-6">
-                                    <h2 class="text-primary m-0" id="vm-detail-title">虚拟机详情</h2>
+                                    <h5 class="text-primary m-0" id="vm-detail-title">虚拟机详情</h5>
                                 </div>
                                 <div class="col-6 col-md-6 text-end">
                                     <button class="btn btn-primary me-2" id="vmDetailConsoleBtn">
@@ -1294,8 +1294,21 @@
                                             <td id="vm-detail-memory">8192MB</td>
                                         </tr>
                                         <tr>
-                                            <th>描述</th>
-                                            <td colspan="3">测试用CentOS虚拟机，用于开发环境</td>
+                                            <th>操作</th>
+                                            <td colspan="3">
+                                                <div class="btn-group" role="group" id="power">
+                                                    <button type="button" class="btn btn-outline-primary action-power-btn"
+                                                        operation="start"><i class="fas fa-play me-2"></i>开机</button>
+                                                    <button type="button" class="btn btn-outline-warning  action-power-btn"
+                                                        operation="suspend"><i class="fas fa-save me-2"></i>挂起</button>
+                                                    <button type="button" class="btn btn-outline-info  action-power-btn"
+                                                        operation="resume"><i class="fas fa-pause me-2"></i>唤醒</button>
+                                                    <button type="button" class="btn btn-outline-secondary  action-power-btn"
+                                                        operation="stop"><i class="fas fa-stop me-2"></i>关机</button>
+                                                    <button type="button" class="btn btn-outline-danger  action-power-btn"
+                                                        operation="destroy"><i class="fas fa-plug me-2"></i>强制关机</button>
+                                                </div>
+                                            </td>
                                         </tr>
                                     </table>
                                 </div>
@@ -1304,10 +1317,10 @@
                             <!-- 主标签页 -->
                             <ul class="nav nav-tabs" id="vmDetailTabs" role="tablist">
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link text-primary active" id="power-tab" data-bs-toggle="tab"
-                                        data-bs-target="#power" type="button" role="tab" aria-controls="power"
-                                        aria-selected="true">
-                                        <i class="fas fa-power-off me-2"></i>电源
+                                    <button class="nav-link text-primary active" id="settings-tab" data-bs-toggle="tab"
+                                        data-bs-target="#settings" type="button" role="tab" aria-controls="settings"
+                                        aria-selected="false">
+                                        <i class="fas fa-cog me-2"></i>设置
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
@@ -1329,13 +1342,6 @@
                                         data-bs-target="#stats" type="button" role="tab" aria-controls="stats"
                                         aria-selected="false">
                                         <i class="fas fa-chart-bar me-2"></i>统计
-                                    </button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link text-primary" id="settings-tab" data-bs-toggle="tab"
-                                        data-bs-target="#settings" type="button" role="tab" aria-controls="settings"
-                                        aria-selected="false">
-                                        <i class="fas fa-cog me-2"></i>设置
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
@@ -1363,158 +1369,8 @@
 
                             <!-- 八个子标签页面 -->
                             <div class="tab-content" id="vmDetailTabContent">
-                                <!-- 电源标签页 -->
-                                <div class="tab-pane fade show active" id="power" role="tabpanel"
-                                    aria-labelledby="power-tab">
-                                    <div class="sub-tab-content">
-                                        <!-- <h5>电源管理</h5> -->
-                                        <p>您可以在此控制虚拟机的电源状态。当前状态：<span class="badge bg-success">运行中</span></p>
-                                        <div class="btn-group" role="group">
-                                            <button type="button" class="btn btn-outline-primary action-power-btn"
-                                                operation="start"><i class="fas fa-play me-2"></i>开机</button>
-                                            <button type="button" class="btn btn-outline-warning  action-power-btn"
-                                                operation="suspend"><i class="fas fa-save me-2"></i>挂起</button>
-                                            <button type="button" class="btn btn-outline-info  action-power-btn"
-                                                operation="resume"><i class="fas fa-pause me-2"></i>唤醒</button>
-                                            <button type="button" class="btn btn-outline-secondary  action-power-btn"
-                                                operation="stop"><i class="fas fa-stop me-2"></i>关机</button>
-                                            <button type="button" class="btn btn-outline-danger  action-power-btn"
-                                                operation="destroy"><i class="fas fa-plug me-2"></i>强制关机</button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- 控制台标签页 -->
-                                <div class="tab-pane fade" id="console" role="tabpanel" aria-labelledby="console-tab">
-                                    <div class="sub-tab-content">
-                                        <!-- <h5>控制台设置</h5> -->
-                                        <div class="mb-3">
-                                            <label for="consoleType" class="form-label">控制台类型</label>
-                                            <select class="form-select" id="consoleType">
-                                                <option value="vnc">VNC</option>
-                                                <option value="spice">Spice</option>
-                                            </select>
-                                        </div>
-                                        <p class="text-muted">VNC提供基本的远程桌面功能，Spice提供更好的多媒体支持。</p>
-                                        <button type="button" class="btn btn-primary" id="setConsoleTypeBtn">
-                                            <i class="fas fa-save me-2"></i>设置控制台类型
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- 快照池标签页 -->
-                                <div class="tab-pane fade" id="snapshot" role="tabpanel" aria-labelledby="snapshot-tab">
-                                    <ul class="nav nav-tabs" id="snapshotTabs" role="tablist">
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link  text-primary active" id="restore-snapshot-tab"
-                                                data-bs-toggle="tab" data-bs-target="#restore-snapshot" type="button"
-                                                role="tab" aria-controls="restore-snapshot"
-                                                aria-selected="false">从快照恢复</button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link  text-primary " id="create-snapshot-tab"
-                                                data-bs-toggle="tab" data-bs-target="#create-snapshot" type="button"
-                                                role="tab" aria-controls="create-snapshot"
-                                                aria-selected="true">创建快照</button>
-                                        </li>
-                                    </ul>
-                                    <div class="tab-content sub-tab-content" id="snapshotTabContent">
-                                        <div class="tab-pane fade show active" id="restore-snapshot" role="tabpanel"
-                                            aria-labelledby="restore-snapshot-tab">
-                                            <!-- <h5>从快照恢复</h5> -->
-                                            <table class="table table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        <th>名称</th>
-                                                        <th>创建时间</th>
-                                                        <th>状态</th>
-                                                        <th>描述</th>
-                                                        <th>操作</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="vmSnapshotTableBody">
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <div class="tab-pane fade" id="create-snapshot" role="tabpanel"
-                                            aria-labelledby="create-snapshot-tab">
-                                            <!-- <h5>创建快照</h5> -->
-                                            <div class="mb-3">
-                                                <label for="snapshotName" class="form-label">快照名称</label>
-                                                <input type="text" class="form-control" id="snapshotName"
-                                                    placeholder="请输入快照名称">
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="snapshotDesc" class="form-label">描述</label>
-                                                <textarea class="form-control" id="snapshotDesc" rows="3"></textarea>
-                                            </div>
-                                            <button type="button" class="btn btn-primary">
-                                                <i class="fas fa-camera me-2"></i>创建快照
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- 统计标签页 -->
-                                <div class="tab-pane fade" id="stats" role="tabpanel" aria-labelledby="stats-tab">
-                                    <ul class="nav nav-tabs" id="statsTabs" role="tablist">
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link text-primary active" id="cpu-stats-tab"
-                                                data-bs-toggle="tab" data-bs-target="#cpu-stats" type="button"
-                                                role="tab" aria-controls="cpu-stats" aria-selected="true">CPU</button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link text-primary" id="memory-stats-tab"
-                                                data-bs-toggle="tab" data-bs-target="#memory-stats" type="button"
-                                                role="tab" aria-controls="memory-stats"
-                                                aria-selected="false">内存</button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link text-primary" id="network-stats-tab"
-                                                data-bs-toggle="tab" data-bs-target="#network-stats" type="button"
-                                                role="tab" aria-controls="network-stats"
-                                                aria-selected="false">网卡</button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link text-primary" id="disk-stats-tab"
-                                                data-bs-toggle="tab" data-bs-target="#disk-stats" type="button"
-                                                role="tab" aria-controls="disk-stats" aria-selected="false">硬盘</button>
-                                        </li>
-                                    </ul>
-                                    <div class="tab-content sub-tab-content" id="statsTabContent">
-                                        <div class="tab-pane fade show active" id="cpu-stats" role="tabpanel"
-                                            aria-labelledby="cpu-stats-tab">
-                                            <h5>CPU使用率</h5>
-                                            <div class="chart-container" id="vmCpuChart">
-                                                <p class="text-center text-muted py-5">CPU使用率图表将在这里显示</p>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="memory-stats" role="tabpanel"
-                                            aria-labelledby="memory-stats-tab">
-                                            <h5>内存使用率</h5>
-                                            <div class="chart-container" id="vmMemoryChart">
-                                                <p class="text-center text-muted py-5">内存使用率图表将在这里显示</p>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="network-stats" role="tabpanel"
-                                            aria-labelledby="network-stats-tab">
-                                            <h5>网卡速率</h5>
-                                            <div class="chart-container" id="vmNetworkChart">
-                                                <p class="text-center text-muted py-5">网卡速率图表将在这里显示</p>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="disk-stats" role="tabpanel"
-                                            aria-labelledby="disk-stats-tab">
-                                            <h5>硬盘读写速率</h5>
-                                            <div class="chart-container" id="vmDiskChart">
-                                                <p class="text-center text-muted py-5">硬盘读写速率图表将在这里显示</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <!-- 设置标签页 -->
-                                <div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+                                <div class="tab-pane fade show active" id="settings" role="tabpanel" aria-labelledby="settings-tab">
                                     <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
                                         <li class="nav-item" role="presentation">
                                             <button class="nav-link text-primary active" id="vcpu-settings-tab"
@@ -1962,6 +1818,134 @@
 [Nov 1 10:30:25] clocksource: kvm-clock: mask: 0xffffffffffffffff max_cycles: 0x1cd42e4dffb, max_idle_ns: 881590591483 ns
 [Nov 1 10:30:25] tsc: Detected 2593.996 MHz processor
                         </pre>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 控制台标签页 -->
+                                <div class="tab-pane fade" id="console" role="tabpanel" aria-labelledby="console-tab">
+                                    <div class="sub-tab-content">
+                                        <!-- <h5>控制台设置</h5> -->
+                                        <div class="mb-3">
+                                            <label for="consoleType" class="form-label">控制台类型</label>
+                                            <select class="form-select" id="consoleType">
+                                                <option value="vnc">VNC</option>
+                                                <option value="spice">Spice</option>
+                                            </select>
+                                        </div>
+                                        <p class="text-muted">VNC提供基本的远程桌面功能，Spice提供更好的多媒体支持。</p>
+                                        <button type="button" class="btn btn-primary" id="setConsoleTypeBtn">
+                                            <i class="fas fa-save me-2"></i>设置控制台类型
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- 快照池标签页 -->
+                                <div class="tab-pane fade" id="snapshot" role="tabpanel" aria-labelledby="snapshot-tab">
+                                    <ul class="nav nav-tabs" id="snapshotTabs" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link  text-primary active" id="restore-snapshot-tab"
+                                                data-bs-toggle="tab" data-bs-target="#restore-snapshot" type="button"
+                                                role="tab" aria-controls="restore-snapshot"
+                                                aria-selected="false">从快照恢复</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link  text-primary " id="create-snapshot-tab"
+                                                data-bs-toggle="tab" data-bs-target="#create-snapshot" type="button"
+                                                role="tab" aria-controls="create-snapshot"
+                                                aria-selected="true">创建快照</button>
+                                        </li>
+                                    </ul>
+                                    <div class="tab-content sub-tab-content" id="snapshotTabContent">
+                                        <div class="tab-pane fade show active" id="restore-snapshot" role="tabpanel"
+                                            aria-labelledby="restore-snapshot-tab">
+                                            <!-- <h5>从快照恢复</h5> -->
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>名称</th>
+                                                        <th>创建时间</th>
+                                                        <th>状态</th>
+                                                        <th>描述</th>
+                                                        <th>操作</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="vmSnapshotTableBody">
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="tab-pane fade" id="create-snapshot" role="tabpanel"
+                                            aria-labelledby="create-snapshot-tab">
+                                            <!-- <h5>创建快照</h5> -->
+                                            <div class="mb-3">
+                                                <label for="snapshotName" class="form-label">快照名称</label>
+                                                <input type="text" class="form-control" id="snapshotName"
+                                                    placeholder="请输入快照名称">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="snapshotDesc" class="form-label">描述</label>
+                                                <textarea class="form-control" id="snapshotDesc" rows="3"></textarea>
+                                            </div>
+                                            <button type="button" class="btn btn-primary">
+                                                <i class="fas fa-camera me-2"></i>创建快照
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 统计标签页 -->
+                                <div class="tab-pane fade" id="stats" role="tabpanel" aria-labelledby="stats-tab">
+                                    <ul class="nav nav-tabs" id="statsTabs" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link text-primary active" id="cpu-stats-tab"
+                                                data-bs-toggle="tab" data-bs-target="#cpu-stats" type="button"
+                                                role="tab" aria-controls="cpu-stats" aria-selected="true">CPU</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link text-primary" id="memory-stats-tab"
+                                                data-bs-toggle="tab" data-bs-target="#memory-stats" type="button"
+                                                role="tab" aria-controls="memory-stats"
+                                                aria-selected="false">内存</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link text-primary" id="network-stats-tab"
+                                                data-bs-toggle="tab" data-bs-target="#network-stats" type="button"
+                                                role="tab" aria-controls="network-stats"
+                                                aria-selected="false">网卡</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link text-primary" id="disk-stats-tab"
+                                                data-bs-toggle="tab" data-bs-target="#disk-stats" type="button"
+                                                role="tab" aria-controls="disk-stats" aria-selected="false">硬盘</button>
+                                        </li>
+                                    </ul>
+                                    <div class="tab-content sub-tab-content" id="statsTabContent">
+                                        <div class="tab-pane fade show active" id="cpu-stats" role="tabpanel"
+                                            aria-labelledby="cpu-stats-tab">
+                                            <h5>CPU使用率</h5>
+                                            <div class="chart-container" id="vmCpuChart">
+                                                <p class="text-center text-muted py-5">CPU使用率图表将在这里显示</p>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="memory-stats" role="tabpanel"
+                                            aria-labelledby="memory-stats-tab">
+                                            <h5>内存使用率</h5>
+                                            <div class="chart-container" id="vmMemoryChart">
+                                                <p class="text-center text-muted py-5">内存使用率图表将在这里显示</p>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="network-stats" role="tabpanel"
+                                            aria-labelledby="network-stats-tab">
+                                            <h5>网卡速率</h5>
+                                            <div class="chart-container" id="vmNetworkChart">
+                                                <p class="text-center text-muted py-5">网卡速率图表将在这里显示</p>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="disk-stats" role="tabpanel"
+                                            aria-labelledby="disk-stats-tab">
+                                            <h5>硬盘读写速率</h5>
+                                            <div class="chart-container" id="vmDiskChart">
+                                                <p class="text-center text-muted py-5">硬盘读写速率图表将在这里显示</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
