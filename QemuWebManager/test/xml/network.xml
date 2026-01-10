@@ -44,7 +44,50 @@ ovs-vsctl add-port ovs0 enp0s3
 ovs-vsctl list-ports ovs0
 
 ovs-vsctl del-br ovs0 
+
+apt install openvswitch-switch-dpdk -y
+
+Created symlink /etc/systemd/system/multi-user.target.wants/dpdk.service → /lib/systemd/system/dpdk.service.
+/lib/systemd/system/dpdk.service
+/lib/dpdk/dpdk-init
+/etc/dpdk/interfaces
+
+export OVS_BR=dpdkovs-br0
+ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-init=true
+ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-lcore-mask=0xE
+ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-socket-mem=1024
+ovs-vsctl add-br ${OVS_BR} -- set bridge ${OVS_BR} datapath_type=netdev
+export OVS_PHYIF=dpdk-phy0
+export NIC_PCIEID=0000:1b:00.3
+ovs-vsctl add-port ${OVS_BR} ${OVS_PHYIF} -- set Interface ${OVS_PHYIF} type=dpdk options:dpdk-devargs=${NIC_PCIEID}
+ip link set ${OVS_BR} up
+
+##验证dpdk是否已经初始化
+ovs-vsctl get Open_vSwitch . dpdk_initialized
 -->
+<!-- ovs-dpdk -->
+<memoryBacking>
+  <hugepages/>
+  <access mode='shared'/>
+</memoryBacking>
+
+<interface type='vhostuser'>
+    <mac address='52:54:00:63:5b:59'/>
+    <source type='unix' path='/tmp/qemu-vm_9_vhost-user.sock' mode='server'/>
+    <model type='virtio'/>
+    <driver queues='4'/>
+    <address type='pci' domain='0x0000' bus='0x00' slot='0x08' function='0x0'/>
+</interface>
+
+
+cd /home/haizhi/downland/qemu-ovs-dpdk-lab/bin/ovs/tools && run_ovs_dpdk.sh start
+
+/home/haizhi/downland/qemu-ovs-dpdk-lab/bin/ovs/bin/ovs-vsctl \
+	--db=unix:/usr/local/var/run/openvswitch/db.sock add-port \
+	ovs-br0 dpdkvhostclient0  -- set Interface dpdkvhostclient0 \
+	type=dpdkvhostuserclient options:vhost-server-path=/tmp/qemu-vm_9_vhost-user.sock
+
+
 
 <!-- Macvtap -->
 <interface type="direct">
@@ -197,3 +240,22 @@ ip link show master br0
 <video>
   <model type='qxl' ram='65536' vram='16384' vgamem='16384' heads='1' primary='yes'/>
 </video>
+
+mkdir -p /var/log/openvswitch
+DEFAULT_DBSOCK=/home/haizhi/downland/qemu-ovs-dpdk-lab/source/ovs/../../bin/ovs/var/run/openvswitch/db.sock
+ovsdb-server \
+	/etc/openvswitch/conf.db \
+	--remote=punix:${DEFAULT_DBSOCK} \
+	--private-key=db:Open_vSwitch,SSL,private_key \
+	--certificate=db:Open_vSwitch,SSL,certificate \
+	--bootstrap-ca-cert=db:Open_vSwitch,SSL,ca_cert \
+	--no-chdir \
+	--log-file=/var/log/openvswitch/ovsdb-server.log \
+	--pidfile=/var/run/openvswitch/ovsdb-server.pid \
+	--detach
+ovs-vswitchd \
+	unix:${DEFAULT_DBSOCK} \
+	--no-chdir \
+	--log-file=/var/log/openvswitch/ovs-vswitchd.log \
+	--pidfile=/var/run/openvswitch/ovs-vswitchd.pid \
+	--detach
