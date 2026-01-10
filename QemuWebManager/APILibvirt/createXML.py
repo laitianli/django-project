@@ -42,6 +42,18 @@ class createVMXML():
             
             currMemoryNode = parentNode.newChild(None, 'currentMemory', '%d' % self.memCurrent)
             currMemoryNode.setProp('unit', 'KiB')
+
+    def __createMemoryBacking(self, parentNode):
+        if parentNode is not None:
+            memBackingNode = libxml2.newNode('memoryBacking')
+            parentNode.addChild(memBackingNode)
+
+            hugePagesNode = libxml2.newNode('hugepages')
+            memBackingNode.addChild(hugePagesNode)
+
+            accessNode = libxml2.newNode('access')
+            accessNode.setProp('mode', 'shared')
+            memBackingNode.addChild(accessNode)
     
     def __createVCPUNode(self, parentNode):
         if parentNode is not None:
