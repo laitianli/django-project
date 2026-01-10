@@ -78,3 +78,324 @@ openssl genpkey -algorithm RSA -out private_key.pem -pkeyopt rsa_keygen_bits:204
 openssl rsa -pubout -in private_key.pem -out public_key.pem
 
 lsblk -o NAME,MODEL,SERIAL
+
+
+qemu-system-x86_64: -chardev socket,id=qemu-vm_0_netdev_chardev2,path=/tmp/qemu-vm_0_vhost-user.sock,server=on: info: QEMU waiting for connection on: disconnected:unix:/tmp/qemu-vm_0_vhost-user.sock,server=on
+request switch flag lock [ppid:55033, pid:55038]
+tap name=tap0 argument: tap0
+ovs-br0: flags=4419<UP,BROADCAST,RUNNING,PROMISC,MULTICAST>  mtu 1500
+SIOCSIFADDR: No such device
+br0: ERROR while getting interface flags: No such device
+br0: ERROR while getting interface flags: No such device
+SIOCSIFNETMASK: No such device
+run cmd: [brctl addif br0 tap0]
+bridge br0 does not exist!
+release switch flag lock file [ppid:55033, pid:55038]
+
+
+ovs-vsctl add-port ovs-switch p0 -- set Interface p0 ofport_request=100 type=internal
+ovs-vsctl add-port ovs-switch p1 -- set Interface p1 ofport_request=101 type=internal
+
+
+ip netns add ns0
+ip link set p0 netns ns0
+ip netns exec ns0 ip addr add 192.168.1.100/24 dev p0
+ip netns exec ns0 ifconfig p0 promisc up
+
+
+ip netns add ns1
+ip link set p1 netns ns1
+ip netns exec ns1 ip addr add 192.168.1.101/24 dev p1
+ip netns exec ns1 ifconfig p1 promisc up
+
+cd /home/haizhi/downland/qemu-ovs-dpdk-lab/bin/ovs/tools && run_ovs_dpdk.sh start
+
+/home/haizhi/downland/qemu-ovs-dpdk-lab/bin/ovs/bin/ovs-vsctl \
+	--db=unix:/usr/local/var/run/openvswitch/db.sock add-port \
+	ovs-br0 dpdkvhostclient0  -- set Interface dpdkvhostclient0 \
+	type=dpdkvhostuserclient options:vhost-server-path=/tmp/vpp_vhost-user.sock
+
+/home/haizhi/downland/qemu-ovs-dpdk-lab/bin/ovs/bin/ovs-vsctl \
+	--db=unix:/usr/local/var/run/openvswitch/db.sock del-port ovs-br0 dpdkvhostclient0
+
+
+
+/usr/local/var/log/openvswitch/ovs-vswitchd.log
+
+/home/haizhi/downland/qemu-ovs-dpdk-lab/bin/ovs/bin/ovs-vsctl \
+	--db=unix:/usr/local/var/run/openvswitch/db.sock add-port \
+	ovs-br0 dpdkvhostclient0  -- set Interface dpdkvhostclient0 \
+	type=dpdkvhostuserclient options:vhost-server-path=/tmp/qemu-vm_9_vhost-user.sock
+	
+/home/haizhi/downland/qemu-ovs-dpdk-lab/bin/qemu/bin/qemu-system-x86_64 \
+  -name qemu-vm_9 \
+  -daemonize \
+  -uuid a557b86f-cdc5-48df-89ab-299f02038a4e \
+  -m 1024M \
+  -smp 4 \
+  -enable-kvm \
+  -cpu host \
+  -object memory-backend-file,id=mem,size=1024M,mem-path=/dev/hugepages,share=on \
+  -machine type=pc,memory-backend=mem \
+  -mem-prealloc \
+  -netdev tap,script=/home/haizhi/downland/qemu-ovs-dpdk-lab/tools/script/qemu-ifup,downscript=/home/haizhi/downland/qemu-ovs-dpdk-lab/tools/script/qemu-ifdown,id=qemu-vm_9_netdev1 \
+  -device driver=virtio-net-pci,netdev=qemu-vm_9_netdev1,mac=00:16:3E:2F:CB:ED \
+  -netdev vhost-user,id=qemu-vm_9_netdev2,chardev=qemu-vm_9_netdev_chardev2,queues=4 \
+  -device driver=virtio-net-pci,netdev=qemu-vm_9_netdev2,mac=00:16:3E:30:96:97 \
+  -chardev socket,id=qemu-vm_9_netdev_chardev2,path=/tmp/qemu-vm_9_vhost-user.sock,server=on \
+  -drive file=/home/haizhi/downland/qemu-ovs-dpdk-lab/out/run/image/qemu-vm_9_disk_7c8c187b_81e4_4cc7_9a81_e5a42727e1b5.qcow2,if=none,format=qcow2,cache=writeback,id=drive-virtio-disk1 \
+  -device virtio-blk-pci,drive=drive-virtio-disk1,bootindex=1 \
+  -drive file=/home/haizhi/downland/qemu-ovs-dpdk-lab/out/run/image/qemu-vm_9_disk_eff3b105_9a01_4876_9ec7_ed63d09fbec9.qcow2,if=none,format=qcow2,cache=writeback,id=drive-virtio-disk2 \
+  -device virtio-blk-pci,drive=drive-virtio-disk2,bootindex=2 \
+  -kernel /home/haizhi/downland/qemu-ovs-dpdk-lab/bin/kernel/bzImage \
+  -append 'root=/dev/vda rootfstype=ext4 rw init=/usr/sbin/init console=ttyS0,115200 default_hugepagesz=2m hugepagesz=2m hugepages=128 index=9' \
+  -vnc :110 \
+  -vga qxl \
+  -spice port=5910,addr=0.0.0.0,disable-ticketing=on
+
+
+/home/haizhi/downland/qemu-ovs-dpdk-lab/bin/ovs/bin/ovs-vsctl \
+	--db=unix:/usr/local/var/run/openvswitch/db.sock add-port \
+	ovs-br0 dpdkvhostclient0  -- set Interface dpdkvhostclient0 \
+	type=dpdkvhostuserclient options:vhost-server-path=/tmp/qemu-vm_0_vhost-user.sock
+
+/home/haizhi/downland/qemu-ovs-dpdk-lab/bin/qemu/bin/qemu-system-x86_64 \
+  -name qemu-vm_0 \
+  -daemonize \
+  -uuid f5ee10e0-33e3-4d7d-ada5-4d437be9a112 \
+  -m 1024M \
+  -smp 4 \
+  -enable-kvm \
+  -cpu host \
+  -object memory-backend-file,id=mem,size=1024M,mem-path=/dev/hugepages,share=on \
+  -machine type=pc,memory-backend=mem \
+  -mem-prealloc \
+  -netdev tap,script=/home/haizhi/downland/qemu-ovs-dpdk-lab/tools/script/qemu-ifup,downscript=/home/haizhi/downland/qemu-ovs-dpdk-lab/tools/script/qemu-ifdown,br=tap-br0,id=qemu-vm_0_netdev1 \
+  -device driver=virtio-net-pci,netdev=qemu-vm_0_netdev1,mac=00:16:3E:BC:CE:80 \
+  -netdev vhost-user,id=qemu-vm_0_netdev2,chardev=qemu-vm_0_netdev_chardev2 \
+  -device driver=virtio-net-pci,netdev=qemu-vm_0_netdev2,mac=00:16:3E:C8:29:C7 \
+  -chardev socket,id=qemu-vm_0_netdev_chardev2,path=/tmp/qemu-vm_0_vhost-user.sock,server=on \
+  -drive file=/home/haizhi/downland/qemu-ovs-dpdk-lab/out/run/image/qemu-vm_0_disk_7a5e5d38_6947_4b17_a8d0_0707a621581b.qcow2,if=none,format=qcow2,cache=writeback,id=drive-virtio-disk1 \
+  -device virtio-blk-pci,drive=drive-virtio-disk1,bootindex=1 \
+  -drive file=/home/haizhi/downland/qemu-ovs-dpdk-lab/out/run/image/qemu-vm_0_disk_cb4d55ca_4fe1_48b3_8928_12b1c9278621.qcow2,if=none,format=qcow2,cache=writeback,id=drive-virtio-disk2 \
+  -device virtio-blk-pci,drive=drive-virtio-disk2,bootindex=2 \
+  -kernel /home/haizhi/downland/qemu-ovs-dpdk-lab/bin/kernel/bzImage \
+  -append 'root=/dev/vda rootfstype=ext4 rw init=/usr/sbin/init console=ttyS0,115200 default_hugepagesz=2m hugepagesz=2m hugepages=128 index=0' \
+  -vnc :101 \
+  -vga qxl \
+  -spice port=5901,addr=0.0.0.0,disable-ticketing=on
+  
+  [root@x86_64 <5218-Ubuntu2204> /home/haizhi/downland/qemu-ovs-dpdk-lab/ctlplane]# python3 ./create_qemu.py ../template/template_qemu_argument_vhost_user.json   
+  [root@x86_64 <5218-Ubuntu2204> /home/haizhi/downland/qemu-ovs-dpdk-lab/ctlplane]# python3 qemu_argument_parse.py ../out/run/json_script/qemu_vm_9.json 
+  
+  <domain type='kvm'>
+  <name>your-vm-name</name>
+  <memory unit='GiB'>1</memory>
+  <currentMemory unit='GiB'>1</currentMemory>
+  
+  <!-- 大页内存配置 -->
+  <memoryBacking>
+    <hugepages>
+      <page size='1' unit='GiB'/>
+    </hugepages>
+    <source type='file' path='/dev/hugepages'/>
+    <access mode='shared'/>
+    <allocation mode='immediate'/>
+  </memoryBacking>
+  
+  <vcpu>2</vcpu>
+  <os>
+    <type arch='x86_64' machine='pc'>hvm</type>
+    <boot dev='hd'/>
+  </os>
+  <!-- 其他设备配置 -->
+</domain>
+
+  <memoryBacking>
+    <hugepages/>
+    <access mode='shared'/>
+  </memoryBacking>
+
+
+1.停掉系统自带实例
+apt install openvswitch-switch-dpdk
+systemctl stop openvswitch-switch   # 停掉系统自带实例
+
+2.启动 OVS 并打开 DPDK
+export DB_SOCK=/var/run/openvswitch/db.sock
+ovsdb-tool create /etc/openvswitch/conf.db \
+        /usr/share/openvswitch/vswitch.ovsschema
+ovsdb-server --remote=punix:$DB_SOCK --pidfile --detach
+ovs-vsctl --no-wait set Open_vSwitch . \
+        other_config:dpdk-init=true \
+        other_config:dpdk-socket-mem="1024" \
+        other_config:dpdk-lcore-mask=0x6   # 用 CPU1、2
+ovs-vswitchd --pidfile --detach --log-file=/var/log/ovs-vswitchd.log
+
+3.建桥并加 DPDK 物理口
+ovs-vsctl add-br dpdk-ovs0 -- set bridge dpdk-ovs0 datapath_type=netdev
+ovs-vsctl add-port dpdk-ovs0 dpdk-phy0 -- set Interface dpdk-phy0 type=dpdk options:dpdk-devargs=0000:1b:00.3
+		
+4.给 libvirt 用的 vhost-user 端口
+ovs-vsctl add-port dpdk-ovs0 vhost-user1 -- set Interface vhost-user1 \
+        type=dpdkvhostuserclient \
+        options:vhost-server-path=/usr/local/var/run/openvswitch/vhost-user1
+# 注意路径必须跟 libvirt XML 里完全一致
+chmod 777 /usr/local/var/run/openvswitch/vhost-user1
+#删除端口
+ovs-vsctl del-port dpdk-ovs0 vhost-user1
+
+5.先把 QEMU 的 hugepage 权限打开（/etc/libvirt/qemu.conf）
+hugetlbfs_mount = "/dev/hugepages"
+user = "root"
+group = "root"
+
+6.虚拟机网卡定义（model 用 vhostuser，不是 virtio！）
+<devices>
+  <interface type='vhostuser'>
+    <source type='unix' path='/tmp/vpp_vhost-user.sock' mode='client'/>
+    <model type='virtio'/>   <!-- 虚拟机内部仍是 virtio -->
+    <driver queues='4' iommu='on'/>   <!-- 多队列、iommu 按需开 -->
+  </interface>
+</devices>
+
+<devices>
+  <interface type='vhostuser'>
+    <source type='unix' path='/tmp/vpp_vhost-user.sock' mode='client'/>
+    <model type='virtio'/> 
+    <driver queues='4' iommu='on'/>
+  </interface>
+</devices>
+
+
+/usr/libexec/qemu-kvm \
+-name guest=Ubuntu2204-membackend,debug-threads=on \
+-S \
+-machine pc-i440fx-6.2,usb=off,dump-guest-core=off,memory-backend=pc.ram \
+-accel kvm \
+-cpu Cascadelake-Server,ss=on,vmx=on,pdcm=on,hypervisor=on,tsc-adjust=on,mpx=on,umip=on,pku=on,md-clear=on,stibp=on,arch-capabilities=on,xsaves=on,ibpb=on,ibrs=on,amd-stibp=on,amd-ssbd=on,rdctl-no=on,ibrs-all=on,skip-l1dfl-vmentry=on,mds-no=on,pschange-mc-no=on,tsx-ctrl=on,hle=off,rtm=off \
+-m 4096 \
+-object '{"qom-type":"memory-backend-file","id":"pc.ram","mem-path":"/dev/hugepages/libvirt/qemu/17-Ubuntu2204-membacken","share":true,"x-use-canonical-path-for-ramblock-id":false,"prealloc":true,"size":4294967296}' \
+-overcommit mem-lock=off \
+-smp 4,sockets=4,cores=1,threads=1 \
+-uuid 07ccdf56-cb98-fb99-0889-c3af4de43983 \
+-no-user-config \
+-nodefaults \
+-chardev socket,id=charmonitor,fd=32,server=on,wait=off \
+-mon chardev=charmonitor,id=monitor,mode=control \
+-rtc base=utc,driftfix=slew \
+-global kvm-pit.lost_tick_policy=delay \
+-no-hpet \
+-no-shutdown \
+-global PIIX4_PM.disable_s3=1 \
+-global PIIX4_PM.disable_s4=1 \
+-boot strict=on \
+-device ich9-usb-ehci1,id=usb,bus=pci.0,addr=0x4.0x7 \
+-device virtio-serial-pci,id=virtio-serial0,bus=pci.0,addr=0x5 \
+-blockdev '{"driver":"file","filename":"/var/lib/libvirt/iso/ubuntu-22.04.5-desktop-amd64.iso","node-name":"libvirt-2-storage","auto-read-only":true,"discard":"unmap"}' \
+-blockdev '{"node-name":"libvirt-2-format","read-only":true,"driver":"raw","file":"libvirt-2-storage"}' \
+-device ide-cd,bus=ide.0,unit=0,drive=libvirt-2-format,id=ide0-0-0,bootindex=2 \
+-blockdev '{"driver":"file","filename":"/var/lib/libvirt/images/Ubuntu2204-membackend_db069921-0634-4ac3-9e00-ecdfe72deb4e.qcow2","node-name":"libvirt-1-storage","auto-read-only":true,"discard":"unmap"}' \
+-blockdev '{"node-name":"libvirt-1-format","read-only":false,"driver":"qcow2","file":"libvirt-1-storage","backing":null}' \
+-device virtio-blk-pci,bus=pci.0,addr=0x6,drive=libvirt-1-format,id=virtio-disk0,bootindex=1 \
+-netdev tap,fd=33,id=hostnet0 \
+-device e1000,netdev=hostnet0,id=net0,mac=60:1a:2b:da:4b:29,bootindex=3,bus=pci.0,addr=0x3 \
+-chardev socket,id=charnet1,path=/tmp/qemu-vm_9_vhost-user.sock,server=on \
+-netdev vhost-user,chardev=charnet1,queues=4,id=hostnet1 \
+-device virtio-net-pci,iommu_platform=on,mq=on,vectors=10,netdev=hostnet1,id=net1,mac=52:54:00:63:5b:59,bus=pci.0,addr=0x8 \
+-chardev pty,id=charserial0 \
+-device isa-serial,chardev=charserial0,id=serial0 \
+-audiodev '{"id":"audio1","driver":"none"}' \
+-vnc 0.0.0.0:0,websocket=5700,audiodev=audio1 \
+-device qxl-vga,id=video0,ram_size=67108864,vram_size=16777216,vram64_size_mb=0,vgamem_mb=16,max_outputs=1,bus=pci.0,addr=0x2 \
+-device virtio-balloon-pci,id=balloon0,bus=pci.0,addr=0x7 \
+-sandbox on,obsolete=deny,elevateprivileges=deny,spawn=deny,resourcecontrol=deny \
+-msg timestamp=on
+
+
+	
+ovsdb-server \
+	/etc/openvswitch/conf.db \
+	-vconsole:emer \
+	-vsyslog:err \
+	-vfile:info \
+	--remote=punix:/var/run/openvswitch/db.sock \
+	--private-key=db:Open_vSwitch,SSL,private_key \
+	--certificate=db:Open_vSwitch,SSL,certificate \
+	--bootstrap-ca-cert=db:Open_vSwitch,SSL,ca_cert \
+	--no-chdir \
+	--log-file=/var/log/openvswitch/ovsdb-server.log \
+	--pidfile=/var/run/openvswitch/ovsdb-server.pid \
+	--detach
+ovs-vswitchd \
+	unix:/var/run/openvswitch/db.sock \
+	-vconsole:emer \
+	-vsyslog:err \
+	-vfile:info \
+	--mlockall \
+	--no-chdir \
+	--log-file=/var/log/openvswitch/ovs-vswitchd.log \
+	--pidfile=/var/run/openvswitch/ovs-vswitchd.pid \
+	--detach
+
+
+ /home/haizhi/downland/qemu-ovs-dpdk-lab/bin/ovs/bin/ovs-vsctl --db=unix:/usr/local/var/run/openvswitch/db.sock --no-wait set Open_vSwitch . other_config:dpdk-init=true
+ /home/haizhi/downland/qemu-ovs-dpdk-lab/bin/ovs/bin/ovs-vsctl --db=unix:/usr/local/var/run/openvswitch/db.sock --no-wait set Open_vSwitch . other_config:dpdk-lcore-mask=0xE
+ /home/haizhi/downland/qemu-ovs-dpdk-lab/bin/ovs/bin/ovs-vsctl --db=unix:/usr/local/var/run/openvswitch/db.sock --no-wait set Open_vSwitch . other_config:dpdk-socket-mem=1024
+ /home/haizhi/downland/qemu-ovs-dpdk-lab/bin/ovs/bin/ovs-vsctl --db=unix:/usr/local/var/run/openvswitch/db.sock add-br ovs-br0 -- set bridge ovs-br0 datapath_type=netdev
+ /home/haizhi/downland/qemu-ovs-dpdk-lab/bin/ovs/bin/ovs-vsctl --db=unix:/usr/local/var/run/openvswitch/db.sock add-port ovs-br0 dpdk-phy0 -- set Interface dpdk-phy0 type=dpdk options:dpdk-devargs=0000:1b:00.3
+ 
+ 
+ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-init=true
+ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-lcore-mask=0xE
+ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-socket-mem=1024
+ovs-vsctl add-br ovs-br0 -- set bridge ovs-br0 datapath_type=netdev
+ovs-vsctl add-port ovs-br0 dpdk-phy0 -- set Interface dpdk-phy0 type=dpdk options:dpdk-devargs=0000:1b:00.3
+ 
+  /home/haizhi/downland/qemu-ovs-dpdk-lab/bin/ovs/bin/ovs-vsctl --db=unix:/usr/local/var/run/openvswitch/db.sock add-port ovs-br0 enp27s0f1np1
+ 
+ 
+ /home/haizhi/downland/qemu-ovs-dpdk-lab/bin/ovs/sbin/ovsdb-server \
+	/home/haizhi/downland/qemu-ovs-dpdk-lab/bin/ovs/etc/openvswitch/conf.db \
+	--remote=punix:/usr/local/var/run/openvswitch/db.sock \
+	--private-key=db:Open_vSwitch,SSL,private_key \
+	--certificate=db:Open_vSwitch,SSL,certificate \
+	--bootstrap-ca-cert=db:Open_vSwitch,SSL,ca_cert \
+	--no-chdir \
+	--log-file=/usr/local/var/log/openvswitch/ovsdb-server.log \
+	--pidfile=/usr/local/var/run/openvswitch/ovsdb-server.pid  \
+	--unixctl=/usr/local/var/run/openvswitch/ovsdb-server.ctl \
+	--detach \
+	--monitor
+	
+/home/haizhi/downland/qemu-ovs-dpdk-lab/bin/ovs/sbin/ovs-vswitchd \
+	unix:/usr/local/var/run/openvswitch/db.sock  \
+	--no-chdir \
+	--log-file=/usr/local/var/log/openvswitch/ovs-vswitchd.log \
+	--pidfile=/usr/local/var/run/openvswitch/ovsdb-vswitchd.pid  \
+	--unixctl=/usr/local/var/run/openvswitch/ovsdb-vswitchd.ctl  \
+	--detach \
+	--monitor
+	
+##验证dpdk是否已经初始化
+/home/haizhi/downland/qemu-ovs-dpdk-lab/bin/ovs/bin/ovs-vsctl --db=unix:/usr/local/var/run/openvswitch/db.sock get Open_vSwitch . dpdk_initialized
+
+
+mkdir -p /var/log/openvswitch
+
+ovsdb-server \
+	/etc/openvswitch/conf.db \
+	--remote=punix:/var/run/openvswitch/db.sock \
+	--private-key=db:Open_vSwitch,SSL,private_key \
+	--certificate=db:Open_vSwitch,SSL,certificate \
+	--bootstrap-ca-cert=db:Open_vSwitch,SSL,ca_cert \
+	--no-chdir \
+	--log-file=/var/log/openvswitch/ovsdb-server.log \
+	--pidfile=/var/run/openvswitch/ovsdb-server.pid \
+	--detach
+ovs-vswitchd \
+	unix:/var/run/openvswitch/db.sock \
+	--no-chdir \
+	--log-file=/var/log/openvswitch/ovs-vswitchd.log \
+	--pidfile=/var/run/openvswitch/ovs-vswitchd.pid \
+	--detach
