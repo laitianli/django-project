@@ -399,3 +399,38 @@ ovs-vswitchd \
 	--log-file=/var/log/openvswitch/ovs-vswitchd.log \
 	--pidfile=/var/run/openvswitch/ovs-vswitchd.pid \
 	--detach
+
+
+/* 新环境需要安装的软件命令 */
+apt-get update
+apt install openssh-server -y
+apt install vim -y
+apt install samba -y
+apt install tree -y
+apt install git -y
+apt install make gcc -y
+apt install meson -y
+apt install libnuma-dev -y
+apt install python3-pyelftools -y
+apt install pkg-config -y
+apt install automake -y
+apt install python3-pip -y
+apt install python3-venv  -y
+apt install python3-tomli -y
+apt install libpixman-1-dev -y
+apt install libspice-protocol-dev libspice-server-dev libspice-server1 -y
+apt install libxml2-utils -y
+apt install xsltproc -y
+apt install libgnutls28-dev -y
+apt install python3-libxml2 libxml++2.6-dev -y
+apt install libjson-c-dev -y
+apt install docutils -y
+apt install libpciaccess-dev -y
+apt install libudev-dev -y
+pip install rst2html5 
+pip uninstall rst2html5
+ln -s /usr/bin/python3 /usr/bin/python
+pip install build
+apt install cmake -y
+pip install ply
+pip install django
